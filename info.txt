@@ -1,0 +1,6 @@
+docker build -t ft_transcendencer .
+docker run -it --rm --name ft -p 3000:3000 ft_transcendencer
+
+docker volume create mi_volumen
+docker run -it -p 2222:22 --name mi_ubuntu ubuntu bash
+docker start -ai mi_ubuntu

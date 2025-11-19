@@ -1,0 +1,9 @@
+/* Tailwind minimal reset */
+body { margin:0; }
+.bg-gray-900 { background:#111827; }
+.text-white { color: #fff; }
+.flex { display:flex; }
+.justify-center { justify-content:center; }
+.items-center { align-items:center; }
+.h-screen { height:100vh; }
+.bg-black { background:#000; }
