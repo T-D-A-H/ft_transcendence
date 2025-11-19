@@ -77,28 +77,50 @@ await fastify.register(websocket);
 await fastify.register(fastifyStatic, {
   root: path.join(__dirname, "public"),
   prefix: "/",
+  index: "index.html",
 });
 
 // Estado del juego
-let playerY = 150;
+const clients = [];
+let playerY1 = 150;
+let playerY2 = 150;
+let move1 = 0; // -1=arriba, 1=abajo
+let move2 = 0;
 
 // WebSocket para juego
 fastify.get("/ws", { websocket: true }, (conn) => {
+  clients.push(conn);
+
   conn.socket.on("message", (raw) => {
     const msg = JSON.parse(raw);
 
-    if (msg.type === "MOVE_UP") playerY -= 5;
-    if (msg.type === "MOVE_DOWN") playerY += 5;
+    // Actualizar direcciones de movimiento
+    if (msg.type === "MOVE_UP_1") move1 = -1;
+    if (msg.type === "MOVE_DOWN_1") move1 = 1;
+    if (msg.type === "STOP_1") move1 = 0;
 
-    // Enviar el nuevo estado al cliente
-    conn.socket.send(
-      JSON.stringify({
-        type: "STATE",
-        playerY,
-      })
-    );
+    if (msg.type === "MOVE_UP_2") move2 = -1;
+    if (msg.type === "MOVE_DOWN_2") move2 = 1;
+    if (msg.type === "STOP_2") move2 = 0;
+  });
+
+  conn.socket.on("close", () => {
+    const index = clients.indexOf(conn);
+    if (index !== -1) clients.splice(index, 1);
   });
 });
+
+setInterval(() => {
+  playerY1 += move1 * 5;
+  playerY2 += move2 * 5;
+
+  // Limitar paletas al canvas
+  playerY1 = Math.max(0, Math.min(340, playerY1));
+  playerY2 = Math.max(0, Math.min(340, playerY2));
+
+  const state = JSON.stringify({ type: "STATE", playerY1, playerY2 });
+  clients.forEach(c => c.socket.send(state));
+}, 16);
 
 fastify.listen({ port: 3000 , host: "0.0.0.0"}).then(() =>
   console.log("Servidor en http://localhost:3000")

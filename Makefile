@@ -10,7 +10,6 @@ build:
 	docker build -t $(IMAGE_NAME) .
 
 run: build
-	-docker rm -f $(CONTAINER_NAME)
 	docker run -it --rm --name $(CONTAINER_NAME) -p $(PORT):3000 $(IMAGE_NAME)
 
 clean:
