@@ -1,7 +1,7 @@
 
-export function keyPressEvents(socket) {
+export function keyPressEvents(socket: WebSocket): void {
 
-	document.addEventListener("keydown", (e) => {
+	document.addEventListener("keydown", (e: KeyboardEvent) => {
 		if (e.key === "w")
             socket.send(JSON.stringify({ type: "MOVE_UP_1" }));
 		if (e.key === "s")
@@ -12,7 +12,7 @@ export function keyPressEvents(socket) {
             socket.send(JSON.stringify({ type: "MOVE_DOWN_2" }));
 	});
 
-	document.addEventListener("keyup", (e) => {
+	document.addEventListener("keyup", (e: KeyboardEvent) => {
 
 		if (e.key === "w" || e.key === "s")
             socket.send(JSON.stringify({ type: "STOP_1" }));
