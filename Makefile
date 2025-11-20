@@ -1,56 +1,87 @@
-.PHONY: build run clean restart logs down up dev
-
-# Configuración para campus 42
 DOCKER_RUNTIME?=docker
-DOCKER_CONTEXT?=/sgoinfre/$(USER)/docker
+NO_CACHE=--no-cache
 
-# Establecer contexto de Docker si es necesario
-# setup-runtime:
-# 	@mkdir -p $(DOCKER_CONTEXT)
-# 	@echo "Docker context: $(DOCKER_CONTEXT)"
+RED   := \033[0;31m
+BLUE  := \033[0;34m
+GREEN := \033[0;32m
+NC    := \033[0m
 
-# Comandos principales
-build:
-	$(DOCKER_RUNTIME)-compose build
 
-up: build
+all: # Crear contenedores y levantar
+	$(DOCKER_RUNTIME)-compose build $(NO_CACHE)
 	$(DOCKER_RUNTIME)-compose up -d
 
-up-dev: build
+
+build: #Crear contenedores
+	$(DOCKER_RUNTIME)-compose build $(NO_CACHE)
+
+
+up: # Levantar - dettached
+	$(DOCKER_RUNTIME)-compose up -d
+
+
+up-logs: build # Levantar - attached
 	$(DOCKER_RUNTIME)-compose up
 
-down:
+
+down: # Parar contenedores
 	$(DOCKER_RUNTIME)-compose down
 
-clean:
-	$(DOCKER_RUNTIME)-compose down -v
+ 
+fclean: down # Parar contenedores y eliminar objetos
 	$(DOCKER_RUNTIME) system prune -f
 
-# Solo reinicia, no reconstruye
-restart: down up
 
-logs:
+re: fclean all # Parar contenedores, eliminar objetos, Crear contenedores, Levantarlos
+
+
+logs: # ver LOGS
 	$(DOCKER_RUNTIME)-compose logs -f
 
-rf:
-	$(DOCKER_RUNTIME)-compose build --no-cache frontend
+
+rf: # restartea solo el frontend
+	$(DOCKER_RUNTIME)-compose build $(NO_CACHE) frontend
 	$(DOCKER_RUNTIME)-compose up -d --force-recreate frontend
 
-# Rebuild solo backend  
-rb:
-	$(DOCKER_RUNTIME)-compose build --no-cache backend
+
+rb: # restartea solo el backend
+	$(DOCKER_RUNTIME)-compose build $(NO_CACHE) backend
 	$(DOCKER_RUNTIME)-compose up -d --force-recreate backend
 
-rall: rf rb # Cuando cambias frontend + backend
 
-# Comandos de desarrollo (sin Docker)
-dev-backend:
-	cd backend && npm start
+rall: rf rb # restartea el frontend y backend
 
-dev-frontend:
-	cd frontend && npx http-server src/public -p 4000
 
-# Cuando cambias configuraciones globales
-rebuild:
-	$(DOCKER_RUNTIME)-compose build --no-cache
+enter-backend: # Meterse a contenedor backend
+	docker exec -it ft_backend bash
+
+
+enter-frontend: # Meterse a contenedor frontend
+	docker exec -it ft_frontend bash
+
+
+rebuild: # Reconstruye todo - Cuando cambias configuraciones globales
+	$(DOCKER_RUNTIME)-compose build $(NO_CACHE)
 	$(DOCKER_RUNTIME)-compose up -d
+
+
+
+status:
+	@services=$$(docker compose ps --format '{{.Service}} {{.State}}') ; \
+	if [ -z "$$services" ]; then \
+		printf "[+] ${RED}Running 0/0${NC}\n"; \
+	else \
+		total=$$(echo "$$services" | wc -l) ; \
+		running=$$(echo "$$services" | grep -c 'running') ; \
+		printf "[+] ${BLUE}Running %s/%s${NC}\n" "$$running" "$$total" ; \
+		echo "$$services" | while read svc state ; do \
+			if [ "$$state" = "running" ]; then \
+				printf " ${GREEN}✔${NC} Container %-15s ${GREEN}Running${NC}\n" "$$svc" ; \
+			else \
+				printf " ${RED}✘${NC} Container %-15s %s\n" "$$svc" "$$state" ; \
+			fi ; \
+		done \
+	fi
+
+.PHONY: all build up up-logs status down fclean re logs rf \
+	rb rall enter-backend enter-fronted rebuild

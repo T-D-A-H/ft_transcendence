@@ -15,4 +15,5 @@ COPY . .
 EXPOSE 4000
 
 # Comando para servir archivos estáticos
-CMD ["npx", "http-server", "./public", "-p", "4000"]
+CMD ["npx", "http-server", ".", "-p", "4000", "-c-1"]
+

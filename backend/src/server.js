@@ -1,17 +1,18 @@
-const Fastify = require("fastify");
-const websocket = require("@fastify/websocket");
+const Fastify       = require("fastify");
+const websocket     = require("@fastify/websocket");
 const fastifyStatic = require("@fastify/static");
-const path = require("path");
+const path          = require("path");
 
-const fastify = Fastify({ logger: true });
+const fastify       = Fastify({ logger: true });
 
 async function startServer() {
+
   // Registrar WebSocket
   await fastify.register(websocket);
 
   // Servir archivos estáticos
   await fastify.register(fastifyStatic, {
-    root: path.join(__dirname, "public"),
+    root: path.join(__dirname, "frontend"),
     prefix: "/",
   });
 
@@ -52,6 +53,7 @@ async function startServer() {
 
   // Actualizar estado del juego
   setInterval(() => {
+
     playerY1 += move1 * 5;
     playerY2 += move2 * 5;
 
@@ -67,6 +69,8 @@ async function startServer() {
     });
   }, 16);
 
+
+
   // Ruta de health check
   fastify.get("/api/health", async (request, reply) => {
     return { status: "OK", clients: clients.length };
@@ -74,7 +78,7 @@ async function startServer() {
 
   try {
     await fastify.listen({ port: 3000, host: "0.0.0.0" });
-    console.log("🚀 Servidor corriendo en http://localhost:3000");
+    console.log("Servidor corriendo en http://localhost:3000");
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
