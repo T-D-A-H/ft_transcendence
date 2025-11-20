@@ -1,21 +1,56 @@
+.PHONY: build run clean restart logs down up dev
 
-IMAGE_NAME=ft_transcendencer
-CONTAINER_NAME=ft
-PORT=3000
+# Configuración para campus 42
+DOCKER_RUNTIME?=docker
+DOCKER_CONTEXT?=/sgoinfre/$(USER)/docker
 
+# Establecer contexto de Docker si es necesario
+# setup-runtime:
+# 	@mkdir -p $(DOCKER_CONTEXT)
+# 	@echo "Docker context: $(DOCKER_CONTEXT)"
 
-.PHONY: build run clean restart logs
-
+# Comandos principales
 build:
-	docker build -t $(IMAGE_NAME) .
+	$(DOCKER_RUNTIME)-compose build
 
-run: build
-	docker run -it --rm --name $(CONTAINER_NAME) -p $(PORT):3000 $(IMAGE_NAME)
+up: build
+	$(DOCKER_RUNTIME)-compose up -d
+
+up-dev: build
+	$(DOCKER_RUNTIME)-compose up
+
+down:
+	$(DOCKER_RUNTIME)-compose down
 
 clean:
-	-docker rm -f $(CONTAINER_NAME)
+	$(DOCKER_RUNTIME)-compose down -v
+	$(DOCKER_RUNTIME) system prune -f
 
-restart: clean run
+# Solo reinicia, no reconstruye
+restart: down up
 
 logs:
-	docker logs -f $(CONTAINER_NAME)
+	$(DOCKER_RUNTIME)-compose logs -f
+
+rf:
+	$(DOCKER_RUNTIME)-compose build --no-cache frontend
+	$(DOCKER_RUNTIME)-compose up -d --force-recreate frontend
+
+# Rebuild solo backend  
+rb:
+	$(DOCKER_RUNTIME)-compose build --no-cache backend
+	$(DOCKER_RUNTIME)-compose up -d --force-recreate backend
+
+rall: rf rb # Cuando cambias frontend + backend
+
+# Comandos de desarrollo (sin Docker)
+dev-backend:
+	cd backend && npm start
+
+dev-frontend:
+	cd frontend && npx http-server src/public -p 4000
+
+# Cuando cambias configuraciones globales
+rebuild:
+	$(DOCKER_RUNTIME)-compose build --no-cache
+	$(DOCKER_RUNTIME)-compose up -d

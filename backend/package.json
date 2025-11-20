@@ -1,0 +1,14 @@
+{
+  "name": "ft_transcendence_backend",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js"
+  },
+  "dependencies": {
+    "fastify": "^4.24.3",
+    "@fastify/websocket": "^8.3.0",
+    "@fastify/static": "^6.10.2"
+  }
+}

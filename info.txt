@@ -4,3 +4,18 @@ docker run -it --rm --name ft -p 3000:3000 ft_transcendencer
 docker volume create mi_volumen
 docker run -it -p 2222:22 --name mi_ubuntu ubuntu bash
 docker start -ai mi_ubuntu
+
+# CAMBIOS EN AMBOS (frontend + backend)
+make rebuild-all
+
+# SOLO CAMBIO EN FRONTEND (HTML/CSS/JS)
+make rf
+
+# SOLO CAMBIO EN BACKEND (server.js)
+make rb
+
+# CAMBIOS RÁPIDOS (sin cambiar package.json)
+make fast-rebuild
+
+# LIMPIAR TODO
+make clean

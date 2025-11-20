@@ -7,3 +7,12 @@ body { margin:0; }
 .items-center { align-items:center; }
 .h-screen { height:100vh; }
 .bg-black { background:#000; }
+
+.snail {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 50px;
+  height: auto;
+  z-index: 50;
+}
