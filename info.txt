@@ -19,3 +19,10 @@ make fast-rebuild
 
 # LIMPIAR TODO
 make clean
+
+
+# Flujo endpoint
+1. Usuario accede a la aplicación: /
+2. Redirección automática: /login
+3. Login exitoso: /dashboard o /home
+4. Navegación protegida

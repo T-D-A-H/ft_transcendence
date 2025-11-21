@@ -13,19 +13,15 @@ if (!canvas) {
 }
 const paddle  = canvas.getContext("2d") as CanvasRenderingContext2D;
 
-
-const socket = new WebSocket("ws://localhost:3000/ws");
+const socket = new WebSocket("ws://localhost:4000/proxy-pong");
 socket.onopen = () => console.log("Coonnected to WebSocket");
 socket.onerror = (error: Event) => console.error("Error Connecting to WebSocket:", error);
 
 keyPressEvents(socket);
 
-
 // Recibir estado del servidor
 socket.onmessage = (msg : MessageEvent) => {
-
 	try {
-
 		const data: ServerMessage = JSON.parse(msg.data);
 		console.log("Data Received:", data);
 		if (data.type === "STATE") {
@@ -40,7 +36,6 @@ socket.onmessage = (msg : MessageEvent) => {
 
 
 function drawLoop(): void {
-
 	drawBrackground(vars.backgroundColour, canvas, paddle);
 	drawPlayerOne(vars.paddle1.colour, paddle, vars.paddle1.y, vars.paddle1.x);
 	drawPlayerTwo(vars.paddle1.colour, paddle, vars.paddle2.y, vars.paddle2.x);

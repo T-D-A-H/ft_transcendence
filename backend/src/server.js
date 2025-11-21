@@ -1,38 +1,62 @@
-const Fastify       = require("fastify");
-const websocket     = require("@fastify/websocket");
-const fastifyStatic = require("@fastify/static");
-const path          = require("path");
+const Fastify   = require("fastify");
+const websocket = require("@fastify/websocket");
 
-const fastify       = Fastify({ logger: true });
+const fastify = Fastify({ logger: true });
+
+// Simulación de Base de Datos (Para que pruebes el login)
+const USERS_DB = [
+  { username: "admin", password: "1234" },
+  { username: "jaime", password: "hola" }
+];
 
 async function startServer() {
 
-  // Registrar WebSocket
+  // 1. Registrar Plugin de WebSocket
   await fastify.register(websocket);
 
-  // Servir archivos estáticos
-  await fastify.register(fastifyStatic, {
-    root: path.join(__dirname, "frontend"),
-    prefix: "/",
+  //* --- RUTAS API (JSON) ---
+
+  // Ruta de Login
+  fastify.post("/login", async (req, reply) => {
+    // Fastify parsea el JSON automáticamente si el frontend envía
+    // Content-Type: application/json
+    const { username, password } = req.body || {};
+
+    console.log(`Intento de login: ${username}`);
+
+    // Buscamos en el array (Simulando DB)
+    const user = USERS_DB.find(u => u.username === username && u.password === password);
+
+    if (!user) {
+      // Devolvemos 401 Unauthorized
+      return reply.code(401).send({ error: "Credenciales incorrectas" });
+    }
+
+    // Login OK
+    return { status: "success", message: "Login correcto", user: username };
   });
 
-  // Estado del juego
+
+
+  //* --- LÓGICA DEL JUEGO (WebSocket) ---
+
   const clients = [];
   let playerY1 = 150;
   let playerY2 = 150;
-  let move1 = 0; // -1=arriba, 1=abajo
+  let move1 = 0; 
   let move2 = 0;
 
-  // WebSocket para juego
-  fastify.get("/ws", { websocket: true }, (conn) => {
+  // IMPORTANTE: Esta ruta debe coincidir con el 'proxy_pass' o la location de Nginx
+  // En el Nginx pusimos: location /socket-pong { ... }
+  fastify.get("/proxy-pong", { websocket: true }, (conn) => {
+    console.log("Nuevo jugador conectado!");
     clients.push(conn);
 
     conn.socket.on("message", (raw) => {
       try {
         const msg = JSON.parse(raw);
-        console.log("Mensaje recibido:", msg);
-
-        // Actualizar direcciones de movimiento
+        
+        // Lógica de movimiento
         if (msg.type === "MOVE_UP_1") move1 = -1;
         if (msg.type === "MOVE_DOWN_1") move1 = 1;
         if (msg.type === "STOP_1") move1 = 0;
@@ -46,39 +70,35 @@ async function startServer() {
     });
 
     conn.socket.on("close", () => {
+      console.log("Jugador desconectado");
       const index = clients.indexOf(conn);
       if (index !== -1) clients.splice(index, 1);
     });
   });
 
-  // Actualizar estado del juego
+  // Bucle del juego (Game Loop) - 60 FPS aprox
   setInterval(() => {
-
     playerY1 += move1 * 5;
     playerY2 += move2 * 5;
 
-    // Limitar paletas al canvas
+    // Límites del canvas (0 a 340 aprox considerando altura de paleta)
     playerY1 = Math.max(0, Math.min(340, playerY1));
     playerY2 = Math.max(0, Math.min(340, playerY2));
 
     const state = JSON.stringify({ type: "STATE", playerY1, playerY2 });
+    
+    // Enviar estado a todos los clientes conectados
     clients.forEach(c => {
-      if (c.socket.readyState === 1) { // WebSocket.OPEN
+      if (c.socket.readyState === 1) { // 1 = OPEN
         c.socket.send(state);
       }
     });
   }, 16);
 
-
-
-  // Ruta de health check
-  fastify.get("/api/health", async (request, reply) => {
-    return { status: "OK", clients: clients.length };
-  });
-
+  // Arrancar servidor
   try {
     await fastify.listen({ port: 3000, host: "0.0.0.0" });
-    console.log("Servidor corriendo en http://localhost:3000");
+    console.log("Backend corriendo en puerto 3000");
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

@@ -18,7 +18,7 @@ services:
       dockerfile: Dockerfile
     container_name: ft_frontend
     ports:
-      - "4000:4000"
+      - "4000:80" # Mapeamos puerto 4000 de tu PC al 80 interno de Nginx
     working_dir: /app
     user: "root"
     environment:

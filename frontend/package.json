@@ -1,10 +1,6 @@
 {
   "name": "ft_transcendence_frontend",
   "version": "1.0.0",
-  "scripts": {
-    "dev": "npx http-server ./public -p 4000",
-    "start": "npx http-server ./public -p 4000"
-  },
   "dependencies": {
     "http-server": "^14.1.1"
   }

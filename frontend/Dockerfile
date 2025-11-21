@@ -1,22 +1,22 @@
-FROM node:18-slim
+FROM node:18-alpine as build
 
 WORKDIR /app
 
-# Copiar package.json primero para cachear dependencias
 COPY package*.json ./
-
-# Instalar dependencias
 RUN npm install && npm install -g typescript
 
-# Copiar código fuente
 COPY . .
 
-RUN npx tsc
+# Compilamos el TypeScript
+RUN cd game && npx tsc
 
-# Exponer puerto para el servidor de desarrollo
-EXPOSE 4000
+# --- STAGE 2: Nginx ---
+FROM nginx:alpine
 
-# Comando para servir archivos estáticos
-CMD ["npx", "http-server", ".", "-p", "4000", "-c-1"]
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+COPY --from=build /app/ /usr/share/nginx/html/
 
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
