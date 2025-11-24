@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Mini Pong</title>
-    <link href="/assets/style.css" rel="stylesheet" />
-  </head>
 
-  <body class="bg-gray-900 text-white flex justify-center items-center h-screen">
-    <canvas id="game" width="600" height="400" class="bg-black"></canvas>
-    <img src="/assets/snail2.gif" class="snail" />
-    <script type="module" src="/public/main.js"></script>
-  </body>
+	<head>
+		<title>Mini Pong</title>
+		<link href="/styles/tailwind.css" rel="stylesheet" />
+	</head>
+		
+		<body class="bg-gray-900 text-white flex justify-center items-center h-screen">
+	
+		
+		<canvas id="game" width="600" height="400" class="bg-black border-4 border-gray-700 rounded-1g"> </canvas>
+
+		<img src="/assets/snail2.gif" class="fixed bottom-2 right-2 w-12 z-50" />
+
+		<script type="module" src="/public/main.js"></script>
+
+	</body>
+
 </html>

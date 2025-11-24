@@ -1,13 +1,15 @@
-FROM node:18-slim
+FROM node:18-alpine
 
 WORKDIR /app
 
+# Instalar dependencias primero (mejor práctica)
+COPY package*.json ./
+RUN npm install
+
+# Copiar el resto del código
 COPY . .
 
-RUN npm install && npm install @fastify/websocket
-
-# Mantener como root para evitar problemas de permisos
-USER root
+RUN npm install @fastify/websocket
 
 EXPOSE 3000
 

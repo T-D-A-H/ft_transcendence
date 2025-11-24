@@ -76,20 +76,17 @@ async function startServer() {
     });
   });
 
-  // Bucle del juego (Game Loop) - 60 FPS aprox
   setInterval(() => {
     playerY1 += move1 * 5;
     playerY2 += move2 * 5;
 
-    // Límites del canvas (0 a 340 aprox considerando altura de paleta)
     playerY1 = Math.max(0, Math.min(340, playerY1));
     playerY2 = Math.max(0, Math.min(340, playerY2));
 
     const state = JSON.stringify({ type: "STATE", playerY1, playerY2 });
-    
-    // Enviar estado a todos los clientes conectados
+
     clients.forEach(c => {
-      if (c.socket.readyState === 1) { // 1 = OPEN
+      if (c.socket.readyState === 1) {
         c.socket.send(state);
       }
     });

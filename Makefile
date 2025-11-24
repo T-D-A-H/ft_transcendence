@@ -65,7 +65,6 @@ rebuild: # Reconstruye todo - Cuando cambias configuraciones globales
 	$(DOCKER_RUNTIME)-compose up -d
 
 
-
 status:
 	@services=$$(docker compose ps --format '{{.Service}} {{.State}}') ; \
 	if [ -z "$$services" ]; then \
