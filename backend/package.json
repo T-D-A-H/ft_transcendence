@@ -9,6 +9,7 @@
   "dependencies": {
     "fastify": "^4.24.3",
     "@fastify/websocket": "^8.3.0",
-    "@fastify/static": "^6.10.2"
+    "@fastify/static": "^6.10.2",
+    "sqlite3": "^5.1.6"
   }
 }

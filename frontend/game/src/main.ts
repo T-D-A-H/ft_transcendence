@@ -1,49 +1,67 @@
 import { drawBrackground, drawPlayerOne, drawPlayerTwo } from "./draw.js";
 import { keyPressEvents } from "./keypress.js";
-import { vars, PaddleState } from "./vars.js";
+import { vars } from "./vars.js";
 
-interface StateMessage {type: "STATE"; playerY1: number; playerY2: number;}
-
-type ServerMessage = StateMessage;
-
+// Get canvas element
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 if (!canvas) {
-	console.error("Could not find canvas element");
-	throw new Error("Canvas not found");
+    throw new Error("Canvas element not found");
 }
-const paddle  = canvas.getContext("2d") as CanvasRenderingContext2D;
 
+const loginButton = document.getElementById("loginButton") as HTMLButtonElement;
+const registerButton = document.getElementById("registerButton") as HTMLButtonElement;
+
+loginButton.addEventListener("click", () => {
+    window.location.href = "/login";
+});
+
+registerButton.addEventListener("click", () => {
+    window.location.href = "/register";
+});
+
+const ctx = canvas.getContext("2d");
+if (!ctx) {
+    throw new Error("Could not get 2D context");
+}
+
+// Connect to WebSocket
 const socket = new WebSocket("ws://localhost:4000/proxy-pong");
-socket.onopen = () => console.log("Connected to WebSocket");
-socket.onerror = (error: Event) => console.error("Error Connecting to WebSocket: ", error);
 
+socket.addEventListener("open", () => {
+    console.log("Connected to game server");
+});
+
+socket.addEventListener("message", (event) => {
+    try {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "STATE") {
+            // Update paddle positions from server
+            vars.paddle1.y = data.playerY1;
+            vars.paddle2.y = data.playerY2;
+
+            // Redraw the game
+            drawBrackground(vars.backgroundColour, canvas, ctx);
+            drawPlayerOne(vars.paddle1.colour, ctx, vars.paddle1.y, vars.paddle1.x);
+            drawPlayerTwo(vars.paddle2.colour, ctx, vars.paddle2.y, vars.paddle2.x);
+        }
+    } catch (error) {
+        console.error("Error parsing message:", error);
+    }
+});
+
+socket.addEventListener("close", () => {
+    console.log("Disconnected from game server");
+});
+
+socket.addEventListener("error", (error) => {
+    console.error("WebSocket error:", error);
+});
+
+// Setup keyboard controls
 keyPressEvents(socket);
 
-
-// Recibir estado del servidor
-socket.onmessage = (msg : MessageEvent) => {
-
-	try {
-
-		const data: ServerMessage = JSON.parse(msg.data);
-		console.log("Data Received:", data);
-		if (data.type === "STATE") {
-			vars.paddle1.y = data.playerY1;
-			vars.paddle2.y = data.playerY2;
-		}
-
-	} catch (error) {
-		console.error("Error parsing message:", error);
-	}
-};
-
-
-function drawLoop(): void {
-
-	drawBrackground(vars.backgroundColour, canvas, paddle);
-	drawPlayerOne(vars.paddle1.colour, paddle, vars.paddle1.y, vars.paddle1.x);
-	drawPlayerTwo(vars.paddle1.colour, paddle, vars.paddle2.y, vars.paddle2.x);
-	requestAnimationFrame(drawLoop);
-}
-
-drawLoop();
+// Initial draw
+drawBrackground(vars.backgroundColour, canvas, ctx);
+drawPlayerOne(vars.paddle1.colour, ctx, vars.paddle1.y, vars.paddle1.x);
+drawPlayerTwo(vars.paddle2.colour, ctx, vars.paddle2.y, vars.paddle2.x);

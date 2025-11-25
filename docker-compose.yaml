@@ -1,6 +1,6 @@
 services:
   backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: ft_backend
@@ -10,15 +10,19 @@ services:
     user: "root"
     environment:
       - NODE_ENV=production
+    volumes:
+      - db_data:/data
     restart: unless-stopped
+    networks:
+      - ft_transcen
 
   frontend:
-    build: 
+    build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: ft_frontend
     ports:
-      - "4000:80" # Mapeamos puerto 4000 de tu PC al 80 interno de Nginx
+      - "4000:80"
     working_dir: /app
     user: "root"
     environment:
@@ -26,7 +30,25 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+    networks:
+      - ft_transcen
+
+  database:
+    container_name: ft_database
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    ports:
+      - "5000:8080"
+    volumes:
+      - db_data:/data
+    restart: unless-stopped
+    networks:
+      - ft_transcen
 
 networks:
-  default:
-    name: ft_network
+  ft_transcen:
+    driver: bridge
+
+volumes:
+  db_data:

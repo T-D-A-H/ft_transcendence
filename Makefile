@@ -48,8 +48,12 @@ rb: # restartea solo el backend
 	$(DOCKER_RUNTIME)-compose build $(NO_CACHE) backend
 	$(DOCKER_RUNTIME)-compose up -d --force-recreate backend
 
+rdb: # restartea solo el data base
+	$(DOCKER_RUNTIME)-compose build $(NO_CACHE) database
+	$(DOCKER_RUNTIME)-compose up -d --force-recreate database
 
-rall: rf rb # restartea el frontend y backend
+
+rall: rf rb rdb# restartea el frontend y backend
 
 
 enter-backend: # Meterse a contenedor backend
