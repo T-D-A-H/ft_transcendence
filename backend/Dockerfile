@@ -6,7 +6,7 @@ WORKDIR /app
 RUN apk add --no-cache sqlite
 
 COPY package*.json ./
-RUN npm install fastify sqlite3 @fastify/websocket
+RUN npm install fastify sqlite3 @fastify/websocket bcryptjs
 
 COPY . .
 

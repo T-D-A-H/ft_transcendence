@@ -56,12 +56,14 @@ rn: # restartea solo el data base
 	$(DOCKER_RUNTIME)-compose up -d --force-recreate nginx
 
 rfn:
+	docker stop ft_nginx ft_frontend
 	docker rm ft_nginx ft_frontend
 	docker volume rm ft_transcendencer_front_build
 	make rf
 	make rn
 
 rbd:
+	docker stop ft_database ft_backend
 	docker rm ft_database ft_backend
 	docker volume rm ft_transcendencer_db_data
 	make rb
