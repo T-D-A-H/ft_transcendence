@@ -25,15 +25,14 @@ up-logs: build # Levantar - attached
 
 
 down: # Parar contenedores
-	$(DOCKER_RUNTIME)-compose down
+	$(DOCKER_RUNTIME)-compose down --remove-orphans
+	docker volume rm ft_transcendencer_db_data
+	docker volume rm ft_transcendencer_front_build
 
- 
 fclean: down # Parar contenedores y eliminar objetos
 	$(DOCKER_RUNTIME) system prune -f
 
-
 re: fclean all # Parar contenedores, eliminar objetos, Crear contenedores, Levantarlos
-
 
 logs: # ver LOGS
 	$(DOCKER_RUNTIME)-compose logs -f
@@ -56,24 +55,32 @@ rn: # restartea solo el data base
 	$(DOCKER_RUNTIME)-compose build $(NO_CACHE) nginx
 	$(DOCKER_RUNTIME)-compose up -d --force-recreate nginx
 
-rall: rf rb rdb rn # restartea el frontend y backend
+rfn:
+	docker rm ft_nginx ft_frontend
+	docker volume rm ft_transcendencer_front_build
+	make rf
+	make rn
 
+rbd:
+	docker rm ft_database ft_backend
+	docker volume rm ft_transcendencer_db_data
+	make rb
+	make rdb
+
+rall: rf rb rdb rn # restartea el frontend y backend
 
 enter-backend: # Meterse a contenedor backend
 	docker exec -it ft_backend bash
 
-
 enter-frontend: # Meterse a contenedor frontend
 	docker exec -it ft_frontend bash
 
+vols:
+	docker volume ls  
 
 rebuild: # Reconstruye todo - Cuando cambias configuraciones globales
 	$(DOCKER_RUNTIME)-compose build $(NO_CACHE)
 	$(DOCKER_RUNTIME)-compose up -d
-
-down-vols:
-	docker volume rm ft_transcendence_front_build
-
 
 status:
 	@services=$$(docker compose ps --format '{{.Service}} {{.State}}') ; \

@@ -2,15 +2,24 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Instalar dependencias primero (mejor práctica)
-COPY package*.json ./
-RUN npm install
+# Instalar SQLite
+RUN apk add --no-cache sqlite
 
-# Copiar el resto del código
+COPY package*.json ./
+RUN npm install fastify sqlite3 @fastify/websocket
+
 COPY . .
 
-RUN npm install @fastify/websocket
+# Copiar el archivo SQL de semilla
+COPY .database.sql /app/.database.sql
+
+# Crear directorio /data y base de datos si no existe
+RUN mkdir -p /data && \
+    if [ ! -f /data/database.sqlite ]; then \
+        echo "Creando base de datos desde .database.sql..." && \
+        sqlite3 /data/database.sqlite < /app/.database.sql; \
+    fi
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["node", "src/server.js"]

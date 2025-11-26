@@ -5,8 +5,8 @@ CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     
     -- Identificación
-    username TEXT NOT NULL UNIQUE,       -- Nombre único en la DB
-    display_name TEXT NOT NULL,          -- Nombre visible (puede cambiarse)
+    username TEXT NOT NULL,       -- Nombre único en la DB
+    display_name TEXT NOT NULL UNIQUE,          -- Nombre visible (puede cambiarse)
     email TEXT UNIQUE,                   -- Para notificaciones o OAuth
     
     -- Auth (Password es NULL si entran con OAuth)
@@ -78,3 +78,6 @@ CREATE TABLE messages (
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+INSERT OR IGNORE INTO users (username, display_name, email, password) VALUES 
+('admin', 'admin', 'admin@gmail.com', '12345');

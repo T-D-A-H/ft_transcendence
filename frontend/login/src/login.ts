@@ -9,7 +9,7 @@ form.addEventListener("submit", async (e) => {
 
 	const data = new FormData(form);
 	const body = {
-		username: data.get("username"),
+		display_name: data.get("display_name"),
 		password: data.get("password")
 	};
 
