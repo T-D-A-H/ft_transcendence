@@ -1,34 +1,17 @@
 services:
   backend:
+    container_name: ft_backend
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: ft_backend
+    user: "root"
     ports:
       - "3000:3000"
     working_dir: /app
-    user: "root"
     environment:
       - NODE_ENV=production
     volumes:
       - db_data:/data
-    restart: unless-stopped
-    networks:
-      - ft_transcen
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: ft_frontend
-    ports:
-      - "4000:80"
-    working_dir: /app
-    user: "root"
-    environment:
-      - NODE_ENV=production
-    depends_on:
-      - backend
     restart: unless-stopped
     networks:
       - ft_transcen
@@ -38,10 +21,41 @@ services:
     build:
       context: ./database
       dockerfile: Dockerfile
+    user: "root"
     ports:
       - "5000:8080"
     volumes:
       - db_data:/data
+    restart: unless-stopped
+    networks:
+      - ft_transcen
+
+  frontend:
+    container_name: ft_frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    user: "root"
+    working_dir: /app
+    volumes:
+      - front_build:/app/dist
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - ft_transcen
+
+  nginx:
+    container_name: ft_nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "4000:80"
+    volumes:
+      - front_build:/usr/share/nginx/html
+    depends_on:
+      - frontend
     restart: unless-stopped
     networks:
       - ft_transcen
@@ -52,3 +66,4 @@ networks:
 
 volumes:
   db_data:
+  front_build:

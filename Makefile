@@ -52,8 +52,11 @@ rdb: # restartea solo el data base
 	$(DOCKER_RUNTIME)-compose build $(NO_CACHE) database
 	$(DOCKER_RUNTIME)-compose up -d --force-recreate database
 
+rn: # restartea solo el data base
+	$(DOCKER_RUNTIME)-compose build $(NO_CACHE) nginx
+	$(DOCKER_RUNTIME)-compose up -d --force-recreate nginx
 
-rall: rf rb rdb# restartea el frontend y backend
+rall: rf rb rdb rn # restartea el frontend y backend
 
 
 enter-backend: # Meterse a contenedor backend
@@ -67,6 +70,9 @@ enter-frontend: # Meterse a contenedor frontend
 rebuild: # Reconstruye todo - Cuando cambias configuraciones globales
 	$(DOCKER_RUNTIME)-compose build $(NO_CACHE)
 	$(DOCKER_RUNTIME)-compose up -d
+
+down-vols:
+	docker volume rm ft_transcendence_front_build
 
 
 status:
