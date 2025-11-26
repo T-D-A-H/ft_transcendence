@@ -3,36 +3,26 @@ PRAGMA foreign_keys = ON;
 -- 1. USUARIOS (Soporta Auth Local, OAuth 42/Google, Avatar y Stats Rápidas)
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    
-    -- Identificación
-    username TEXT NOT NULL,       -- Nombre único en la DB
-    display_name TEXT NOT NULL UNIQUE,          -- Nombre visible (puede cambiarse)
-    email TEXT UNIQUE,                   -- Para notificaciones o OAuth
-    
-    -- Auth (Password es NULL si entran con OAuth)
+    username TEXT NOT NULL,
+    display_name TEXT NOT NULL UNIQUE,
+    email TEXT UNIQUE,
     password TEXT,                       
-    oauth_provider TEXT DEFAULT NULL,    -- '42', 'google', 'github'
-    oauth_id TEXT DEFAULT NULL,          -- ID que te devuelve la API de 42/Google
-    
-    -- Perfil
+    oauth_provider TEXT DEFAULT NULL,
+    oauth_id TEXT DEFAULT NULL,
     avatar TEXT DEFAULT '/uploads/default.png',
-    status TEXT DEFAULT 'offline',       -- 'online', 'offline', 'in-game'
-    
-    -- Stats Acumuladas (Para el perfil rápido y Leaderboard)
+    status TEXT DEFAULT 'offline',
     wins INTEGER DEFAULT 0,
     losses INTEGER DEFAULT 0,
-    elo INTEGER DEFAULT 1000,            -- Sistema de ranking
-    
+    elo INTEGER DEFAULT 1000,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 2. RELACIONES SOCIALES (Amigos y Bloqueos)
--- Maneja tanto Friend Request como Block en una sola tabla
 CREATE TABLE relationships (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,            -- Quien envía la solicitud o bloquea
-    target_id INTEGER NOT NULL,          -- A quien añades o bloqueas
-    type TEXT NOT NULL,                  -- 'FRIEND' o 'BLOCK'
+    user_id INTEGER NOT NULL,
+    target_id INTEGER NOT NULL,
+    type TEXT NOT NULL,
     status TEXT DEFAULT 'PENDING',       -- 'PENDING', 'ACCEPTED' (Solo para amigos)
     
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

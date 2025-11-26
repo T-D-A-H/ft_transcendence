@@ -1,10 +1,10 @@
 const Fastify = require("fastify");
 const websocket = require("@fastify/websocket");
 const bcrypt = require('bcryptjs');
-const db = require("./init_db"); // Importamos la DB
+const db = require("./init_db");
 const saltRounds = 12;
 
-const fastify = Fastify({ logger: true });
+const fastify = require("fastify")({ logger: true });
 
 async function startServer() {
 	const clients = [];
