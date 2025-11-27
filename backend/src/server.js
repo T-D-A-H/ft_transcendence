@@ -4,8 +4,11 @@ const bcrypt = require('bcryptjs');
 const db = require("./init_db");
 const { promisify } = require('util');
 const saltRounds = 12;
+const User = require("./User.js");
+const UserManager = require("./UserManager.js");
 
 const fastify = require("fastify")({ logger: true });
+const userManager = new UserManager();
 
 async function startServer() {
 	const clients = [];
@@ -15,27 +18,39 @@ async function startServer() {
 	let move2 = 0;
 
 	await fastify.register(websocket);
-
+	
 	// ── AUTH ──
 	fastify.post("/login", async (req, reply) => {
         const { display_name, password } = req.body || {};
         if (!display_name || !password) {
             return reply.code(400).send({ error: "Faltan campos" });
         }
-        const getAsync = promisify(db.get.bind(db));
         try {
-            const row = await getAsync(
-                "SELECT display_name, password FROM users WHERE display_name = ?",
-                [display_name]
-            );
-            if (!row) {
-                return reply.code(401).send({ error: "Credenciales incorrectas" });
-            }
-            const match = await bcrypt.compare(password, row.password);
-            if (!match) {
-                return reply.code(401).send({ error: "Credenciales incorrectas" });
-            }
-            return reply.send({ ok: true, user: row.display_name });
+			const result = await new Promise((resolve, reject) => {
+				db.get(
+					"SELECT id, display_name, password FROM users WHERE display_name = ?",
+					[display_name],
+					function(err, row) {
+						if (err) {
+							reject(err);
+						} else {
+							resolve(row);
+						}
+					}
+				);
+			});
+			// Verificar si el usuario existe
+			if (!result) {
+            	return reply.code(401).send({ error: "Credenciales incorrectas" });
+        	}
+			// Comparar contraseñas
+			const match = await bcrypt.compare(password, result.password);
+			if (!match) {
+				return reply.code(401).send({ error: "Credenciales incorrectas" });
+			}
+			userManager.loginUser(result.id);
+			console.log(userManager.getUser(result.id));
+			return reply.send({ ok: true });
         } catch (err) {
             console.error("Error en login:", err);
             return reply.code(500).send({ error: "Error de base de datos" });
@@ -49,13 +64,22 @@ async function startServer() {
         }
         try {
             const hashedPassword = await bcrypt.hash(password, saltRounds);
-            const runAsync = promisify(db.run.bind(db));
-            
-            await runAsync(
-                "INSERT INTO users (username, display_name, email, password) VALUES (?,?,?,?)",
-                [username, display_name, email, hashedPassword]
-            );
-
+			const result = await new Promise((resolve, reject) => {
+				db.run(
+					"INSERT INTO users (username, display_name, email, password) VALUES (?,?,?,?)",
+					[username, display_name, email, hashedPassword],
+					function(err) {
+						if (err) {
+							reject(err);
+						} else {
+							resolve(this);
+						}
+					}
+				);
+			});
+			const player = new User({ id: result.lastID, username: username, display_name: display_name, socket: null});
+			userManager.addUser(player);
+			console.log(userManager.getUser(result.lastID));
             return reply.code(201).send({ ok: true });
         } catch (err) {
             console.error("Error al registrarte", err); 
