@@ -2,6 +2,7 @@ const Fastify = require("fastify");
 const websocket = require("@fastify/websocket");
 const bcrypt = require('bcryptjs');
 const db = require("./init_db");
+const { promisify } = require('util');
 const saltRounds = 12;
 
 const fastify = require("fastify")({ logger: true });
@@ -17,53 +18,53 @@ async function startServer() {
 
 	// ── AUTH ──
 	fastify.post("/login", async (req, reply) => {
-		const { display_name, password } = req.body || {};
-		if (!display_name || !password) {
-			return reply.code(400).send({ error: "faltan campos" });
-		}
-		return new Promise((res) => {
-			db.get(
-				"SELECT display_name, password FROM users WHERE display_name = ?",
-				[display_name],
-				async (err, row) => {
-					if (err) return reply.code(500).send({ error: "db error" });
-					if (!row) return reply.code(401).send({ error: "credenciales mal" });
+        const { display_name, password } = req.body || {};
+        if (!display_name || !password) {
+            return reply.code(400).send({ error: "Faltan campos" });
+        }
+        const getAsync = promisify(db.get.bind(db));
+        try {
+            const row = await getAsync(
+                "SELECT display_name, password FROM users WHERE display_name = ?",
+                [display_name]
+            );
+            if (!row) {
+                return reply.code(401).send({ error: "Credenciales incorrectas" });
+            }
+            const match = await bcrypt.compare(password, row.password);
+            if (!match) {
+                return reply.code(401).send({ error: "Credenciales incorrectas" });
+            }
+            return reply.send({ ok: true, user: row.display_name });
+        } catch (err) {
+            console.error("Error en login:", err);
+            return reply.code(500).send({ error: "Error de base de datos" });
+        }
+    });
 
-					const match = await bcrypt.compare(password, row.password);
-					if (!match) return reply.code(401).send({ error: "credenciales mal" });
+    fastify.post("/register", async (req, reply) => {
+        const { username, display_name, email, password } = req.body || {};
+        if (!username || !display_name || !email || !password) {
+            return reply.code(400).send({ error: "Faltan campos" });
+        }
+        try {
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+            const runAsync = promisify(db.run.bind(db));
+            
+            await runAsync(
+                "INSERT INTO users (username, display_name, email, password) VALUES (?,?,?,?)",
+                [username, display_name, email, hashedPassword]
+            );
 
-					reply.send({ ok: true, user: row.display_name });
-					res();
-				}
-			);
-		});
-	});
-
-	fastify.post("/register", async (req, reply) => {
-		const { username, display_name, email, password } = req.body || {};
-		if (!username || !display_name || !email || !password) {
-			return reply.code(400).send({ error: "faltan campos" });
-		}
-
-		try {
-			const hashedPassword = await bcrypt.hash(password, saltRounds);
-			return new Promise((res) => {
-				db.run(
-					"INSERT INTO users (username, display_name, email, password) VALUES (?,?,?,?)",
-					[username, display_name, email, hashedPassword],
-					(err) => {
-						if (err)
-							return reply.code(409).send({ error: "usuario o email ya existe" });
-						reply.code(201).send({ ok: true });
-						res();
-					}
-				);
-			});
-
-		} catch {
-			reply.code(500).send({ error: "error al registrar" });
-		}
-	});
+            return reply.code(201).send({ ok: true });
+        } catch (err) {
+            console.error("Error al registrarte", err); 
+            if (err.message && err.message.includes('UNIQUE constraint failed')) {
+                return reply.code(409).send({ error: "Usuario o email ya existe" });
+            }
+            return reply.code(500).send({ error: "Error interno del servidor" });
+        }
+    });
 
 	// ── GAME (WebSocket PONG) ──
 	fastify.get("/pong", { websocket: true }, (conn) => {
