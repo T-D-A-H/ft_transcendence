@@ -1,8 +1,11 @@
 const User = require("./User.js");
+const Match = require("./Match.js");
 
 class UserManager {
+
     constructor() {
         this.users = new Map(); // Map<id, User>
+        this.matches = new Set(); 
     }
 
     // Agregar usuario
@@ -82,6 +85,20 @@ class UserManager {
     getAllUsers() {
         return Array.from(this.users.values());
     }
+
+    // Create a new match
+	createMatch(user1, user2) {
+		const match = new Match(user1, user2);
+		user1.currentMatch = match;
+		user2.currentMatch = match;
+        this.matches.add(match);
+		return match;
+	}
+
+	// Remove a finished match
+	removeMatch(match) {
+		this.matches.delete(match);
+	}
 
 }
 

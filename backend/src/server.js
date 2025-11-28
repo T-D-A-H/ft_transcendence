@@ -1,131 +1,50 @@
-const Fastify = require("fastify");
-const websocket = require("@fastify/websocket");
-const bcrypt = require('bcryptjs');
-const db = require("./init_db");
-const { promisify } = require('util');
-const saltRounds = 12;
-const User = require("./User.js");
-const UserManager = require("./UserManager.js");
+const Fastify     = require("fastify");
+const websocket   = require("@fastify/websocket");
+const fastify     = Fastify({ logger: true });
 
-const fastify = require("fastify")({ logger: true });
+const jwt         = require("jsonwebtoken");
+const SECRET 	  = "12345";
+const bcrypt      = require("bcryptjs");
+const db          = require("./init_db");
+const saltRounds  = 12;
+
+const Match       = require("./Match.js")
+const User        = require("./User.js");
+const UserManager = require("./UserManager.js");
 const userManager = new UserManager();
+const buildLoginHandler = require("./login");
+const { buildRegisterHandler } = require("./register");
+const buildGameSocketHandler = require("./game.js")
+
+const FRAMES = 1000/60;
+const SPEED = 8;
 
 async function startServer() {
-	const clients = [];
-	let playerY1 = 150;
-	let playerY2 = 150;
-	let move1 = 0;
-	let move2 = 0;
+
 
 	await fastify.register(websocket);
+
+
+	const loginHandler = buildLoginHandler(db, bcrypt, jwt, SECRET, userManager);
+	fastify.post("/login", loginHandler);
 	
-	// ── AUTH ──
-	fastify.post("/login", async (req, reply) => {
-        const { display_name, password } = req.body || {};
-        if (!display_name || !password) {
-            return reply.code(400).send({ error: "Faltan campos" });
-        }
-        try {
-			const result = await new Promise((resolve, reject) => {
-				db.get(
-					"SELECT id, display_name, password FROM users WHERE display_name = ?",
-					[display_name],
-					function(err, row) {
-						if (err) {
-							reject(err);
-						} else {
-							resolve(row);
-						}
-					}
-				);
-			});
-			// Verificar si el usuario existe
-			if (!result) {
-            	return reply.code(401).send({ error: "Credenciales incorrectas" });
-        	}
-			// Comparar contraseñas
-			const match = await bcrypt.compare(password, result.password);
-			if (!match) {
-				return reply.code(401).send({ error: "Credenciales incorrectas" });
-			}
-			userManager.loginUser(result.id);
-			console.log(userManager.getUser(result.id));
-			return reply.send({ ok: true });
-        } catch (err) {
-            console.error("Error en login:", err);
-            return reply.code(500).send({ error: "Error de base de datos" });
-        }
-    });
 
-    fastify.post("/register", async (req, reply) => {
-        const { username, display_name, email, password } = req.body || {};
-        if (!username || !display_name || !email || !password) {
-            return reply.code(400).send({ error: "Faltan campos" });
-        }
-        try {
-            const hashedPassword = await bcrypt.hash(password, saltRounds);
-			const result = await new Promise((resolve, reject) => {
-				db.run(
-					"INSERT INTO users (username, display_name, email, password) VALUES (?,?,?,?)",
-					[username, display_name, email, hashedPassword],
-					function(err) {
-						if (err) {
-							reject(err);
-						} else {
-							resolve(this);
-						}
-					}
-				);
-			});
-			const player = new User({ id: result.lastID, username: username, display_name: display_name, socket: null});
-			userManager.addUser(player);
-			console.log(userManager.getUser(result.lastID));
-            return reply.code(201).send({ ok: true });
-        } catch (err) {
-            console.error("Error al registrarte", err); 
-            if (err.message && err.message.includes('UNIQUE constraint failed')) {
-                return reply.code(409).send({ error: "Usuario o email ya existe" });
-            }
-            return reply.code(500).send({ error: "Error interno del servidor" });
-        }
-    });
+	const registerHandler = buildRegisterHandler(db, bcrypt, saltRounds, User, userManager);
+	fastify.post("/register", registerHandler);
 
-	// ── GAME (WebSocket PONG) ──
-	fastify.get("/pong", { websocket: true }, (conn) => {
-		console.log("Jugador conectado!");
-		clients.push(conn);
 
-		conn.socket.on("message", (raw) => {
-			try {
-				const msg = JSON.parse(raw);
-				if (msg.type === "MOVE_UP_1") move1 = -1;
-				if (msg.type === "MOVE_DOWN_1") move1 = 1;
-				if (msg.type === "STOP_1") move1 = 0;
+	const initGameSocket = buildGameSocketHandler(userManager, jwt, SECRET);
+	fastify.get("/proxy-game", { websocket: true }, initGameSocket);
 
-				if (msg.type === "MOVE_UP_2") move2 = -1;
-				if (msg.type === "MOVE_DOWN_2") move2 = 1;
-				if (msg.type === "STOP_2") move2 = 0;
-			} catch {}
-		});
-
-		conn.socket.on("close", () => {
-			const i = clients.indexOf(conn);
-			if (i !== -1) clients.splice(i, 1);
-		});
-	});
-
-	// Broadcast loop
 	setInterval(() => {
-		playerY1 = Math.max(0, Math.min(340, playerY1 + move1 * 5));
-		playerY2 = Math.max(0, Math.min(340, playerY2 + move2 * 5));
+	    userManager.matches.forEach(match => {
+	        if (!match.isActive) return;
+	        if (!match.players[0].socket || !match.players[1].socket) return;
+	        match.sendState(SPEED);
+	    });
+	}, FRAMES);
 
-		const state = JSON.stringify({ type: "STATE", playerY1, playerY2 });
-		clients.forEach(c => {
-			if (c.socket.readyState === 1) c.socket.send(state);
-		});
-	}, 16);
 
-	// ── ARRANCAR SERVER ──
 	try {
 		await fastify.listen({ port: 3000, host: "0.0.0.0" });
 		console.log("Backend ON en 3000");

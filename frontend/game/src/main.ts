@@ -1,67 +1,76 @@
-import { drawBrackground, drawPlayerOne, drawPlayerTwo } from "./draw.js";
-import { keyPressEvents } from "./keypress.js";
-import { vars } from "./vars.js";
 
-// Get canvas element
-const canvas = document.getElementById("game") as HTMLCanvasElement;
-if (!canvas) {
-    throw new Error("Canvas element not found");
+import { 
+	loginModal, openLogin, closeLogin, submitLoginButton,
+	usernameInput, passwordInput,
+	registerModal, openRegister, closeRegister, submitRegisterButton,
+	regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput,
+	startMatchButton, waitingPlayers, 
+	show, hide, canvas, paddle, } from "./ui.js";
+import { registerUser } from "./register.js"
+import { loginUser } from "./login.js"
+import { searchForPlayers } from "./search.js"
+import { sendKeyPressEvents } from "./keypress.js";
+import { drawGame } from "./draw.js";
+
+
+if (!loginModal || !openLogin || !closeLogin || !submitLoginButton ||
+	!usernameInput || !passwordInput ||
+	!registerModal || !openRegister || !closeRegister || !submitRegisterButton ||
+	!regUsernameInput || !regDisplaynameInput || !regEmailInput || !regPasswordInput ||
+	!waitingPlayers || !startMatchButton || !canvas || !paddle) {
+	console.error("One or more UI elements are missing");
 }
 
-const loginButton = document.getElementById("loginButton") as HTMLButtonElement;
-const registerButton = document.getElementById("registerButton") as HTMLButtonElement;
+let userSocket: WebSocket | null = null;
 
-loginButton.addEventListener("click", () => {
-    window.location.href = "/login";
-});
+openLogin.onclick = () => show(loginModal);
+closeLogin.onclick = () => hide(loginModal);
 
-registerButton.addEventListener("click", () => {
-    window.location.href = "/register";
-});
+submitLoginButton.onclick = async () => {
+	const { status, token } = await loginUser(usernameInput, passwordInput);
+	if (status === 0 && token) {
+		hide(loginModal);
+		show(startMatchButton);
+		userSocket = new WebSocket(`ws://localhost:4000/proxy-game?token=${token}`);
+		userSocket.onopen = () => console.log("User WebSocket connected");
+		userSocket.onerror = (err) => { console.error(err); userSocket?.close(); };
+	}
+};
 
-const ctx = canvas.getContext("2d");
-if (!ctx) {
-    throw new Error("Could not get 2D context");
-}
 
-// Connect to WebSocket
-const socket = new WebSocket("ws://localhost:4000/proxy-pong");
+openRegister.onclick = () => show(registerModal);
+closeRegister.onclick = () => hide(registerModal);
 
-socket.addEventListener("open", () => {
-    console.log("Connected to game server");
-});
+submitRegisterButton.onclick = async () => {
+	const status = await registerUser(regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput);
+	if (status === 0) 
+		hide(registerModal);
+};
 
-socket.addEventListener("message", (event) => {
-    try {
-        const data = JSON.parse(event.data);
 
-        if (data.type === "STATE") {
-            // Update paddle positions from server
-            vars.paddle1.y = data.playerY1;
-            vars.paddle2.y = data.playerY2;
+startMatchButton.onclick = () => {
 
-            // Redraw the game
-            drawBrackground(vars.backgroundColour, canvas, ctx);
-            drawPlayerOne(vars.paddle1.colour, ctx, vars.paddle1.y, vars.paddle1.x);
-            drawPlayerTwo(vars.paddle2.colour, ctx, vars.paddle2.y, vars.paddle2.x);
-        }
-    } catch (error) {
-        console.error("Error parsing message:", error);
-    }
-});
+	if (!userSocket) {
+		alert("No WebSocket connection. Please log in again.");
+		return;
+	}
 
-socket.addEventListener("close", () => {
-    console.log("Disconnected from game server");
-});
+	if (userSocket.readyState !== WebSocket.OPEN) {
+		alert("WebSocket not ready. Try again in a moment.");
+		return;
+	}
+	hide(startMatchButton);
+	show(waitingPlayers);
+	searchForPlayers(userSocket!).then((start_status) => {
 
-socket.addEventListener("error", (error) => {
-    console.error("WebSocket error:", error);
-});
+		if (start_status !== 1) return;
+		if (!userSocket) return;
 
-// Setup keyboard controls
-keyPressEvents(socket);
+		hide(waitingPlayers);
 
-// Initial draw
-drawBrackground(vars.backgroundColour, canvas, ctx);
-drawPlayerOne(vars.paddle1.colour, ctx, vars.paddle1.y, vars.paddle1.x);
-drawPlayerTwo(vars.paddle2.colour, ctx, vars.paddle2.y, vars.paddle2.x);
+		sendKeyPressEvents(userSocket!);
+		drawGame(userSocket!, canvas!, paddle!);
+
+	});
+};
+

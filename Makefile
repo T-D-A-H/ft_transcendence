@@ -8,24 +8,24 @@ NC    := \033[0m
 
 
 all: # Crear contenedores y levantar
-	$(DOCKER_RUNTIME)-compose build $(NO_CACHE)
-	$(DOCKER_RUNTIME)-compose up -d
+	$(DOCKER_RUNTIME) compose build $(NO_CACHE)
+	$(DOCKER_RUNTIME) compose up -d
 
 
 build: #Crear contenedores
-	$(DOCKER_RUNTIME)-compose build $(NO_CACHE)
+	$(DOCKER_RUNTIME) compose build $(NO_CACHE)
 
 
 up: # Levantar - dettached
-	$(DOCKER_RUNTIME)-compose up -d
+	$(DOCKER_RUNTIME) compose up -d
 
 
 up-logs: build # Levantar - attached
-	$(DOCKER_RUNTIME)-compose up
+	$(DOCKER_RUNTIME) compose up
 
 
 down: # Parar contenedores
-	$(DOCKER_RUNTIME)-compose down --remove-orphans
+	$(DOCKER_RUNTIME) compose down --remove-orphans
 # 	docker volume rm ft_transcendencer_db_data
 # 	docker volume rm ft_transcendencer_front_build
 
@@ -35,25 +35,25 @@ fclean: down # Parar contenedores y eliminar objetos
 re: fclean all # Parar contenedores, eliminar objetos, Crear contenedores, Levantarlos
 
 logs: # ver LOGS
-	$(DOCKER_RUNTIME)-compose logs -f
+	$(DOCKER_RUNTIME) compose logs -f
 
 
 rf: # restartea solo el frontend
-	$(DOCKER_RUNTIME)-compose build $(NO_CACHE) frontend
-	$(DOCKER_RUNTIME)-compose up -d --force-recreate frontend
+	$(DOCKER_RUNTIME) compose build $(NO_CACHE) frontend
+	$(DOCKER_RUNTIME) compose up -d --force-recreate frontend
 
 
 rb: # restartea solo el backend
-	$(DOCKER_RUNTIME)-compose build $(NO_CACHE) backend
-	$(DOCKER_RUNTIME)-compose up -d --force-recreate backend
+	$(DOCKER_RUNTIME) compose build $(NO_CACHE) backend
+	$(DOCKER_RUNTIME) compose up -d --force-recreate backend
 
 rdb: # restartea solo el data base
-	$(DOCKER_RUNTIME)-compose build $(NO_CACHE) database
-	$(DOCKER_RUNTIME)-compose up -d --force-recreate database
+	$(DOCKER_RUNTIME) compose build $(NO_CACHE) database
+	$(DOCKER_RUNTIME) compose up -d --force-recreate database
 
 rn: # restartea solo el data base
-	$(DOCKER_RUNTIME)-compose build $(NO_CACHE) nginx
-	$(DOCKER_RUNTIME)-compose up -d --force-recreate nginx
+	$(DOCKER_RUNTIME) compose build $(NO_CACHE) nginx
+	$(DOCKER_RUNTIME) compose up -d --force-recreate nginx
 
 rfn:
 	docker stop ft_nginx ft_frontend
@@ -81,8 +81,8 @@ vols:
 	docker volume ls  
 
 rebuild: # Reconstruye todo - Cuando cambias configuraciones globales
-	$(DOCKER_RUNTIME)-compose build $(NO_CACHE)
-	$(DOCKER_RUNTIME)-compose up -d
+	$(DOCKER_RUNTIME) compose build $(NO_CACHE)
+	$(DOCKER_RUNTIME) compose up -d
 
 status:
 	@services=$$(docker compose ps --format '{{.Service}} {{.State}}') ; \

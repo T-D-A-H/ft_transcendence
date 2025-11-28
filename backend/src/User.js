@@ -1,4 +1,5 @@
 class User {
+    
     constructor({ id, username, display_name, socket }) {
         this.id = id;
         this.username = username;
@@ -6,6 +7,7 @@ class User {
         this.socket = socket;
         this.score = 0;
         this.isConnected = false;
+        this.currentMatch = null;
     }
 
     // Enviar mensaje al jugador vía WebSocket
