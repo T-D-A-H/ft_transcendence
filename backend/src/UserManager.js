@@ -4,7 +4,7 @@ const Match = require("./Match.js");
 class UserManager {
 
     constructor() {
-        this.users = new Map(); // Map<id, User>
+        this.users = new Map();
         this.matches = new Set(); 
     }
 

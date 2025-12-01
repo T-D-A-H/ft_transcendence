@@ -25,14 +25,14 @@ function buildRegisterHandler(db, bcrypt, saltRounds, User, userManager) {
 				);
 			});
 
-			const player = new User({
+/* 			const player = new User({
 				id: insert_result.lastID,
 				username: username,
 				display_name: display_name,
 				socket: null
 			});
-
-			userManager.addUser(player);
+			
+			userManager.addUser(player); */
 
 			return reply.code(201).send({ ok: true });
 		}

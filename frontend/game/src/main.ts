@@ -26,6 +26,7 @@ let userSocket: WebSocket | null = null;
 openLogin.onclick = () => show(loginModal);
 closeLogin.onclick = () => hide(loginModal);
 
+
 submitLoginButton.onclick = async () => {
 	const { status, token } = await loginUser(usernameInput, passwordInput);
 	if (status === 0 && token) {
@@ -37,7 +38,6 @@ submitLoginButton.onclick = async () => {
 	}
 };
 
-
 openRegister.onclick = () => show(registerModal);
 closeRegister.onclick = () => hide(registerModal);
 
@@ -46,7 +46,6 @@ submitRegisterButton.onclick = async () => {
 	if (status === 0) 
 		hide(registerModal);
 };
-
 
 startMatchButton.onclick = () => {
 
@@ -63,8 +62,10 @@ startMatchButton.onclick = () => {
 	show(waitingPlayers);
 	searchForPlayers(userSocket!).then((start_status) => {
 
-		if (start_status !== 1) return;
-		if (!userSocket) return;
+		if (start_status !== 1)
+			return;
+		if (!userSocket)
+			return;
 
 		hide(waitingPlayers);
 

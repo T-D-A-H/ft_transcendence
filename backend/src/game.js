@@ -3,8 +3,16 @@
 function searchRequest(userManager, requestingUser) {
 	const connectedUsers = userManager.getConnectedUsers();
 
-	if (connectedUsers.length >= 2) {
-		const [user1, user2] = connectedUsers.slice(0, 2);
+	if (requestingUser && requestingUser.currentMatch !== null) {
+    	requestingUser.send({ type: "SEARCH_RESPONSE", status: 409, error: "Already in a match" });
+   		return null;
+ 	
+	}
+
+	const freeUsers = connectedUsers.filter(u => u.currentMatch === null);
+
+	if (freeUsers.length >= 2) {
+		const [user1, user2] = freeUsers.slice(0, 2);
 		const match = userManager.createMatch(user1, user2);
 		match.broadcast({ type: "SEARCH_RESPONSE", status: 200 });
 		return match;

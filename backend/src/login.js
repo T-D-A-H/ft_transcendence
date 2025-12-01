@@ -1,4 +1,4 @@
-
+const User = require("./User.js");   
 
 function buildLoginHandler(db, bcrypt, jwt, SECRET, userManager) {
 
@@ -11,7 +11,7 @@ function buildLoginHandler(db, bcrypt, jwt, SECRET, userManager) {
 		try {
 			const user = await new Promise((resolve, reject) => {
 				db.get(
-					"SELECT id, display_name, password FROM users WHERE display_name = ?",
+					"SELECT id, username, display_name, password FROM users WHERE display_name = ?",
 					[display_name],
 					(err, row) => err ? reject(err) : resolve(row)
 				);
@@ -25,12 +25,20 @@ function buildLoginHandler(db, bcrypt, jwt, SECRET, userManager) {
 				return reply.code(401).send({ error: "Invalid credentials" });
 
 			const token = jwt.sign(
-				{ id: user.id, display_name: user.display_name },
+				{ id: user.id, username: user.username, display_name: user.display_name },
 				SECRET,
 				{ expiresIn: "1h" }
 			);
 
-			userManager.loginUser(user.id);
+			const player = new User({
+				id: user.id,
+				username: user.username,
+				display_name: user.display_name,
+				socket: null
+			});
+
+			userManager.addUser(player);
+			userManager.loginUser(player.id);
 
 			return reply.send({ status: true, token });
 		}
