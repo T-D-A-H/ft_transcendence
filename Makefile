@@ -27,7 +27,7 @@ up-logs: build # Levantar - attached
 down: # Parar contenedores
 	$(DOCKER_RUNTIME) compose down --remove-orphans
 # 	docker volume rm ft_transcendencer_db_data
-# 	docker volume rm ft_transcendencer_front_build
+	docker volume rm ft_transcendencer_front_build
 
 fclean: down # Parar contenedores y eliminar objetos
 	$(DOCKER_RUNTIME) system prune -f

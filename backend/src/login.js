@@ -1,6 +1,6 @@
 const User = require("./User.js");   
 
-function buildLoginHandler(db, bcrypt, jwt, SECRET, userManager) {
+function buildLoginHandler(db, bcrypt, userManager, fastify) {
 
 	return async function handleLogin(req, reply) {
 		const { display_name, password } = req.body || {};
@@ -24,12 +24,8 @@ function buildLoginHandler(db, bcrypt, jwt, SECRET, userManager) {
 			if (!match)
 				return reply.code(401).send({ error: "Invalid credentials" });
 
-			const token = jwt.sign(
-				{ id: user.id, username: user.username, display_name: user.display_name },
-				SECRET,
-				{ expiresIn: "1h" }
-			);
-
+			const token = fastify.jwt.sign({ id: user.id, display_name: user.display_name });
+			console.log(token);
 			const player = new User({
 				id: user.id,
 				username: user.username,

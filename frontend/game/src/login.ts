@@ -22,6 +22,7 @@ export async function loginUser(usernameInput: HTMLInputElement, passwordInput: 
 		const result = await res.json();
 
 		if (res.ok && result.token) {
+			localStorage.setItem("token", result.token);
 			return { status: 0, token: result.token };
 		} else {
 			alert(result.error);

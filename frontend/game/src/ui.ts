@@ -48,6 +48,8 @@ export const startMatchButton = // Start match button element
 export const waitingPlayers = // Waiting for players element
 	document.getElementById("waiting_players") as HTMLButtonElement;
 
+export const logoutButton = document.getElementById("logout_button") as HTMLButtonElement;
+
 export const canvas = // Canvas where game is drawn
 	document.getElementById("game_screen") as HTMLCanvasElement;
 

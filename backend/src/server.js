@@ -2,8 +2,6 @@ const Fastify     = require("fastify");
 const websocket   = require("@fastify/websocket");
 const fastify     = Fastify({ logger: true });
 
-const jwt         = require("jsonwebtoken");
-const SECRET 	  = "12345";
 const bcrypt      = require("bcryptjs");
 const db          = require("./init_db");
 const saltRounds  = 12;
@@ -19,21 +17,22 @@ const buildGameSocketHandler = require("./game.js")
 const FRAMES = 1000/60;
 const SPEED = 8;
 
+
+fastify.register(require('fastify-jwt'), {
+	secret: process.env.JWT_SECRET || 'supersecret' //! Hay que guardar la clave en el .ENV
+})
+
 async function startServer() {
-
-
+	
 	await fastify.register(websocket);
 
-
-	const loginHandler = buildLoginHandler(db, bcrypt, jwt, SECRET, userManager);
+	const loginHandler = buildLoginHandler(db, bcrypt, userManager, fastify);
 	fastify.post("/login", loginHandler);
 	
-
 	const registerHandler = buildRegisterHandler(db, bcrypt, saltRounds, User, userManager);
 	fastify.post("/register", registerHandler);
 
-
-	const initGameSocket = buildGameSocketHandler(userManager, jwt, SECRET);
+	const initGameSocket = buildGameSocketHandler(userManager, fastify);
 	fastify.get("/proxy-game", { websocket: true }, initGameSocket);
 
 	setInterval(() => {
@@ -43,7 +42,6 @@ async function startServer() {
 	        match.sendState(SPEED);
 	    });
 	}, FRAMES);
-
 
 	try {
 		await fastify.listen({ port: 3000, host: "0.0.0.0" });

@@ -1,5 +1,4 @@
 
-
 function searchRequest(userManager, requestingUser) {
 	const connectedUsers = userManager.getConnectedUsers();
 
@@ -10,7 +9,7 @@ function searchRequest(userManager, requestingUser) {
 	}
 
 	const freeUsers = connectedUsers.filter(u => u.currentMatch === null);
-
+	HTMLFormControlsCollection.log("usuarios libres", freeUsers);
 	if (freeUsers.length >= 2) {
 		const [user1, user2] = freeUsers.slice(0, 2);
 		const match = userManager.createMatch(user1, user2);
@@ -23,7 +22,6 @@ function searchRequest(userManager, requestingUser) {
 	}
 	return null;
 }
-
 
 function handleUserCommands(user, userManager) {
 
@@ -39,7 +37,7 @@ function handleUserCommands(user, userManager) {
 
         if (msg.type === "SEARCH_REQUEST") {
 			console.log("Search requested");
-			searchRequest(userManager);
+			searchRequest(userManager, user);
 		}
 		else if (msg.type === "MOVE" && user.currentMatch) {
 			console.log("move recv: " + msg.move);
@@ -49,34 +47,28 @@ function handleUserCommands(user, userManager) {
 
 }
 
-function buildGameSocketHandler(userManager, jwt, SECRET) {
+function buildGameSocketHandler(userManager, fastify) {
 
-	return (conn, req) => {
+  return (conn, req) => {
 
-		const urlParams = new URLSearchParams(req.url.split("?")[1]);
-		const token = urlParams.get("token");
+    const token = req.query.token;
+    if (!token || token === "null")
+      return conn.socket.close(1008);
 
-		if (!token) {
-			conn.socket.close();
-			return;
-		}
+    let payload;
+    try {
+		payload = fastify.jwt.verify(token);
+    } catch {
+		return conn.socket.close(1008);
+    }
 
-		let payload;
-		try {
-			payload = jwt.verify(token, SECRET);
-		} catch (err) {
-			conn.socket.close();
-			return;
-		}
+    const user = userManager.getUser(payload.id);
+    if (!user)
+		return conn.socket.close(1008);
 
-		const user = userManager.getUser(payload.id);
-		if (!user) {
-			conn.socket.close();
-			return;
-		}
-		user.connect(conn.socket);
-		handleUserCommands(user, userManager);
-	};
+    user.connect(conn.socket);
+    handleUserCommands(user, userManager);
+  };
 }
 
 module.exports = buildGameSocketHandler;
