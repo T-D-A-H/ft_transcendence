@@ -11,6 +11,8 @@ services:
       - NODE_ENV=production
     volumes:
       - db_data:/data
+    env_file:
+      - ./backend/.env
     restart: unless-stopped
     networks:
       - ft_transcen

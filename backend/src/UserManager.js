@@ -5,7 +5,32 @@ class UserManager {
 
     constructor() {
         this.users = new Map();
-        this.matches = new Set(); 
+        this.matches = new Set();
+        this.pending2FA = new Map();
+    }
+
+    // Guardar código 2FA temporal
+    set2FACode(userId, code) {
+        const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutos de validez
+        this.pending2FA.set(userId, { code, expiresAt });
+    }
+
+    // Verificar código 2FA
+    verify2FACode(userId, code) {
+        const record = this.pending2FA.get(userId);
+        if (!record) return false;
+
+        if (record.expiresAt < Date.now()) {
+            this.pending2FA.delete(userId);
+            return false; // Código expirado
+        }
+
+        if (record.code !== Number(code))
+            return false;
+
+        // Código correcto, eliminar del registro
+        this.pending2FA.delete(userId);
+        return true;
     }
 
     // Agregar usuario

@@ -41,6 +41,10 @@ export const regPasswordInput = // Password in register box
 export const submitRegisterButton = // Submit info in register box
 	document.getElementById("register_submit_button") as HTMLButtonElement;
 
+export const twoFAModal = document.getElementById("twofa_modal") as HTMLDivElement;
+export const twoFAInput = document.getElementById("twofa_input") as HTMLInputElement;
+export const twoFASubmitButton = document.getElementById("twofa_submit_button") as HTMLButtonElement;
+
 
 export const startMatchButton = // Start match button element
 	document.getElementById("start_match") as HTMLButtonElement;

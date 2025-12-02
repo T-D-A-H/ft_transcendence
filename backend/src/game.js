@@ -1,4 +1,5 @@
 
+
 function searchRequest(userManager, requestingUser) {
 	const connectedUsers = userManager.getConnectedUsers();
 
@@ -9,7 +10,7 @@ function searchRequest(userManager, requestingUser) {
 	}
 
 	const freeUsers = connectedUsers.filter(u => u.currentMatch === null);
-	HTMLFormControlsCollection.log("usuarios libres", freeUsers);
+
 	if (freeUsers.length >= 2) {
 		const [user1, user2] = freeUsers.slice(0, 2);
 		const match = userManager.createMatch(user1, user2);
@@ -37,7 +38,7 @@ function handleUserCommands(user, userManager) {
 
         if (msg.type === "SEARCH_REQUEST") {
 			console.log("Search requested");
-			searchRequest(userManager, user);
+			searchRequest(userManager);
 		}
 		else if (msg.type === "MOVE" && user.currentMatch) {
 			console.log("move recv: " + msg.move);

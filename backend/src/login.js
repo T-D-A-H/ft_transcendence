@@ -1,48 +1,43 @@
-const User = require("./User.js");   
+const User = require("./User.js");
 
-function buildLoginHandler(db, bcrypt, userManager, fastify) {
+function build2FAHandler( userManager, fastify) {
+    return async function login2FAHandler(req, reply) {
+        const { tempToken, code } = req.body;
 
-	return async function handleLogin(req, reply) {
-		const { display_name, password } = req.body || {};
+        if (!tempToken || !code)
+            return reply.code(400).send({ error: "Missing fields" });
 
-		if (!display_name || !password)
-			return reply.code(400).send({ error: "Missing fields" });
+        try {
+            // Verificar token temporal
+            const decoded = fastify.jwt.verify(tempToken);
+            if (decoded.step !== "2fa_pending")
+                return reply.code(401).send({ error: "Invalid token" });
 
-		try {
-			const user = await new Promise((resolve, reject) => {
-				db.get(
-					"SELECT id, username, display_name, password FROM users WHERE display_name = ?",
-					[display_name],
-					(err, row) => err ? reject(err) : resolve(row)
-				);
-			});
+            const userId = decoded.id;
 
-			if (!user)
-				return reply.code(401).send({ error: "Invalid credentials" });
+            // Verificar código 2FA
+            if (!userManager.verify2FACode(userId, code)) {
+                return reply.code(401).send({ error: "Invalid or expired 2FA code" });
+            }
 
-			const match = await bcrypt.compare(password, user.password);
-			if (!match)
-				return reply.code(401).send({ error: "Invalid credentials" });
+            const player = new User({
+                id: userId,
+                username: decoded.username,
+                display_name: decoded.display_name,
+                socket: null
+            });
+            userManager.addUser(player);
+            userManager.loginUser(player.id);
 
-			const token = fastify.jwt.sign({ id: user.id, display_name: user.display_name });
-			console.log(token);
-			const player = new User({
-				id: user.id,
-				username: user.username,
-				display_name: user.display_name,
-				socket: null
-			});
+            // Emitir JWT final
+            const token = fastify.jwt.sign({ id: player.id, display_name: player.display_name });
 
-			userManager.addUser(player);
-			userManager.loginUser(player.id);
-
-			return reply.send({ status: true, token });
-		}
-		catch (err) {
-			console.error("Login error:", err);
-			return reply.code(500).send({ error: "Database error" });
-		}
-	};
+            return reply.send({ status: "ok", token });
+        } catch (err) {
+            console.error("2FA verification error:", err);
+            return reply.code(401).send({ error: "Invalid or expired token" });
+        }
+    };
 }
 
-module.exports = buildLoginHandler;
+module.exports = build2FAHandler;
