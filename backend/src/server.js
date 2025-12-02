@@ -12,8 +12,10 @@ const UserManager = require("./UserManager.js");
 const userManager = new UserManager();
 const { buildRegisterHandler } = require("./register");
 const buildGameSocketHandler = require("./game.js");
-const buildLoginHandler = require("./login.js");
-const build2FAHandler = require("./login2FA.js");
+
+// LOGIN 2FA MAIL
+const verify2FACode = require("../endpoints/login.js");
+const buildLoginHandler = require("../endpoints/login2FA.js");
 
 const FRAMES = 1000/60;
 const SPEED = 8;
@@ -26,17 +28,26 @@ async function startServer() {
 	
 	await fastify.register(websocket);
 
-	const loginHandler = buildLoginHandler(userManager, fastify);
+	// Login Normal option == 0
+	const loginHandler = buildLoginHandler(db, bcrypt, userManager, fastify, "skip");
 	fastify.post("/login", loginHandler);
+
+	// Login 2FA mail option == 1
+	const Login2FAmailHandler = buildLoginHandler(db, bcrypt, userManager, fastify, "2FAmail");
+    fastify.post("/login-2fa-mail", Login2FAmailHandler);
 	
+	const verify2FAmail = verify2FACode(userManager, fastify);
+	fastify.post("/verify-2fa-mail", verify2FAmail);
+
+	// REGISTRO
 	const registerHandler = buildRegisterHandler(db, bcrypt, saltRounds, User, userManager);
 	fastify.post("/register", registerHandler);
 
+	// GAME
 	const initGameSocket = buildGameSocketHandler(userManager, fastify);
 	fastify.get("/proxy-game", { websocket: true }, initGameSocket);
 
-	const login2FAHandler = build2FAHandler(db, bcrypt, userManager, fastify);
-    fastify.post("/verify-2fa", login2FAHandler);
+
 
 	setInterval(() => {
 	    userManager.matches.forEach(match => {

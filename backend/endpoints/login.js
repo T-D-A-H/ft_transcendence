@@ -1,6 +1,6 @@
-const User = require("./User.js");
+const User = require("../src/User.js");
 
-function build2FAHandler( userManager, fastify) {
+function verify2FACode ( userManager, fastify) {
     return async function login2FAHandler(req, reply) {
         const { tempToken, code } = req.body;
 
@@ -40,4 +40,4 @@ function build2FAHandler( userManager, fastify) {
     };
 }
 
-module.exports = build2FAHandler;
+module.exports = verify2FACode;

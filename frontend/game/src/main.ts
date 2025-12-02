@@ -4,9 +4,10 @@ import {
 	registerModal, openRegister, closeRegister, submitRegisterButton,
 	regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput,
 	startMatchButton, waitingPlayers, 
-	show, hide, canvas, paddle, twoFAModal,twoFASubmitButton,twoFAInput,} from "./ui.js";
+	show, hide, canvas, paddle, twoFAModal,  twoFAOptionModal, twoFAEmailButton,
+    twoFAAuthButton, twoFASkipButton, twoFASubmitButton,twoFAInput,} from "./ui.js";
 import { registerUser } from "./register.js"
-import { loginUser } from "./login.js"
+import { login } from "./login.js"
 import { searchForPlayers } from "./search.js"
 import { sendKeyPressEvents } from "./keypress.js";
 import { drawGame } from "./draw.js";
@@ -20,7 +21,7 @@ if (!loginModal || !openLogin || !closeLogin || !submitLoginButton ||
 	console.error("One or more UI elements are missing");
 }
 
-let tempToken2FA: string | null = null;
+let tempToken2FA: string | null | undefined = null;
 let userSocket: WebSocket | null = null;
 
 openLogin.onclick = () => show(loginModal);
@@ -65,22 +66,28 @@ if (!token || token === "null") {
 }
 
 submitLoginButton.onclick = async () => {
-    const result = await loginUser(usernameInput, passwordInput);
+    show(twoFAOptionModal);
+    
+    twoFASkipButton.onclick = async () => {
+        const result = await login(usernameInput, passwordInput, "skip");
+        if (result.status === 0 && result.token) {
+            // Guardas token temporal si quieres
+            localStorage.setItem("token", result.token);
+            hide(twoFAOptionModal);
+            hide(twoFAModal);
+            hide(openRegister);
+            hide(openLogin);
+            hide(loginModal);
+            show(logoutButton);
+            initializeWebSocket(result.token);
+        }
+    }
 
-    if (result.status === 0 && result.token) {
-        // Esto fuera si quitamos el Token 2FA Ignoramos Siempre de momento
-        localStorage.setItem("token", result.token);
-        hide(twoFAModal);
-        hide(openRegister);
-        hide(openLogin);
-        hide(loginModal);
-        show(logoutButton);
-        initializeWebSocket(result.token);
-    } 
-    //! DESCOMENTAR PARA 2FA
-/*     else if (result.status === "2fa_required" && result.tempToken) {
-        tempToken2FA = result.tempToken;
+    twoFAEmailButton.onclick = async () => {
+        hide(twoFAOptionModal);
         show(twoFAModal);
+        const result = await login(usernameInput, passwordInput, "2FAmail");
+        tempToken2FA = result.tempToken;
 
         twoFASubmitButton.onclick = async () => {
             const code = twoFAInput.value;
@@ -90,14 +97,14 @@ submitLoginButton.onclick = async () => {
             try {
                 // SI esta todo , lo enviamos al back para comprobar y inicar sesion
 				const code = twoFAInput.value;
-				const res = await fetch("/proxy-login", {
+				const res = await fetch("/verify-2fa-mail", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					 body: JSON.stringify({ tempToken: tempToken2FA, code })
 				});
 
                 const verifyResult = await res.json();
-                
+
                 // SI esta todo bien iniciamos
                 if (verifyResult.status === "ok" && verifyResult.token) {
 					localStorage.setItem("token", verifyResult.token);
@@ -116,12 +123,8 @@ submitLoginButton.onclick = async () => {
                 alert("Error al verificar 2FA");
             }
         };
-    } 
-    else {
-        alert("Login failed");
-    } */
+    }
 };
-
 
 submitRegisterButton.onclick = async () => {
 	const status = await registerUser(regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput);
