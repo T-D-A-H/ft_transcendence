@@ -49,7 +49,7 @@ export const twoFAOptionModal = document.getElementById("twofa_option_modal") as
 export const twoFAEmailButton = document.getElementById("twofa_email_button")  as HTMLInputElement;;
 export const twoFAAuthButton = document.getElementById("twofa_auth_button") as HTMLButtonElement;
 export const twoFASkipButton = document.getElementById("twofa_skip_button") as HTMLButtonElement;
-
+export const initialLoader = document.getElementById("initial_loader") as HTMLDivElement;
 
 export const startMatchButton = // Start match button element
 	document.getElementById("start_match") as HTMLButtonElement;

@@ -48,7 +48,6 @@ async function startServer() {
 	fastify.get("/proxy-game", { websocket: true }, initGameSocket);
 
 
-
 	setInterval(() => {
 	    userManager.matches.forEach(match => {
 	        if (!match.isActive) return;

@@ -5,7 +5,7 @@ import {
 	regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput,
 	startMatchButton, waitingPlayers, 
 	show, hide, canvas, paddle, twoFAModal,  twoFAOptionModal, twoFAEmailButton,
-    twoFAAuthButton, twoFASkipButton, twoFASubmitButton,twoFAInput,} from "./ui.js";
+    twoFAAuthButton, twoFASkipButton, twoFASubmitButton,twoFAInput,initialLoader,} from "./ui.js";
 import { registerUser } from "./register.js"
 import { login } from "./login.js"
 import { searchForPlayers } from "./search.js"
@@ -29,13 +29,22 @@ closeLogin.onclick = () => hide(loginModal);
 openRegister.onclick = () => show(registerModal);
 closeRegister.onclick = () => hide(registerModal);
 
+function showLoader() {
+    show(initialLoader);
+}
+
+function hideLoader() {
+    hide(initialLoader);
+}
 
 // Función para inicializar la conexión WebSocket con el token
 function initializeWebSocket(token: string) {
+    showLoader();
     userSocket = new WebSocket(`ws://localhost:4000/proxy-game?token=${token}`);
     userSocket.onopen = () => {
         console.log("User WebSocket connected");
         show(startMatchButton);
+        hideLoader();
     };
     userSocket.onerror = (err) => { 
         console.error(err); 
@@ -43,22 +52,31 @@ function initializeWebSocket(token: string) {
         userSocket = null;
         alert("Error de conexión. Por favor, inicia sesión nuevamente.");
         hide(startMatchButton);
+        hideLoader();
     };
     userSocket.onclose = () => {
         console.log("WebSocket disconnected");
         userSocket = null;
-        hide(startMatchButton); 
+        hide(startMatchButton);
+        hideLoader();
     };
 }
+
+showLoader();
 
 // Verificar si hay token al cargar la página
 const token = localStorage.getItem("token");
 if (!token || token === "null") {
+    // Usuario NO autenticado
+    hide(openLogin);
+    hide(openRegister);
+    hide(logoutButton);
+    // Mostrar solo después de ocultar todo
     show(openLogin);
     show(openRegister);
-    hide(logoutButton);
-    hide(startMatchButton);
+    setTimeout(hideLoader, 300)
 } else {
+    // Usuario autenticado
     hide(openLogin);
     hide(openRegister);
     show(logoutButton);
@@ -79,15 +97,20 @@ submitLoginButton.onclick = async () => {
             hide(openLogin);
             hide(loginModal);
             show(logoutButton);
+            showLoader();
             initializeWebSocket(result.token);
+        } else {
+            hideLoader();
         }
     }
 
     twoFAEmailButton.onclick = async () => {
         hide(twoFAOptionModal);
         show(twoFAModal);
+        showLoader();
         const result = await login(usernameInput, passwordInput, "2FAmail");
         tempToken2FA = result.tempToken;
+        hideLoader();
 
         twoFASubmitButton.onclick = async () => {
             const code = twoFAInput.value;
@@ -113,21 +136,26 @@ submitLoginButton.onclick = async () => {
                     hide(openLogin);
                     hide(loginModal);
                     show(logoutButton);
+                     showLoader();
                     initializeWebSocket(verifyResult.token);
 					tempToken2FA = null;
                 } else {
                     alert(verifyResult.error || "Código 2FA incorrecto");
+                    hideLoader();
                 }
             } catch (err) {
                 console.error(err);
                 alert("Error al verificar 2FA");
+                hideLoader();
             }
         };
     }
 };
 
 submitRegisterButton.onclick = async () => {
+    showLoader()
 	const status = await registerUser(regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput);
+    hideLoader();
 	if (status === 0) 
 		hide(registerModal);
 };
@@ -156,9 +184,10 @@ startMatchButton.onclick = () => {
 	}
 	hide(startMatchButton);
 	show(waitingPlayers);
+    //showLoader();
 	console.log("Buscando Partida");
 	searchForPlayers(userSocket!).then((start_status) => {
-
+        //hideLoader();
 		if (start_status !== 1)
 			return;
 		if (!userSocket)
@@ -172,3 +201,9 @@ startMatchButton.onclick = () => {
 	});
 };
 
+/* document.addEventListener('DOMContentLoaded', () => {
+    // Si ya se manejó el estado de autenticación antes, ocultar loader
+    setTimeout(() => {
+        hideLoader();
+    }, 1000); // Timeout de seguridad
+}); */

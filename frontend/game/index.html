@@ -6,19 +6,25 @@
 	</head>
 
 	<body class="bg-gray-900 text-white h-screen">
-
+		<div id="initial_loader" class="fixed inset-0 flex items-center justify-center bg-gray-900 z-50">
+			<div class="text-center">
+				<!-- Spinner animado -->
+				<div class="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mb-4"></div>
+				<div class="text-white text-lg">Cargando...</div>
+			</div>
+		</div>
 		<!-- Top bar -->
 		<div class="fixed top-0 left-0 w-full h-12 bg-gray-800 flex items-center justify-end px-4 z-40">
 			<div class="flex gap-x-2">
 				<!-- Login button -->
 				<button id="open_login"
-					class="px-4 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm">
+					class="px-4 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm hidden">
 					Sign In
 				</button>
 			
 				<!-- Register button -->
 				<button id="open_register"
-					class="px-4 py-1 bg-green-600 hover:bg-green-700 rounded text-sm">
+					class="px-4 py-1 bg-green-600 hover:bg-green-700 rounded text-sm hidden">
 					Register
 				</button>
 				<!-- Logout button -->
