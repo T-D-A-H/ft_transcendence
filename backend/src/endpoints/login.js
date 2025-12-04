@@ -26,7 +26,7 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 				error: "Credenciales incorrectas" 
 			});
 		}
-
+		
 		// 3. Validar contraseña
 		const match = await bcrypt.compare(password, user.password);
 		if (!match) {

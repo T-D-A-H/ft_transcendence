@@ -23,7 +23,7 @@ function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
 					[username, display_name, email, hashed, "skip"],
 					function(err) {
 					if (err) reject(err);
-					else resolve(this.lastID);
+						else resolve(this.lastID);
 					}
 				);
 			});
@@ -48,8 +48,8 @@ function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
 			console.error("Error registering user:", err);
 			
 			if (err.message && err.message.includes("UNIQUE constraint failed")) {
-				return reply.code(409).send({ 
-					error: "Una cuenta con ese username, email o display_name ya existe" 
+			return reply.code(409).send({ 
+					error: "Ya existe una cuenta con estos datos" 
 				});
 			}
 			
