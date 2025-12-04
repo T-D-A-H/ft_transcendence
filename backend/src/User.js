@@ -1,6 +1,9 @@
+const LOGGER = require("./LOGGER.js");
+
 class User {
     
     constructor({ id, username, display_name, socket }) {
+        LOGGER(200, "User: ", "Constructor called for: " + username);
         this.id = id;
         this.username = username;
         this.display_name = display_name;
@@ -42,6 +45,22 @@ class User {
     setConnected(isConnected) {
         this.isConnected = true;
     }
+    
+    setMatch(match) {
+        this.currentMatch = match;
+    }
+
+    unsetMatch() {
+        this.currentMatch = null;
+    }
+
+    getId() {return this.id;}
+    getUsername() {return this.username;}
+    getDisplayName() {return this.display_name;}
+    getSocket() {return this.socket;}
+    getScore() {return this.score;}
+    getIsConnected() {return this.isConnected;}
+    getCurrentMatch() {return this.currentMatch;}
 }
 
 module.exports = User;

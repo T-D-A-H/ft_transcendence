@@ -14,8 +14,8 @@ const { buildRegisterHandler } = require("./register");
 const buildGameSocketHandler = require("./game.js");
 
 // LOGIN 2FA MAIL
-const verify2FACode = require("../endpoints/login.js");
-const buildLoginHandler = require("../endpoints/login2FA.js");
+const verify2FACode = require("./endpoints/verify2FA.js");
+const buildLoginHandler = require("./endpoints/login.js");
 
 const FRAMES = 1000/60;
 const SPEED = 8;
@@ -40,18 +40,23 @@ async function startServer() {
 	const registerHandler = buildRegisterHandler(db, bcrypt, saltRounds, fastify);
 	fastify.post("/register", registerHandler);
 
+	// ✅ SET 2FA de usuarios
+	const buildSet2FAHandler = require('./endpoints/set2FA');
+	fastify.post("/set-2fa", buildSet2FAHandler(db, fastify));
+
 	// ✅ WebSocket del juego
 	const initGameSocket = buildGameSocketHandler(userManager, fastify);
 	fastify.get("/proxy-game", { websocket: true }, initGameSocket);
 
-	const buildSet2FAHandler = require('./endpoints/set2FA');
-	fastify.post("/set-2fa", buildSet2FAHandler(db, fastify));
+	const buildLogoutHandler = require('./endpoints/logout');
+	fastify.post("/logout", buildLogoutHandler(userManager, fastify));
 
 	setInterval(() => {
 	    userManager.matches.forEach(match => {
-	        if (!match.isActive) return;
+	        if (match.isWaiting) return;
 	        if (!match.players[0].socket || !match.players[1].socket) return;
-	        match.sendState(SPEED);
+			if (match.isReady[0] === true && match.isReady[1] === true)
+	        	match.sendState(SPEED);
 	    });
 	}, FRAMES);
 

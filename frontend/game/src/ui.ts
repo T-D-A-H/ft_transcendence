@@ -16,7 +16,6 @@ export const passwordInput = // Password entered in login box
 export const submitLoginButton = // Submit info in login box
 	document.getElementById("login_submit_button") as HTMLButtonElement;
 
-
 export const registerModal = // Register Box element
 	document.getElementById("register_modal") as HTMLDivElement;
 
@@ -38,9 +37,55 @@ export const regEmailInput = // Email in register box
 export const regPasswordInput = // Password in register box
 	document.getElementById("reg_password") as HTMLInputElement;
 
-
 export const submitRegisterButton = // Submit info in register box
 	document.getElementById("register_submit_button") as HTMLButtonElement;
+
+
+export const createMatchButton = // Create match button element
+	document.getElementById("create_match") as HTMLButtonElement;
+
+export const searchForMatchButton = // Look for match button element
+	document.getElementById("search_match") as HTMLButtonElement;
+
+export const startMatchButton = // Start match button element
+	document.getElementById("start_match") as HTMLButtonElement;
+
+export const waitingPlayers = // Waiting for players element
+	document.getElementById("waiting_players") as HTMLButtonElement;
+
+export const activeMatchesModal = // Container showing waiting players
+	document.getElementById("active_matches_modal") as HTMLDivElement;
+
+export const playersListUL = // UL element where usernames will be inserted
+	document.getElementById("players_list_ul") as HTMLUListElement;
+
+export function renderMatchList(matches: string[]): HTMLButtonElement[] {
+
+	playersListUL.innerHTML = "";
+
+	const joinButtons: HTMLButtonElement[] = [];
+
+	for (const username of matches) {
+		const li = document.createElement("li");
+		li.className = "flex justify-between items-center";
+
+		const nameSpan = document.createElement("span");
+		nameSpan.textContent = username;
+
+		const joinBtn = document.createElement("button");
+		joinBtn.textContent = "Join";
+		joinBtn.className = "px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-xs";
+		joinBtn.dataset.username = username;
+
+		li.appendChild(nameSpan);
+		li.appendChild(joinBtn);
+		playersListUL.appendChild(li);
+
+		joinButtons.push(joinBtn);
+	}
+
+	return joinButtons;
+}
 
 // MENU 2FA
 export const twoFAOptionModal = document.getElementById("twofa_option_modal") as HTMLDivElement;
@@ -51,7 +96,6 @@ export const twoFAModal = document.getElementById("twofa_modal") as HTMLDivEleme
 export const twoFAInput = document.getElementById("twofa_input") as HTMLInputElement;
 export const twoFASubmitButton = document.getElementById("twofa_submit_button") as HTMLButtonElement;
 
-
 // Skip
 export const twoFASkipButton = document.getElementById("twofa_skip_button") as HTMLButtonElement;
 
@@ -60,12 +104,6 @@ export const twoFAAuthButton = document.getElementById("twofa_auth_button") as H
 
 // LOADER
 export const initialLoader = document.getElementById("initial_loader") as HTMLDivElement;
-
-export const startMatchButton = // Start match button element
-	document.getElementById("start_match") as HTMLButtonElement;
-
-export const waitingPlayers = // Waiting for players element
-	document.getElementById("waiting_players") as HTMLButtonElement;
 
 export const logoutButton = document.getElementById("logout_button") as HTMLButtonElement;
 
@@ -84,6 +122,3 @@ export function hide(elem: HTMLElement): void { // hide HTML
 	elem.classList.add("hidden"); 
 }
 
-export const lolModal = document.getElementById("lol_modal") as HTMLDivElement;
-export const clickMeButton = document.getElementById("click_me") as HTMLButtonElement;
-export const closeLolButton = document.getElementById("close_lol") as HTMLButtonElement;

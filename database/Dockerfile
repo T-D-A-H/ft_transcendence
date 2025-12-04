@@ -1,13 +1,15 @@
 FROM python:3.9-alpine
 
-# Instalar dependencias y sqlite-web
 RUN apk add --no-cache sqlite && \
     pip install --no-cache-dir sqlite-web
 
-WORKDIR /data
+WORKDIR /app
 
-# Exponer puerto para sqlite-web
+COPY database.sql /app/database.sql
+
+COPY entrypoint-database.sh /usr/local/bin/entrypoint-database.sh
+RUN chmod +x /usr/local/bin/entrypoint-database.sh
+
 EXPOSE 8080
 
-# Comando para ejecutar sqlite-web con la base de datos compartida
-CMD ["sqlite_web", "/data/database.sqlite", "-H", "0.0.0.0", "-p", "8080", "--read-only"]
+ENTRYPOINT ["/usr/local/bin/entrypoint-database.sh"]

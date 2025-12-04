@@ -1,5 +1,5 @@
 const nodemailer = require("nodemailer");
-const User = require("../src/User.js");
+const User = require("../User.js");
 
 function buildLoginHandler(db, bcrypt, userManager, fastify) {
 	return async function handleLogin(req, reply) {
@@ -51,6 +51,7 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 
 			// Generar código 2FA (6 dígitos)
 			const code = Math.floor(100000 + Math.random() * 900000);
+
 			let player = userManager.getUser(user.id);
 			if (!player) {
 				player = new User({
@@ -101,7 +102,12 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 		}
 
 		// 5. Login exitoso sin 2FA
-		userManager.loginUser(user.id);
+		if (userManager.loginUser(user.id) ===  false) {
+			return reply.code(401).send({ 
+				status: "error",
+				error: "Usuario ya logeado" 
+			});
+		}
 
 		const token = fastify.jwt.sign({ 
 			id: user.id, 

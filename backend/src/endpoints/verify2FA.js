@@ -31,7 +31,12 @@ function verify2FACode(userManager, fastify) {
 			}
 
 			// Login exitoso
-			userManager.loginUser(userId);
+			if (userManager.loginUser(userId) ===  false) {
+				return reply.code(401).send({ 
+					status: "error",
+					error: "Usuario ya logeado" 
+				});
+			}
 
 			// Generar token final
 			const token = fastify.jwt.sign({ 

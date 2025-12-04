@@ -6,6 +6,7 @@
 	</head>
 
 	<body class="bg-gray-900 text-white h-screen">
+		<!-- Loadinf screen -->
 		<div id="initial_loader" class="fixed inset-0 flex items-center justify-center bg-gray-900 z-50">
 			<div class="text-center">
 				<!-- Spinner animado -->
@@ -13,6 +14,7 @@
 				<div class="text-white text-lg">Cargando...</div>
 			</div>
 		</div>
+
 		<!-- Top bar -->
 		<div class="fixed top-0 left-0 w-full h-12 bg-gray-800 flex items-center justify-end px-4 z-40">
 			<div class="flex gap-x-2">
@@ -27,6 +29,24 @@
 					class="px-4 py-1 bg-green-600 hover:bg-green-700 rounded text-sm hidden">
 					Register
 				</button>
+								<!-- Create Match button (hidden) -->
+				<button id="create_match"
+					class="px-4 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm">
+					Create Match
+				</button>
+
+				<!-- Look For Match button -->
+				<button id="search_match"
+					class="px-4 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm">
+					Search Match
+				</button>
+
+				<!-- Start Match button -->
+				<button id="start_match"
+					class="px-4 py-1 bg-green-600 hover:bg-green-700 rounded text-sm">
+					Start Match
+				</button>
+
 				<!-- Logout button -->
 				<button id="logout_button"
 					class="px-4 py-1 bg-red-600 hover:bg-red-700 rounded text-sm hidden">
@@ -43,11 +63,6 @@
 				class="bg-black border-4 border-gray-700 rounded-lg">
 			</canvas>
 
-			<!-- Start Match button (initially hidden, appears over canvas) -->
-			<button id="start_match"
-				class="absolute z-50 px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-lg hidden">
-				Start Match
-			</button>
 
 			<button id="waiting_players"
 				class="absolute z-50 px-4 py-2 bg-yellow-600 rounded text-lg hidden">
@@ -56,8 +71,14 @@
 
 		</div>
 
-		<!-- Snail gif -->
-		<img src="/game/assets/snail2.gif" class="fixed bottom-2 right-2 w-12 z-50" />
+		<!-- Active players modal -->
+		<div id="active_matches_modal"
+			class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 hidden">
+			<div class="bg-gray-800 p-6 rounded-lg w-80">
+				<h3 class="mb-2 text-sm">Players Waiting</h3>
+				<ul id="players_list_ul" class="text-xs flex flex-col gap-2"></ul>
+			</div>
+		</div>
 
 		<!-- Login modal -->
 		<div id="login_modal"
@@ -126,6 +147,8 @@
 			
 			</div>
 		</div>
+
+		<!-- 2FA modals -->
 		<div id="twofa_option_modal"
 			class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 hidden">
 			<div class="bg-gray-800 p-6 rounded-lg w-80">
@@ -150,6 +173,7 @@
 				</div>
 			</div>
 		</div>
+
 		<div id="twofa_modal"
 			class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 hidden">
 			<div class="bg-gray-800 p-6 rounded-lg w-80">
@@ -165,7 +189,9 @@
 				</div>
 			</div>
 		</div>
-
+		
+		<!-- Snail gif -->
+		<img src="/game/assets/snail2.gif" class="fixed bottom-2 right-2 w-12 z-50" />
 
 		<script type="module" src="/game/public/main.js"></script>
 

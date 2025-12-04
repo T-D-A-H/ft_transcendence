@@ -1,11 +1,24 @@
 
+const LOGGER = require("./LOGGER.js");
+
 class Match {
 
-	constructor(user1, user2) {
-		this.players = [user1, user2];
-		this.playerCoords = [0, 0];
-		this.playerY = [150, 150];
-		this.isActive = true;
+	constructor(user, match_id) {
+		LOGGER("Match: Constructor called for: " + user.getUsername() + " match_id: " + match_id, 200);
+		this.id = match_id;
+		this.players = [user, null];
+		this.playerCoords = [0, null];
+		this.playerY = [150, null];
+		this.isWaiting = true;
+		this.isReady = [null, null];
+	}
+
+	addUserToMatch(user) {
+		LOGGER("addUserToMatch: Added user: " + user.getUsername() + " to match_id: " + this.id + " with: " + this.players[0].getUsername(), 200);
+		this.players[1] = user;
+		this.playerCoords[1] = 0;
+		this.playerY[1] = 150;
+		this.isWaiting = false; 
 	}
 
     broadcast(msg) {
@@ -25,7 +38,6 @@ class Match {
 
 	sendState(SPEED) {
 		this.updateCoords(SPEED);
-		console.log("player1Y: " + this.playerY[0] + " player2Y: " + this.playerY[1]);
 		this.broadcast({ type: "MOVE", playerY1: this.playerY[0], playerY2: this.playerY[1] });
 	}
 
@@ -42,6 +54,7 @@ class Match {
             this.playerCoords[i] = 0;
 	}
     
+
 	end() {
 		this.isActive = false;
 		this.players.forEach(player => player.disconnect());

@@ -38,4 +38,3 @@ export function drawGame(userSocket: WebSocket, canvas: HTMLCanvasElement, paddl
 		}
 	};
 }
-

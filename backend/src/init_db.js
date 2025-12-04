@@ -1,20 +1,24 @@
 const sqlite = require("sqlite3").verbose();
+const LOGGER = require("./LOGGER.js");
 
 const DB_PATH = "/data/database.sqlite";
 const db = new sqlite.Database(DB_PATH, (err) => {
 
     if (err) {
+        LOGGER(502, "DataBase:", "Error connecting to database: " + err.message);
         console.error("Error connecting to database:", err.message);
     }
     else {
-        
-        console.log("Connected to SQLite database successfully");
+        LOGGER(200, "DataBase:", "Connected to SQLite database successfully");
         db.get("SELECT name FROM sqlite_master WHERE type='table'", (err, row) => {
             if (err) {
+                LOGGER(502, "DataBase:", "Error checking tables");
                 console.error("Error checking tables:", err.message);
             } else if (row) {
+                LOGGER(200, "DataBase:", "Database tables are ready");
                 console.log("Database tables are ready");
             } else {
+                LOGGER(502, "DataBase:", "No tables found in database");
                 console.log("No tables found in database");
             }
         });

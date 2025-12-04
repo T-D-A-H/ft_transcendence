@@ -1,105 +1,96 @@
-DOCKER_RUNTIME?=docker
-NO_CACHE=--no-cache
+# ----------------------------------------------------------
 
-RED   := \033[0;31m
-BLUE  := \033[0;34m
-GREEN := \033[0;32m
-NC    := \033[0m
+D_COMPOSE     = docker compose
+D_VOLUME      = docker volume
+D_EXEC        = docker exec
+D_SYSTEM      = docker system
+D_STOP        = docker compose stop
+D_RUN		  = docker run
+DETTACHED     = -d
+REMOVE_ORPH   = --remove-orphans
+NO_CACHE      = --no-cache
 
+# ----------------------------------------------------------
 
-all: # Crear contenedores y levantar
-	$(DOCKER_RUNTIME) compose build $(NO_CACHE)
-	$(DOCKER_RUNTIME) compose up -d
+BACK_SERVICE      = backend
+BACK_CONTAINER    = ft_backend
 
+DB_BACK_VOLUME    = ft_transcendence_db_data:/data
 
-build: #Crear contenedores
-	$(DOCKER_RUNTIME) compose build $(NO_CACHE)
+DATABASE_SERVICE   = database
+DATABASE_CONTAINER = ft_database
 
+FRONT_SERVICE     = frontend
+FRONT_CONTAINER   = ft_frontend
+FRONT_SCRIPT      = /usr/local/bin/entrypoint-frontend.sh
 
-up: # Levantar - dettached
-	$(DOCKER_RUNTIME) compose up -d
+NGINX_SERVICE     = nginx
+NGINX_CONTAINER   = ft_nginx
 
+# ----------------------------------------------------------
 
-up-logs: build # Levantar - attached
-	$(DOCKER_RUNTIME) compose up
+all: build up
 
+build: # Construir imagenes y borrar huerfanos
+	$(D_COMPOSE) build $(NO_CACHE)
 
-down: # Parar contenedores
-	$(DOCKER_RUNTIME) compose down --remove-orphans
-# 	docker volume rm ft_transcendencer_db_data
-	docker volume rm ft_transcendencer_front_build
+up: # Ejecutar contenedores dettached
+	$(D_COMPOSE) up $(DETTACHED) $(REMOVE_ORPH)
+	$(D_EXEC) $(DETTACHED) $(FRONT_CONTAINER) sh $(FRONT_SCRIPT)
 
-fclean: down # Parar contenedores y eliminar objetos
-	$(DOCKER_RUNTIME) system prune -f
+up-logs:  # Ejecutar contenedores con LOGS
+	$(D_COMPOSE) up $(REMOVE_ORPH)
 
-re: fclean all # Parar contenedores, eliminar objetos, Crear contenedores, Levantarlos
+down: #Tirar contenedores y borrar volumenes
+	$(D_COMPOSE) down -v --remove-orphans
+
+fclean: down #Borrar builds antiguos y borrar volumenes
+	$(D_SYSTEM) prune -a -f --volumes
+
+re: fclean all
+
+# ----------------------------------------------------------
+
+rf: # refresca el frontend por si hay cambios en src/
+	$(D_COMPOSE) up $(DETTACHED) $(FRONT_SERVICE)
+	$(D_EXEC) $(FRONT_CONTAINER) sh $(FRONT_SCRIPT)
+
+rn:
+	$(D_COMPOSE) up $(DETTACHED) $(NGINX_SERVICE)
+
+rfn: rf rn
+
+rb: # refresca el backend nodejs server por si hay cambios en src/
+	$(D_COMPOSE) up $(DETTACHED) $(BACK_SERVICE)
+	$(D_COMPOSE) restart $(BACK_SERVICE)
+
+rd: # resetea la base de datos a 0 sin construir imagen
+	$(D_STOP) $(BACK_SERVICE) $(DATABASE_SERVICE)
+	$(D_RUN) --rm -v $(DB_BACK_VOLUME) alpine sh -c 'rm -f /data/database.sqlite || true'
+	$(D_COMPOSE) restart $(DATABASE_SERVICE) $(BACK_SERVICE)
+
+rdb: rd
+
+rall: rfn rd # Recompilar backend, database, frontend, nginx , borrar volumenes y ejecutar scripts
+
+# ----------------------------------------------------------
 
 logs: # ver LOGS
-	$(DOCKER_RUNTIME) compose logs -f
+	$(D_COMPOSE) logs -f
 
+vols: # Nombrar volumenes
+	$(D_VOLUME) ls
 
-rf: # restartea solo el frontend
-	$(DOCKER_RUNTIME) compose build $(NO_CACHE) frontend
-	$(DOCKER_RUNTIME) compose up -d --force-recreate frontend
+enter-frontend: # Entrar contenedor frontend
+	$(D_EXEC) -it $(FRONT_CONTAINER) sh
 
+enter-backend: # Entrar contenedor backend
+	$(D_EXEC) -it $(BACK_CONTAINER) sh
 
-rb: # restartea solo el backend
-	$(DOCKER_RUNTIME) compose build $(NO_CACHE) backend
-	$(DOCKER_RUNTIME) compose up -d --force-recreate backend
+enter-nginx: # Entrar contenedor nginx
+	$(D_EXEC) -it $(NGINX_CONTAINER) sh
 
-rdb: # restartea solo el data base
-	$(DOCKER_RUNTIME) compose build $(NO_CACHE) database
-	$(DOCKER_RUNTIME) compose up -d --force-recreate database
+enter-database:  # Entrar contenedor database
+	$(D_EXEC) -it $(DATABASE_CONTAINER) sh
 
-rn: # restartea solo el data base
-	$(DOCKER_RUNTIME) compose build $(NO_CACHE) nginx
-	$(DOCKER_RUNTIME) compose up -d --force-recreate nginx
-
-rfn:
-	docker stop ft_nginx ft_frontend
-	docker rm ft_nginx ft_frontend
-	docker volume rm ft_transcendencer_front_build
-	make rf
-	make rn
-
-rbd:
-	docker stop ft_database ft_backend
-	docker rm ft_database ft_backend
-	docker volume rm ft_transcendencer_db_data
-	make rb
-	make rdb
-
-rall: rf rb rdb rn # restartea el frontend y backend
-
-enter-backend: # Meterse a contenedor backend
-	docker exec -it ft_backend bash
-
-enter-frontend: # Meterse a contenedor frontend
-	docker exec -it ft_frontend bash
-
-vols:
-	docker volume ls  
-
-rebuild: # Reconstruye todo - Cuando cambias configuraciones globales
-	$(DOCKER_RUNTIME) compose build $(NO_CACHE)
-	$(DOCKER_RUNTIME) compose up -d
-
-status:
-	@services=$$(docker compose ps --format '{{.Service}} {{.State}}') ; \
-	if [ -z "$$services" ]; then \
-		printf "[+] ${RED}Running 0/0${NC}\n"; \
-	else \
-		total=$$(echo "$$services" | wc -l) ; \
-		running=$$(echo "$$services" | grep -c 'running') ; \
-		printf "[+] ${BLUE}Running %s/%s${NC}\n" "$$running" "$$total" ; \
-		echo "$$services" | while read svc state ; do \
-			if [ "$$state" = "running" ]; then \
-				printf " ${GREEN}✔${NC} Container %-15s ${GREEN}Running${NC}\n" "$$svc" ; \
-			else \
-				printf " ${RED}✘${NC} Container %-15s %s\n" "$$svc" "$$state" ; \
-			fi ; \
-		done \
-	fi
-
-.PHONY: all build up up-logs status down fclean re logs rf \
-	rb rall enter-backend enter-fronted rebuild
+# ----------------------------------------------------------

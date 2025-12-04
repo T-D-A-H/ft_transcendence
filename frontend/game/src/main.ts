@@ -3,12 +3,14 @@ import {
 	usernameInput, passwordInput, logoutButton,
 	registerModal, openRegister, closeRegister, submitRegisterButton,
 	regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput,
-	startMatchButton, waitingPlayers, 
-	show, hide, canvas, paddle, twoFAModal,  twoFAOptionModal, twoFAEmailButton,
-	twoFASkipButton, twoFASubmitButton,twoFAInput,initialLoader,} from "./ui.js";
+	startMatchButton, searchForMatchButton, createMatchButton, waitingPlayers,
+	activeMatchesModal, playersListUL, renderMatchList,
+	show, hide, canvas, paddle, twoFAModal, twoFAOptionModal, twoFAEmailButton,
+	twoFASkipButton, twoFASubmitButton,twoFAInput, initialLoader,} from "./ui.js";
+
 import { registerUser } from "./register.js"
 import { login } from "./login.js"
-import { searchForPlayers } from "./search.js"
+import { createNewMatch, searchForMatch, joinMatch, playerJoinedMatch} from "./match.js"
 import { sendKeyPressEvents } from "./keypress.js";
 import { drawGame } from "./draw.js";
 
@@ -17,7 +19,9 @@ if (!loginModal || !openLogin || !closeLogin || !submitLoginButton ||
 	!usernameInput || !passwordInput ||
 	!registerModal || !openRegister || !closeRegister || !submitRegisterButton ||
 	!regUsernameInput || !regDisplaynameInput || !regEmailInput || !regPasswordInput ||
-	!waitingPlayers || !startMatchButton || !canvas || !paddle) {
+	!waitingPlayers || !startMatchButton || !searchForMatchButton || !createMatchButton ||
+	!activeMatchesModal || !playersListUL || !renderMatchList
+	|| !canvas || !paddle) {
 	console.error("One or more UI elements are missing");
 }
 
@@ -118,7 +122,7 @@ submitLoginButton.onclick = async () => {
 					});
 					
 					const verifyResult = await res.json();
-					
+
 					if (verifyResult.status === "ok" && verifyResult.token) {
 						// Login completo
 						localStorage.setItem("token", verifyResult.token);
@@ -176,7 +180,7 @@ submitRegisterButton.onclick = async () => {
 				method: "POST",
 				headers: { 
 					"Content-Type": "application/json",
-					"Authorization": `Bearer ${result.setupToken}`   // <- aquí
+					"Authorization": `Bearer ${result.setupToken}`
 				},
 				body: JSON.stringify({ method: "2FAmail" })
 			});
@@ -216,44 +220,99 @@ submitRegisterButton.onclick = async () => {
 };
 
 
-logoutButton.onclick = () => {
+logoutButton.onclick = async () => {
 	if (userSocket) {
 		userSocket.close();
 		userSocket = null;
 	}
-	localStorage.removeItem("token");
-	hide(startMatchButton);
-	hide(waitingPlayers);
-	hide(logoutButton);
-	show(openLogin);
-	show(openRegister);
+	let token = localStorage.getItem("token");
+	const res = await fetch("/logout", {
+		method: "POST",
+		headers: { 
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ token })
+	});
+
+	const data = await res.json();
+	if (data.status === "ok") {
+		localStorage.removeItem("token");
+		hide(startMatchButton);
+		hide(waitingPlayers);
+		hide(logoutButton);
+		show(openLogin);
+		show(openRegister);
+	}
 };
 
-startMatchButton.onclick = () => {
-	if (!userSocket) {
-		alert("No WebSocket connection. Please log in again.");
-		return;
-	}
-	if (userSocket.readyState !== WebSocket.OPEN) {
+createMatchButton.onclick = () => {
+
+	if (!userSocket || userSocket.readyState !== WebSocket.OPEN) {
 		alert("WebSocket not ready. Try again in a moment.");
 		return;
 	}
-	hide(startMatchButton);
-	show(waitingPlayers);
-	//showLoader();
-	console.log("Buscando Partida");
-	searchForPlayers(userSocket!).then((start_status) => {
-		//hideLoader();
-		if (start_status !== 1)
+	createNewMatch(userSocket!).then((new_match_status) => {
+		if (new_match_status === 0) {
+			alert("Match created");
+			// hide(createMatchButton);
+		}
+		else if (new_match_status === 1) {
+			alert("Match already created.");
+		}
+		else if (new_match_status === 2) {
+			alert("An error occured creating your match.")
+		}
+	});
+}
+
+searchForMatchButton.onclick = () => {
+	
+	if (!userSocket || userSocket.readyState !== WebSocket.OPEN) {
+		alert("WebSocket not ready. Try again in a moment.");
+		return;
+	}
+	searchForMatch(userSocket!).then((matches) => {
+
+		if (!matches) {
+			alert("No Matches found.");
+			hide(activeMatchesModal);
 			return;
-		if (!userSocket)
-			return;
+		}
+		const joinButtons = renderMatchList(matches!);
+		for (const btn of joinButtons) {
+			const target = btn.dataset.username!;
 
-		hide(waitingPlayers);
+			btn.onclick = () => {
 
-		sendKeyPressEvents(userSocket!);
-		drawGame(userSocket!, canvas!, paddle!);
-
+				if (!userSocket || userSocket.readyState !== WebSocket.OPEN) {
+					userSocket!.onopen = () => joinMatch(userSocket!, target);
+				} else {
+					joinMatch(userSocket!, target);
+				}
+				hide(activeMatchesModal);
+			};
+		}
+		show(activeMatchesModal);
 	});
 };
 
+startMatchButton.onclick = () => {
+
+	if (!userSocket || userSocket.readyState !== WebSocket.OPEN) {
+		alert("WebSocket not ready. Try again in a moment.");
+		return;
+	}
+	show(waitingPlayers);
+    playerJoinedMatch(userSocket!).then((joined_status) => {
+    	if (joined_status === 0) {
+    		hide(waitingPlayers);
+    		// hide(createMatchButton);
+    	}
+    	else if (joined_status === 1) {
+    		alert("idk, error");
+    	}
+    });
+
+	sendKeyPressEvents(userSocket!);
+	drawGame(userSocket!, canvas!, paddle!);
+};

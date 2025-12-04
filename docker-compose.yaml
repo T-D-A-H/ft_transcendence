@@ -10,12 +10,15 @@ services:
     environment:
       - NODE_ENV=production
     volumes:
+      - ./backend/src:/app/src
       - db_data:/data
     env_file:
       - ./backend/.env
+    depends_on:
+      - database
     restart: unless-stopped
     networks:
-      - ft_transcen
+      - ft_transcendence
 
   database:
     container_name: ft_database
@@ -27,11 +30,9 @@ services:
       - "5000:8080"
     volumes:
       - db_data:/data
-    depends_on:
-      - backend
     restart: unless-stopped
     networks:
-      - ft_transcen
+      - ft_transcendence
 
   frontend:
     container_name: ft_frontend
@@ -41,12 +42,13 @@ services:
     user: "root"
     working_dir: /app
     volumes:
-      - front_build:/app/dist
+      - ./frontend/game/:/app/game
+      - front_build:/usr/share/nginx/html
     depends_on:
       - backend
     restart: unless-stopped
     networks:
-      - ft_transcen
+      - ft_transcendence
 
   nginx:
     container_name: ft_nginx
@@ -61,10 +63,10 @@ services:
       - frontend
     restart: unless-stopped
     networks:
-      - ft_transcen
+      - ft_transcendence
 
 networks:
-  ft_transcen:
+  ft_transcendence:
     driver: bridge
 
 volumes:
