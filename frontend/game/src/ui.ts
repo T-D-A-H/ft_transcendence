@@ -38,17 +38,27 @@ export const regEmailInput = // Email in register box
 export const regPasswordInput = // Password in register box
 	document.getElementById("reg_password") as HTMLInputElement;
 
+
 export const submitRegisterButton = // Submit info in register box
 	document.getElementById("register_submit_button") as HTMLButtonElement;
 
+// MENU 2FA
+export const twoFAOptionModal = document.getElementById("twofa_option_modal") as HTMLDivElement;
+
+// Via email
+export const twoFAEmailButton = document.getElementById("twofa_email_button")  as HTMLInputElement;
 export const twoFAModal = document.getElementById("twofa_modal") as HTMLDivElement;
 export const twoFAInput = document.getElementById("twofa_input") as HTMLInputElement;
 export const twoFASubmitButton = document.getElementById("twofa_submit_button") as HTMLButtonElement;
 
-export const twoFAOptionModal = document.getElementById("twofa_option_modal") as HTMLDivElement;;
-export const twoFAEmailButton = document.getElementById("twofa_email_button")  as HTMLInputElement;;
-export const twoFAAuthButton = document.getElementById("twofa_auth_button") as HTMLButtonElement;
+
+// Skip
 export const twoFASkipButton = document.getElementById("twofa_skip_button") as HTMLButtonElement;
+
+// VIA AUTH
+export const twoFAAuthButton = document.getElementById("twofa_auth_button") as HTMLButtonElement;
+
+// LOADER
 export const initialLoader = document.getElementById("initial_loader") as HTMLDivElement;
 
 export const startMatchButton = // Start match button element

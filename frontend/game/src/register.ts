@@ -1,5 +1,9 @@
-export async function registerUser(usernameInput: HTMLInputElement, displaynameInput: HTMLInputElement, emailInput: HTMLInputElement, passwordInput: HTMLInputElement ): Promise<number> {
-
+export async function registerUser(
+  usernameInput: HTMLInputElement,
+  displaynameInput: HTMLInputElement,
+  emailInput: HTMLInputElement,
+  passwordInput: HTMLInputElement
+): Promise<{ status: number; userId?: string; setupToken?: string; error?: string }> {
 	const body = {
 		username: usernameInput.value,
 		display_name: displaynameInput.value,
@@ -17,16 +21,23 @@ export async function registerUser(usernameInput: HTMLInputElement, displaynameI
 
 		const result = await res.json();
 
-		if (res.ok) {
-			alert("Registration successful! You can now log in.");
-			return 0;
-		} else {
-			alert(result.error);
-			return 1;
+		if (res.ok && result.status === "ok" && result.userId && result.setupToken) {
+			return { 
+				status: 0, 
+				userId: String(result.userId),
+				setupToken: result.setupToken
+			};
 		}
+
+		return { 
+			status: 1,
+			error: result.error || "Error en el registro"
+		};
 	} catch (err) {
-		console.error(err);
-		alert("Registration failed due to network error");
-		return 1;
+		console.error("Register error:", err);
+		return { 
+			status: 1,
+			error: "Error de conexión"
+		};
 	}
 }

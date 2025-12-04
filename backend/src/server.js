@@ -21,32 +21,31 @@ const FRAMES = 1000/60;
 const SPEED = 8;
 
 fastify.register(require('fastify-jwt'), {
-  secret: process.env.JWT_SECRET
+	secret: process.env.JWT_SECRET
 });
 
 async function startServer() {
 	
 	await fastify.register(websocket);
 
-	// Login Normal option == 0
-	const loginHandler = buildLoginHandler(db, bcrypt, userManager, fastify, "skip");
+	// ✅ UN SOLO ENDPOINT DE LOGIN (unificado y seguro)
+	const loginHandler = buildLoginHandler(db, bcrypt, userManager, fastify);
 	fastify.post("/login", loginHandler);
 
-	// Login 2FA mail option == 1
-	const Login2FAmailHandler = buildLoginHandler(db, bcrypt, userManager, fastify, "2FAmail");
-    fastify.post("/login-2fa-mail", Login2FAmailHandler);
-	
+	// ✅ Verificación de código 2FA
 	const verify2FAmail = verify2FACode(userManager, fastify);
 	fastify.post("/verify-2fa-mail", verify2FAmail);
 
-	// REGISTRO
-	const registerHandler = buildRegisterHandler(db, bcrypt, saltRounds, User, userManager);
+	// ✅ Registro de usuarios
+	const registerHandler = buildRegisterHandler(db, bcrypt, saltRounds, fastify);
 	fastify.post("/register", registerHandler);
 
-	// GAME
+	// ✅ WebSocket del juego
 	const initGameSocket = buildGameSocketHandler(userManager, fastify);
 	fastify.get("/proxy-game", { websocket: true }, initGameSocket);
 
+	const buildSet2FAHandler = require('./endpoints/set2FA');
+	fastify.post("/set-2fa", buildSet2FAHandler(db, fastify));
 
 	setInterval(() => {
 	    userManager.matches.forEach(match => {
