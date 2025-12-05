@@ -1,4 +1,5 @@
-const User = require("../src/User.js");
+
+const LOGGER 	 = require("../LOGGER.js");
 
 function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
 	return async function registerHandler(req, reply) {

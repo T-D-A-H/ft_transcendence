@@ -1,4 +1,6 @@
-// set2FA.js
+
+const LOGGER 	 = require("../LOGGER.js");
+
 function buildSet2FAHandler(db, fastify) {
 	return async function handleSet2FA(req, reply) {
 		const { method } = req.body || {};

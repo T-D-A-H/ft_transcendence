@@ -1,4 +1,6 @@
-// endpoints/logout.js
+
+const LOGGER 	 = require("../LOGGER.js");
+
 function buildLogoutHandler(userManager, fastify) {
 	return async function handleLogout(req, reply) {
 		const { token } = req.body || {};

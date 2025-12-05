@@ -1,4 +1,4 @@
-const LOGGER = require("./LOGGER.js");
+const LOGGER = require("../LOGGER.js");
 
 class User {
     

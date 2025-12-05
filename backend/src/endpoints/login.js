@@ -1,5 +1,7 @@
 const nodemailer = require("nodemailer");
-const User = require("../User.js");
+const User 		 = require("../Classes/User.js");
+const LOGGER 	 = require("../LOGGER.js");
+
 
 function buildLoginHandler(db, bcrypt, userManager, fastify) {
 	return async function handleLogin(req, reply) {

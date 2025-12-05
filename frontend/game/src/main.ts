@@ -6,7 +6,7 @@ import {
 	startMatchButton, searchForMatchButton, createMatchButton, waitingPlayers,
 	activeMatchesModal, playersListUL, renderMatchList,
 	show, hide, canvas, paddle, twoFAModal, twoFAOptionModal, twoFAEmailButton,
-	twoFASkipButton, twoFASubmitButton,twoFAInput, initialLoader,} from "./ui.js";
+	twoFASkipButton, twoFASubmitButton, twoFAInput, initialLoader,} from "./ui.js";
 
 import { registerUser } from "./register.js"
 import { login } from "./login.js"
@@ -14,16 +14,14 @@ import { createNewMatch, searchForMatch, joinMatch, playerJoinedMatch} from "./m
 import { sendKeyPressEvents } from "./keypress.js";
 import { drawGame } from "./draw.js";
 
-
-if (!loginModal || !openLogin || !closeLogin || !submitLoginButton ||
-	!usernameInput || !passwordInput ||
-	!registerModal || !openRegister || !closeRegister || !submitRegisterButton ||
-	!regUsernameInput || !regDisplaynameInput || !regEmailInput || !regPasswordInput ||
-	!waitingPlayers || !startMatchButton || !searchForMatchButton || !createMatchButton ||
-	!activeMatchesModal || !playersListUL || !renderMatchList
-	|| !canvas || !paddle) {
-	console.error("One or more UI elements are missing");
+if (!loginModal || !openLogin || !closeLogin || !submitLoginButton || !usernameInput || !passwordInput || !logoutButton ||
+	!registerModal || !openRegister || !closeRegister || !submitRegisterButton || !regUsernameInput || !regDisplaynameInput || !regEmailInput || !regPasswordInput ||
+	!startMatchButton || !searchForMatchButton || !createMatchButton || !waitingPlayers || !activeMatchesModal || !playersListUL || !renderMatchList ||
+	!twoFAModal || !twoFAOptionModal || !twoFAEmailButton || !twoFASkipButton || !twoFASubmitButton || twoFAInput || !initialLoader ||
+	!show || !hide || !canvas || !paddle) {
+		console.error("One or more UI elements are missing");
 }
+
 
 let tempToken2FA: string | null | undefined = null;
 let userSocket: WebSocket | null = null;
@@ -33,22 +31,16 @@ closeLogin.onclick = () => hide(loginModal);
 openRegister.onclick = () => show(registerModal);
 closeRegister.onclick = () => hide(registerModal);
 
-function showLoader() {
-	show(initialLoader);
-}
-
-function hideLoader() {
-	hide(initialLoader);
-}
 
 // Función para inicializar la conexión WebSocket con el token
 function initializeWebSocket(token: string) {
-	showLoader();
+
+	show(initialLoader);
 	userSocket = new WebSocket(`ws://localhost:4000/proxy-game?token=${token}`);
 	userSocket.onopen = () => {
 		console.log("User WebSocket connected");
 		show(startMatchButton);
-		hideLoader();
+		hide(initialLoader);
 	};
 	userSocket.onerror = (err) => { 
 		console.error(err); 
@@ -56,17 +48,17 @@ function initializeWebSocket(token: string) {
 		userSocket = null;
 		alert("Error de conexión. Por favor, inicia sesión nuevamente.");
 		hide(startMatchButton);
-		hideLoader();
+		hide(initialLoader);
 	};
 	userSocket.onclose = () => {
 		console.log("WebSocket disconnected");
 		userSocket = null;
 		hide(startMatchButton);
-		hideLoader();
+		hide(initialLoader);
 	};
 }
 
-showLoader();
+show(initialLoader);
 
 // Verificar si hay token al cargar la página
 const token = localStorage.getItem("token");
@@ -78,7 +70,7 @@ if (!token || token === "null") {
 	// Mostrar solo después de ocultar todo
 	show(openLogin);
 	show(openRegister);
-	setTimeout(hideLoader, 300)
+	// setTimeout(hide(initialLoader), 300);
 } else {
 	// Usuario autenticado
 	hide(openLogin);
@@ -87,9 +79,8 @@ if (!token || token === "null") {
 	initializeWebSocket(token);
 }
 
-
 submitLoginButton.onclick = async () => {
-	showLoader();
+	show(initialLoader);
   
 	try {
 		// 1. PRIMERO: Intentar login (backend valida usuario + contraseña)
@@ -98,10 +89,10 @@ submitLoginButton.onclick = async () => {
 		// 2. El backend decide si necesita 2FA DESPUÉS de validar credenciales
 		if (result.status === "requires_2fa" && result.method === "email") {
 			// Usuario válido y necesita 2FA
-			hideLoader();
+			hide(initialLoader);
 			show(twoFAModal);
 			tempToken2FA = result.tempToken; // Token temporal del backend
-			
+
 			// Configurar el botón de verificación 2FA
 			twoFASubmitButton.onclick = async () => {
 				const code = twoFAInput.value.trim();
@@ -110,7 +101,7 @@ submitLoginButton.onclick = async () => {
 					return;
 				}
 				
-				showLoader();
+				show(initialLoader);
 				try {
 					const res = await fetch("/verify-2fa-mail", {
 						method: "POST",
@@ -136,12 +127,12 @@ submitLoginButton.onclick = async () => {
 						twoFAInput.value = "";
 					} else {
 						alert(verifyResult.error || "Código 2FA incorrecto");
-						hideLoader();
+						hide(initialLoader);
 					}
 				} catch (err) {
 					console.error(err);
 					alert("Error al verificar 2FA");
-					hideLoader();
+					hide(initialLoader);
 				}
 			};
 			
@@ -154,18 +145,18 @@ submitLoginButton.onclick = async () => {
 			hide(loginModal);
 			show(logoutButton);
 			initializeWebSocket(result.token);
-			hideLoader();
+			hide(initialLoader);
 			
 		} else {
 			// Credenciales incorrectas
 			alert(result.error || "Usuario o contraseña incorrectos");
-			hideLoader();
+			hide(initialLoader);
 		}
 
 		} catch (err) {
 		console.error(err);
 		alert("Error al iniciar sesión");
-		hideLoader();
+		hide(initialLoader);
 	}
 };
 

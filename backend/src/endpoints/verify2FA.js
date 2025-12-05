@@ -1,3 +1,6 @@
+
+const LOGGER 	 = require("../LOGGER.js");
+
 function verify2FACode(userManager, fastify) {
 	return async function verify2FAHandler(req, reply) {
 		const { tempToken, code } = req.body;

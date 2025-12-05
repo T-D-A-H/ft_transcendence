@@ -1,7 +1,6 @@
 const User = require("./User.js");
 const Match = require("./Match.js");
-
-const LOGGER = require("./LOGGER.js");
+const LOGGER = require("../LOGGER.js");
 
 class UserManager {
 

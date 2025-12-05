@@ -16,6 +16,13 @@ export const passwordInput = // Password entered in login box
 export const submitLoginButton = // Submit info in login box
 	document.getElementById("login_submit_button") as HTMLButtonElement;
 
+
+
+export const logoutButton = // Logout Button
+	document.getElementById("logout_button") as HTMLButtonElement;
+
+
+
 export const registerModal = // Register Box element
 	document.getElementById("register_modal") as HTMLDivElement;
 
@@ -39,6 +46,33 @@ export const regPasswordInput = // Password in register box
 
 export const submitRegisterButton = // Submit info in register box
 	document.getElementById("register_submit_button") as HTMLButtonElement;
+
+
+export const twoFAModal = // 2FA Optional Modal
+	document.getElementById("twofa_modal") as HTMLDivElement;
+
+export const twoFAOptionModal = // 2FA Modal
+	document.getElementById("twofa_option_modal") as HTMLDivElement;
+
+export const twoFAEmailButton = // 2FA Email Button
+	document.getElementById("twofa_email_button")  as HTMLInputElement;
+
+export const twoFAInput = // 2FA Email input
+	document.getElementById("twofa_input") as HTMLInputElement;
+
+export const twoFASubmitButton = // 2FA Submit Button
+	document.getElementById("twofa_submit_button") as HTMLButtonElement;
+
+export const twoFASkipButton = // 2FA Skip Button
+	document.getElementById("twofa_skip_button") as HTMLButtonElement;
+
+export const twoFAAuthButton =  // 2FA via AUTH Button
+	document.getElementById("twofa_auth_button") as HTMLButtonElement;
+
+export const initialLoader = // Initial loader Modal
+	document.getElementById("initial_loader") as HTMLDivElement;
+
+
 
 
 export const createMatchButton = // Create match button element
@@ -87,25 +121,6 @@ export function renderMatchList(matches: string[]): HTMLButtonElement[] {
 	return joinButtons;
 }
 
-// MENU 2FA
-export const twoFAOptionModal = document.getElementById("twofa_option_modal") as HTMLDivElement;
-
-// Via email
-export const twoFAEmailButton = document.getElementById("twofa_email_button")  as HTMLInputElement;
-export const twoFAModal = document.getElementById("twofa_modal") as HTMLDivElement;
-export const twoFAInput = document.getElementById("twofa_input") as HTMLInputElement;
-export const twoFASubmitButton = document.getElementById("twofa_submit_button") as HTMLButtonElement;
-
-// Skip
-export const twoFASkipButton = document.getElementById("twofa_skip_button") as HTMLButtonElement;
-
-// VIA AUTH
-export const twoFAAuthButton = document.getElementById("twofa_auth_button") as HTMLButtonElement;
-
-// LOADER
-export const initialLoader = document.getElementById("initial_loader") as HTMLDivElement;
-
-export const logoutButton = document.getElementById("logout_button") as HTMLButtonElement;
 
 export const canvas = // Canvas where game is drawn
 	document.getElementById("game_screen") as HTMLCanvasElement;
@@ -113,7 +128,7 @@ export const canvas = // Canvas where game is drawn
 export const paddle = // Paddle to paint
 	canvas.getContext("2d") as CanvasRenderingContext2D;
 
-// Utility functions
+
 export function show(elem: HTMLElement): void { // show HTML element
 	elem.classList.remove("hidden"); 
 }
