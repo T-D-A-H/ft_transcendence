@@ -4,17 +4,18 @@ const LOGGER = require("../LOGGER.js");
 class Match {
 
 	constructor(user, match_id) {
-		LOGGER("Match: Constructor called for: " + user.getUsername() + " match_id: " + match_id, 200);
+		LOGGER(200, "Match", "Constructor", "For " + user.getUsername() + " match_id: " + match_id);
 		this.id = match_id;
 		this.players = [user, null];
 		this.playerCoords = [0, null];
 		this.playerY = [150, null];
 		this.isWaiting = true;
 		this.isReady = [null, null];
+		this.ballXY = [0, 0]
 	}
 
 	addUserToMatch(user) {
-		LOGGER("addUserToMatch: Added user: " + user.getUsername() + " to match_id: " + this.id + " with: " + this.players[0].getUsername(), 200);
+		LOGGER(200, "Match", "addUserToMatch", "For " + user.getUsername() + " match_id: " + this.id);
 		this.players[1] = user;
 		this.playerCoords[1] = 0;
 		this.playerY[1] = 150;
@@ -38,7 +39,7 @@ class Match {
 
 	sendState(SPEED) {
 		this.updateCoords(SPEED);
-		this.broadcast({ type: "MOVE", playerY1: this.playerY[0], playerY2: this.playerY[1] });
+		this.broadcast({ type: "DRAW", playerY1: this.playerY[0], ballY: this.ballXY[0], ballX: this.ballXY[1], playerY2: this.playerY[1] });
 	}
 
 	setPlayerMove(user, moveDir) {
@@ -46,9 +47,9 @@ class Match {
 		if (i === -1) 
             return;
 
-		if (moveDir === "MOVE_UP") 
+		if (moveDir === "UP") 
             this.playerCoords[i] = -1;
-		else if (moveDir === "MOVE_DOWN") 
+		else if (moveDir === "DOWN") 
             this.playerCoords[i] = 1;
 		else if (moveDir === "STOP") 
             this.playerCoords[i] = 0;

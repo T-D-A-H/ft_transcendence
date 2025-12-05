@@ -1,10 +1,10 @@
 export const loginModal = // Login Box element
 	document.getElementById("login_modal") as HTMLDivElement;
 
-export const openLogin = // Display login box element
+export const openLoginButton = // Display login box element
 	document.getElementById("open_login") as HTMLButtonElement;
 
-export const closeLogin = // Close login box element
+export const closeLoginButton = // Close login box element
 	document.getElementById("close_login") as HTMLButtonElement;
 
 export const usernameInput = // Username entered in login box
@@ -16,20 +16,19 @@ export const passwordInput = // Password entered in login box
 export const submitLoginButton = // Submit info in login box
 	document.getElementById("login_submit_button") as HTMLButtonElement;
 
-
-
 export const logoutButton = // Logout Button
 	document.getElementById("logout_button") as HTMLButtonElement;
+
 
 
 
 export const registerModal = // Register Box element
 	document.getElementById("register_modal") as HTMLDivElement;
 
-export const openRegister = // Display register box element
+export const openRegisterButton = // Display register box element
 	document.getElementById("open_register") as HTMLButtonElement;
 
-export const closeRegister = // Close register box element
+export const closeRegisterButton = // Close register box element
 	document.getElementById("close_register") as HTMLButtonElement;
 
 export const regUsernameInput = // Username entered in register box
@@ -46,6 +45,8 @@ export const regPasswordInput = // Password in register box
 
 export const submitRegisterButton = // Submit info in register box
 	document.getElementById("register_submit_button") as HTMLButtonElement;
+
+
 
 
 export const twoFAModal = // 2FA Optional Modal
@@ -69,11 +70,18 @@ export const twoFASkipButton = // 2FA Skip Button
 export const twoFAAuthButton =  // 2FA via AUTH Button
 	document.getElementById("twofa_auth_button") as HTMLButtonElement;
 
-export const initialLoader = // Initial loader Modal
+
+	
+export const loadAnimation = // Initial loader Modal
 	document.getElementById("initial_loader") as HTMLDivElement;
 
+export function showLoader() {
+	show(loadAnimation);
+}
 
-
+export function hideLoader() {
+	hide(loadAnimation);
+}
 
 export const createMatchButton = // Create match button element
 	document.getElementById("create_match") as HTMLButtonElement;

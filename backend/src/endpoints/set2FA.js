@@ -2,10 +2,12 @@
 const LOGGER 	 = require("../LOGGER.js");
 
 function buildSet2FAHandler(db, fastify) {
+
 	return async function handleSet2FA(req, reply) {
 		const { method } = req.body || {};
 
 		if (!method) {
+			LOGGER(400, "server", "handleSet2FA", "Falta el método 2FA");
 			return reply.code(400).send({ 
 				status: "error",
 				error: "Falta el método 2FA" 
@@ -14,6 +16,8 @@ function buildSet2FAHandler(db, fastify) {
 
 		const validMethods = ['skip', '2FAmail'];
 		if (!validMethods.includes(method)) {
+
+			LOGGER(400, "server", "handleSet2FA", "Método 2FA inválido");
 			return reply.code(400).send({ 
 				status: "error",
 				error: "Método 2FA inválido" 
@@ -23,6 +27,7 @@ function buildSet2FAHandler(db, fastify) {
 		try {
 			const authHeader = req.headers.authorization;
 			if (!authHeader || !authHeader.startsWith('Bearer ')) {
+				LOGGER(401, "server", "handleSet2FA", "No autorizado - Token requerido");
 				return reply.code(401).send({ 
 					status: "error",
 					error: "No autorizado - Token requerido" 
@@ -41,26 +46,29 @@ function buildSet2FAHandler(db, fastify) {
 				);
 			});
 
+			LOGGER(200, "server", "handleSet2FA", "token authorized");
 			return reply.send({ 
 				status: "ok" 
 			});
 
 		} catch (err) {
-			console.error("Set 2FA error:", err);
+
 
 			if (err.name === 'JsonWebTokenError') {
+				LOGGER(401, "server", "handleSet2FA", "Token inválido");
 				return reply.code(401).send({ 
 					status: "error",
 					error: "Token inválido" 
 				});
 			}
 			if (err.name === 'TokenExpiredError') {
+				LOGGER(401, "server", "handleSet2FA", "Token expirado");
 				return reply.code(401).send({ 
 					status: "error",
 					error: "Token expirado" 
 				});
 			}
-
+			LOGGER(500, "server", "handleSet2FA", "Error en el servidor");
 			return reply.code(500).send({ 
 				status: "error",
 				error: "Error en el servidor" 

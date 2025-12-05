@@ -4,10 +4,12 @@ const LOGGER 	 = require("../LOGGER.js");
 
 
 function buildLoginHandler(db, bcrypt, userManager, fastify) {
+
 	return async function handleLogin(req, reply) {
 	const { display_name, password } = req.body || {};
 
 	if (!display_name || !password) {
+		LOGGER(400, "server", "handleLogin", "Missing fields");
 		return reply.code(400).send({ error: "Missing fields" });
 	}
 
@@ -23,6 +25,7 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 
 		// 2. Validar que el usuario existe
 		if (!user) {
+			LOGGER(401, "server", "handleLogin", "Credenciales incorrectas");
 			return reply.code(401).send({ 
 				status: "error",
 				error: "Credenciales incorrectas" 
@@ -32,6 +35,7 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 		// 3. Validar contraseña
 		const match = await bcrypt.compare(password, user.password);
 		if (!match) {
+			LOGGER(401, "server", "handleLogin", "Credenciales incorrectas");
 			return reply.code(401).send({ 
 				status: "error",
 				error: "Credenciales incorrectas" 
@@ -105,6 +109,7 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 
 		// 5. Login exitoso sin 2FA
 		if (userManager.loginUser(user.id) ===  false) {
+			LOGGER(401, "server", "handleLogin", "Usuario ya logeado");
 			return reply.code(401).send({ 
 				status: "error",
 				error: "Usuario ya logeado" 
@@ -123,7 +128,7 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 		});
 
 	} catch (err) {
-		console.error("Login error:", err);
+		LOGGER(500, "server", "handleLogin", "Login Error: " + err);
 		return reply.code(500).send({ 
 			status: "error",
 			error: "Error en el servidor" 

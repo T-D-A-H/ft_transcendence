@@ -1,6 +1,11 @@
 
-interface MoveMessage  {type: "MOVE"; playerY1: number; playerY2: number;};
-type ServerMessage = MoveMessage;
+
+function drawBall(paddle: CanvasRenderingContext2D, y: number, x: number) {
+
+	paddle.fillStyle = "white";
+	paddle.fillRect(x, y, 10, 10)
+	return;
+}
 
 function drawBrackground(canvas: HTMLCanvasElement, paddle: CanvasRenderingContext2D) {
 
@@ -21,20 +26,11 @@ function drawPlayerTwo(paddle: CanvasRenderingContext2D, y: number, x: number) {
 	paddle.fillRect(x, y, 10, 60);
 }
 
+export function drawGame(canvas: HTMLCanvasElement, paddle: CanvasRenderingContext2D, p1Y: number, bY: number, bX: number, p2Y: number) {
 
-export function drawGame(userSocket: WebSocket, canvas: HTMLCanvasElement, paddle: CanvasRenderingContext2D): void {
-	
-	userSocket.onmessage = (event: MessageEvent) => {
-		try {
-			const data: ServerMessage = JSON.parse(event.data);
-
-			if (data.type === "MOVE") {
-				drawBrackground(canvas, paddle);
-				drawPlayerOne(paddle, data.playerY1, 10);
-				drawPlayerTwo(paddle, data.playerY2, canvas.width - 20);
-			}
-		} catch (err) {
-			console.error("Error parsing move message:", err);
-		}
-	};
+	drawBrackground(canvas, paddle);
+	drawPlayerOne(paddle, p1Y, 10);
+	drawPlayerTwo(paddle, p2Y, canvas.width - 20);
+	drawBall(paddle, (canvas.height / 2) + bY, (canvas.width / 2) + bX);
 }
+

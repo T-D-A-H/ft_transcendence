@@ -1,23 +1,22 @@
 import { 
-	loginModal, openLogin, closeLogin, submitLoginButton,
+	loginModal, openLoginButton, closeLoginButton, submitLoginButton,
 	usernameInput, passwordInput, logoutButton,
-	registerModal, openRegister, closeRegister, submitRegisterButton,
+	registerModal, openRegisterButton, closeRegisterButton, submitRegisterButton,
 	regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput,
 	startMatchButton, searchForMatchButton, createMatchButton, waitingPlayers,
 	activeMatchesModal, playersListUL, renderMatchList,
 	show, hide, canvas, paddle, twoFAModal, twoFAOptionModal, twoFAEmailButton,
-	twoFASkipButton, twoFASubmitButton, twoFAInput, initialLoader,} from "./ui.js";
+	twoFASkipButton, twoFASubmitButton, twoFAInput, loadAnimation, showLoader, hideLoader} from "./ui.js";
 
-import { registerUser } from "./register.js"
-import { login } from "./login.js"
-import { createNewMatch, searchForMatch, joinMatch, playerJoinedMatch} from "./match.js"
-import { sendKeyPressEvents } from "./keypress.js";
-import { drawGame } from "./draw.js";
+import { registerUser,  loginUser } from "./login-register.js"
+import { initializeWebSocket } from "./websocket.js";
+import { sendKeyPress, playerJoinedMatch, joinMatch, createNewMatch, searchForMatch } from "./events.js";
 
-if (!loginModal || !openLogin || !closeLogin || !submitLoginButton || !usernameInput || !passwordInput || !logoutButton ||
-	!registerModal || !openRegister || !closeRegister || !submitRegisterButton || !regUsernameInput || !regDisplaynameInput || !regEmailInput || !regPasswordInput ||
+
+if (!loginModal || !openLoginButton || !closeLoginButton || !submitLoginButton || !usernameInput || !passwordInput || !logoutButton ||
+	!registerModal || !openRegisterButton || !closeRegisterButton || !submitRegisterButton || !regUsernameInput || !regDisplaynameInput || !regEmailInput || !regPasswordInput ||
 	!startMatchButton || !searchForMatchButton || !createMatchButton || !waitingPlayers || !activeMatchesModal || !playersListUL || !renderMatchList ||
-	!twoFAModal || !twoFAOptionModal || !twoFAEmailButton || !twoFASkipButton || !twoFASubmitButton || twoFAInput || !initialLoader ||
+	!twoFAModal || !twoFAOptionModal || !twoFAEmailButton || !twoFASkipButton || !twoFASubmitButton || twoFAInput || !loadAnimation ||
 	!show || !hide || !canvas || !paddle) {
 		console.error("One or more UI elements are missing");
 }
@@ -26,141 +25,107 @@ if (!loginModal || !openLogin || !closeLogin || !submitLoginButton || !usernameI
 let tempToken2FA: string | null | undefined = null;
 let userSocket: WebSocket | null = null;
 
-openLogin.onclick = () => show(loginModal);
-closeLogin.onclick = () => hide(loginModal);
-openRegister.onclick = () => show(registerModal);
-closeRegister.onclick = () => hide(registerModal);
+openLoginButton.onclick = () => show(loginModal);
+closeLoginButton.onclick = () => hide(loginModal);
+openRegisterButton.onclick = () => show(registerModal);
+closeRegisterButton.onclick = () => hide(registerModal);
 
-
-// Función para inicializar la conexión WebSocket con el token
-function initializeWebSocket(token: string) {
-
-	show(initialLoader);
-	userSocket = new WebSocket(`ws://localhost:4000/proxy-game?token=${token}`);
-	userSocket.onopen = () => {
-		console.log("User WebSocket connected");
-		show(startMatchButton);
-		hide(initialLoader);
-	};
-	userSocket.onerror = (err) => { 
-		console.error(err); 
-		userSocket?.close();
-		userSocket = null;
-		alert("Error de conexión. Por favor, inicia sesión nuevamente.");
-		hide(startMatchButton);
-		hide(initialLoader);
-	};
-	userSocket.onclose = () => {
-		console.log("WebSocket disconnected");
-		userSocket = null;
-		hide(startMatchButton);
-		hide(initialLoader);
-	};
-}
-
-show(initialLoader);
+showLoader();
 
 // Verificar si hay token al cargar la página
 const token = localStorage.getItem("token");
 if (!token || token === "null") {
-	// Usuario NO autenticado
-	hide(openLogin);
-	hide(openRegister);
-	hide(logoutButton);
-	// Mostrar solo después de ocultar todo
-	show(openLogin);
-	show(openRegister);
-	// setTimeout(hide(initialLoader), 300);
-} else {
-	// Usuario autenticado
-	hide(openLogin);
-	hide(openRegister);
-	show(logoutButton);
-	initializeWebSocket(token);
+	show(openLoginButton);
+	show(openRegisterButton);
+	setTimeout(hideLoader, 300);
+}
+else {
+	initializeWebSocket(token).then((ws) => {
+		userSocket = ws;
+	}).catch(() => alert("Error connecting to server"));
 }
 
-submitLoginButton.onclick = async () => {
-	show(initialLoader);
-  
-	try {
-		// 1. PRIMERO: Intentar login (backend valida usuario + contraseña)
-		const result = await login(usernameInput, passwordInput);
 
-		// 2. El backend decide si necesita 2FA DESPUÉS de validar credenciales
-		if (result.status === "requires_2fa" && result.method === "email") {
-			// Usuario válido y necesita 2FA
-			hide(initialLoader);
+submitLoginButton.onclick = async () => {
+
+	showLoader();
+	try {
+		
+		const result = await loginUser(usernameInput, passwordInput); // 1. PRIMERO: Intentar login (backend valida usuario + contraseña)
+
+		if (result.status === "requires_2fa" && result.method === "email") { // 2. El backend decide si necesita 2FA DESPUÉS de validar credenciales
+			
+			hideLoader();// Usuario válido y necesita 2FA
 			show(twoFAModal);
 			tempToken2FA = result.tempToken; // Token temporal del backend
-
-			// Configurar el botón de verificación 2FA
-			twoFASubmitButton.onclick = async () => {
+			twoFASubmitButton.onclick = async () => { // Configurar el botón de verificación 2FA
 				const code = twoFAInput.value.trim();
 				if (!code) {
 					alert("Ingresa el código 2FA");
 					return;
 				}
-				
-				show(initialLoader);
+				showLoader();
 				try {
+
 					const res = await fetch("/verify-2fa-mail", {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ 
-							tempToken: tempToken2FA, 
-							code 
+						body: JSON.stringify({ tempToken: tempToken2FA, code 
 						})
 					});
 					
 					const verifyResult = await res.json();
 
-					if (verifyResult.status === "ok" && verifyResult.token) {
-						// Login completo
+					if (verifyResult.status === "ok" && verifyResult.token) { // Login completo
+						
 						localStorage.setItem("token", verifyResult.token);
 						hide(twoFAModal);
-						hide(openRegister);
-						hide(openLogin);
 						hide(loginModal);
-						show(logoutButton);
-						initializeWebSocket(verifyResult.token);
+						initializeWebSocket(verifyResult.token).then((ws) => {
+							userSocket = ws;
+						}).catch(() => alert("Error connecting to server"));
 						tempToken2FA = null;
 						twoFAInput.value = "";
 					} else {
+
 						alert(verifyResult.error || "Código 2FA incorrecto");
-						hide(initialLoader);
+						hideLoader();
 					}
 				} catch (err) {
+
 					console.error(err);
 					alert("Error al verificar 2FA");
-					hide(initialLoader);
+					hideLoader();
 				}
 			};
 			
-		} else if (result.status === 0 && result.token) {
-			// Login exitoso sin 2FA
+		} else if (result.status === 0 && result.token) { // Login exitoso sin 2FA
+			
 			localStorage.setItem("token", result.token);
 			hide(twoFAModal);
-			hide(openRegister);
-			hide(openLogin);
 			hide(loginModal);
-			show(logoutButton);
-			initializeWebSocket(result.token);
-			hide(initialLoader);
+			initializeWebSocket(result.token).then((ws) => {
+				userSocket = ws;
+    			hideLoader();
+
+			}).catch(() => alert("Error connecting to server"));
 			
-		} else {
-			// Credenciales incorrectas
+			
+		} else { // Credenciales incorrectas
+			
 			alert(result.error || "Usuario o contraseña incorrectos");
-			hide(initialLoader);
+			hideLoader();
 		}
 
 		} catch (err) {
-		console.error(err);
-		alert("Error al iniciar sesión");
-		hide(initialLoader);
-	}
+			console.error(err);
+			alert("Error al iniciar sesión");
+			hideLoader();
+		}
 };
 
 submitRegisterButton.onclick = async () => {
+
 	const result = await registerUser(regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput);
 
 	if (result.status === 0 && result.userId && result.setupToken) {
@@ -208,8 +173,10 @@ submitRegisterButton.onclick = async () => {
 			}
 		};
 	}
+	else if (result.status === 1) {
+		alert("User with that username already exists");
+	}
 };
-
 
 logoutButton.onclick = async () => {
 	if (userSocket) {
@@ -228,23 +195,27 @@ logoutButton.onclick = async () => {
 	const data = await res.json();
 	if (data.status === "ok") {
 		localStorage.removeItem("token");
-		hide(startMatchButton);
-		hide(waitingPlayers);
+		hide(createMatchButton);
+		hide(searchForMatchButton);
 		hide(logoutButton);
-		show(openLogin);
-		show(openRegister);
+		hide(startMatchButton);
+		show(openLoginButton);
+		show(openRegisterButton);
 	}
 };
 
 createMatchButton.onclick = () => {
+    if (!userSocket) {
+        alert("WebSocket not ready");
+        return;
+    }
 
-	if (!userSocket || userSocket.readyState !== WebSocket.OPEN) {
-		alert("WebSocket not ready. Try again in a moment.");
-		return;
-	}
 	createNewMatch(userSocket!).then((new_match_status) => {
 		if (new_match_status === 0) {
 			alert("Match created");
+			hide(createMatchButton);
+			hide(searchForMatchButton);
+			show(startMatchButton);
 			// hide(createMatchButton);
 		}
 		else if (new_match_status === 1) {
@@ -257,11 +228,11 @@ createMatchButton.onclick = () => {
 }
 
 searchForMatchButton.onclick = () => {
-	
-	if (!userSocket || userSocket.readyState !== WebSocket.OPEN) {
-		alert("WebSocket not ready. Try again in a moment.");
-		return;
-	}
+	if (!userSocket) {
+        alert("WebSocket not ready");
+        return;
+    }
+
 	searchForMatch(userSocket!).then((matches) => {
 
 		if (!matches) {
@@ -272,38 +243,34 @@ searchForMatchButton.onclick = () => {
 		const joinButtons = renderMatchList(matches!);
 		for (const btn of joinButtons) {
 			const target = btn.dataset.username!;
-
-			btn.onclick = () => {
-
-				if (!userSocket || userSocket.readyState !== WebSocket.OPEN) {
-					userSocket!.onopen = () => joinMatch(userSocket!, target);
-				} else {
-					joinMatch(userSocket!, target);
-				}
+			btn.onclick = () => joinMatch(userSocket!, target).then(() => {
 				hide(activeMatchesModal);
-			};
+				hide(createMatchButton);
+				hide(searchForMatchButton);
+				show(startMatchButton);
+			});
 		}
 		show(activeMatchesModal);
 	});
 };
 
 startMatchButton.onclick = () => {
-
-	if (!userSocket || userSocket.readyState !== WebSocket.OPEN) {
-		alert("WebSocket not ready. Try again in a moment.");
-		return;
-	}
+    if (!userSocket) {
+        alert("WebSocket not ready");
+        return;
+    }
+	hide(startMatchButton);
 	show(waitingPlayers);
     playerJoinedMatch(userSocket!).then((joined_status) => {
     	if (joined_status === 0) {
     		hide(waitingPlayers);
-    		// hide(createMatchButton);
     	}
     	else if (joined_status === 1) {
-    		alert("idk, error");
+			hide(waitingPlayers);
+			show(startMatchButton);
+    		alert("Player couldnt join match");
     	}
     });
-
-	sendKeyPressEvents(userSocket!);
-	drawGame(userSocket!, canvas!, paddle!);
+	hide(waitingPlayers);
+	sendKeyPress(userSocket!, canvas!, paddle!);
 };

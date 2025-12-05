@@ -3,7 +3,7 @@ const LOGGER = require("../LOGGER.js");
 class User {
     
     constructor({ id, username, display_name, socket }) {
-        LOGGER(200, "User: ", "Constructor called for: " + username);
+        LOGGER(200, "User", "Constructor", "called for " + username);
         this.id = id;
         this.username = username;
         this.display_name = display_name;

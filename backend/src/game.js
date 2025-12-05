@@ -4,12 +4,12 @@ function joinMatchRequest(requestingUser, userManager, target_username) {
 
 	const match = userManager.addToMatch(requestingUser, target_username);
 	if (match === null) {
+		LOGGER(409, "server", "joinMatchRequest", "Match is already full");
 		requestingUser.send({ type: "JOIN_MATCH_RESPONSE", status: 409, target: null });
-		LOGGER(409, "joinMatchRequest: ", "Match is already full");
 		return ;
 	}
 	requestingUser.send({ type: "JOIN_MATCH_RESPONSE", status: 200, target: match.players[0].getUsername()});
-	LOGGER(200, "joinMatchRequest: ", "Match found for: " + match.players[1].getUsername() + " against " + match.players[0].getUsername());
+	LOGGER(200, "server", "joinMatchRequest", "Match found for: " + match.players[1].getUsername() + " against " + match.players[0].getUsername());
 }
 
 function searchMatchRequest(requestingUser, userManager) {
@@ -21,24 +21,24 @@ function searchMatchRequest(requestingUser, userManager) {
 		matches_names.push(match.players[0].getUsername());
 	}
 	if (matches_names.length === 0) {
-		LOGGER(409, "searchMatchRequest: ", "No available matches found");
+		LOGGER(409, "server", "searchMatchRequest", "No available matches found");
 		requestingUser.send({ type: "SEARCH_MATCH_RESPONSE", status: 409});
 		return ;
 	}
 	requestingUser.send({ type: "SEARCH_MATCH_RESPONSE", status: 200, matches: matches_names});
-	LOGGER(200, "searchMatchRequest: ", "Sent available matches");
+	LOGGER(200, "server", "searchMatchRequest", "Sent available matches");
 }
 
 function createMatchRequest(requestingUser, userManager) {
 
 	if (userManager.findMatch(requestingUser) !== null) {
-		LOGGER(409, "createMatchRequest: ", "Already in a match.");
+		LOGGER(409, "server", "createMatchRequest", "Already in a match.");
 		requestingUser.send({ type: "CREATE_MATCH_RESPONSE", status: 409, msg: "Already in a match." });
 		return ;
 	}
 	userManager.createMatch(requestingUser);
 	requestingUser.send({ type: "CREATE_MATCH_RESPONSE", status: 200, msg: "Match created."});
-	LOGGER(200, "createMatchRequest: ", "Sent Match created.");
+	LOGGER(200, "server", "createMatchRequest", "Sent Match created.");
 }
 
 function handleUserCommands(user, userManager) {
@@ -49,7 +49,7 @@ function handleUserCommands(user, userManager) {
 	    try {
 		    msg = JSON.parse(raw);
 	    } catch (err) {
-		    LOGGER("handleUserCommands: invalid json", 500);
+			LOGGER(500, "server", "handleUserCommands", "invalid json");
 		    return ;
 	    }
 		if (msg.type === "CREATE_MATCH_REQUEST") {
@@ -62,7 +62,7 @@ function handleUserCommands(user, userManager) {
 			joinMatchRequest(user, userManager, msg.target);
 		}
 		else if (msg.type === "READY_TO_JOIN") {
-			LOGGER(200, "playerJoinedMatch: ", "Sent match join");
+			LOGGER(200, "server", "playerJoinedMatch", "Sent match join");
 			if (user.currentMatch.players[0] === user) {
 				user.currentMatch.isReady[0] = true;
 			}
@@ -85,7 +85,7 @@ function buildGameSocketHandler(userManager, fastify) {
 
     const token = req.query.token;
     if (!token || token === "null") {
-		LOGGER(400, "buildGameSocketHandler:", "couldnt get token");
+		LOGGER(400, "server", "buildGameSocketHandler", "couldnt get token");
 		return conn.socket.close(1008);
 	}
 
@@ -93,13 +93,13 @@ function buildGameSocketHandler(userManager, fastify) {
     try {
 		payload = fastify.jwt.verify(token);
     } catch {
-		LOGGER(400, "buildGameSocketHandler:", "jwt.verify failed");
+		LOGGER(400, "server", "buildGameSocketHandler", "jwt.verify failed");
 		return conn.socket.close(1008);
     }
 
     const user = userManager.getUser(payload.id);
     if (!user) {
-		LOGGER(400, "buildGameSocketHandler:", "couldnt find user");
+		LOGGER(500, "server", "buildGameSocketHandler", "couldnt find user");
 		return conn.socket.close(1008);
 	}
 

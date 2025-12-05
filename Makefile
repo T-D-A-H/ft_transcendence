@@ -56,7 +56,7 @@ rf: # refresca el frontend por si hay cambios en src/
 	$(D_EXEC) $(FRONT_CONTAINER) sh $(FRONT_SCRIPT)
 
 rn:
-	$(D_COMPOSE) up $(DETTACHED) $(NGINX_SERVICE)
+	$(D_COMPOSE) restart $(NGINX_SERVICE)
 
 rfn: rf rn
 
@@ -69,7 +69,7 @@ rd: # resetea la base de datos a 0 sin construir imagen
 	$(D_RUN) --rm -v $(DB_BACK_VOLUME) alpine sh -c 'rm -f /data/database.sqlite || true'
 	$(D_COMPOSE) restart $(DATABASE_SERVICE) $(BACK_SERVICE)
 
-rdb: rd
+rdb: rd rb
 
 rall: rfn rd # Recompilar backend, database, frontend, nginx , borrar volumenes y ejecutar scripts
 
