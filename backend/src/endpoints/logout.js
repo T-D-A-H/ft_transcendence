@@ -20,7 +20,7 @@ function buildLogoutHandler(userManager, fastify) {
 			const userId = decoded.id;
 
 			// Obtener usuario
-			const player = userManager.getUser(userId);
+			const player = userManager.getUserByID(userId);
 			if (player) {
 				if (player.socket)
 					player.socket.close();

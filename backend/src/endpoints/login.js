@@ -58,7 +58,7 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 			// Generar código 2FA (6 dígitos)
 			const code = Math.floor(100000 + Math.random() * 900000);
 
-			let player = userManager.getUser(user.id);
+			let player = userManager.getUserByID(user.id);
 			if (!player) {
 				player = new User({
 					id: user.id,
@@ -96,7 +96,7 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 			});
 		}
 
-		let player = userManager.getUser(user.id);
+		let player = userManager.getUserByID(user.id);
 		if (!player) {
 			player = new User({
 				id: user.id,

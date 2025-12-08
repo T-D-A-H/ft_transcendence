@@ -83,12 +83,6 @@ export function hideLoader() {
 	hide(loadAnimation);
 }
 
-export const createMatchButton = // Create match button element
-	document.getElementById("create_match") as HTMLButtonElement;
-
-export const searchForMatchButton = // Look for match button element
-	document.getElementById("search_match") as HTMLButtonElement;
-
 export const startMatchButton = // Start match button element
 	document.getElementById("start_match") as HTMLButtonElement;
 
@@ -144,4 +138,34 @@ export function show(elem: HTMLElement): void { // show HTML element
 export function hide(elem: HTMLElement): void { // hide HTML
 	elem.classList.add("hidden"); 
 }
+
+
+
+export const playAgainstUserButton =
+	document.getElementById("play_against_user") as HTMLButtonElement;
+
+export const playRequestModal =
+	document.getElementById("play_request_modal") as HTMLDivElement;
+
+export const playRequestUsernameInput =
+	document.getElementById("play_request_username") as HTMLInputElement;
+
+export const playRequestCloseButton =
+	document.getElementById("close_play_request") as HTMLButtonElement;
+
+export const playRequestSendButton =
+	document.getElementById("send_play_request") as HTMLButtonElement;
+
+	
+export const incomingPlayRequestModal =
+	document.getElementById("incoming_play_request_modal") as HTMLDivElement;
+
+export const incomingPlayRequestText =
+	document.getElementById("incoming_play_request_text") as HTMLParagraphElement;
+
+export const incomingPlayRequestCloseButton =
+	document.getElementById("incoming_play_request_close") as HTMLButtonElement;
+
+export const incomingPlayRequestAcceptButton =
+	document.getElementById("incoming_play_request_accept") as HTMLButtonElement;
 

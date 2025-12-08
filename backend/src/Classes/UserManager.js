@@ -74,15 +74,17 @@ class UserManager {
         return false;
     }
 
+    
+
     // Obtener usuario por ID
-    getUser(userId) {
+    getUserByID(userId) {
         return this.users.get(userId);
     }
 
-    // Obtener usuario por nombre
-    getUserByDisplayName(displayName) {
+    // Obtener usuario por username
+    getUserByUsername(username) {
         for (const user of this.users.values()) {
-            if (user.display_name === displayName) {
+            if (user.display_name === username) {
                 return user;
             }
         }
@@ -131,9 +133,9 @@ class UserManager {
         LOGGER(200, "UserManager", "createMatch", user.getUsername());
         const match_id = this.match_id;
 		const match = new Match(user, match_id);
-		user.currentMatch = match;
         this.matches.set(match_id, match);
         this.match_id++;
+        return (match);
 	}
 
     findMatch(user) {
@@ -175,16 +177,15 @@ class UserManager {
         return (current_matches);
     }
 
-    addToMatch(user, target_username) {
-
+    addToMatch(requestingUser, user) {
 
         const matches = this.getAllMatches();
         for (const match of matches) {
 
-            if (match.players[0].getUsername() === target_username) {
+            if (match.players[0] === user) {
 
                 if (match.players[1] === null) {
-                    match.addUserToMatch(user);
+                    match.addUserToMatch(requestingUser);
                     match.players[0].setMatch(match);
                     match.players[1].setMatch(match);
                     LOGGER(200, "UserManager", "addToMatch", "Added " + user.getUsername() + " to match["  + match.id + "] against " + match.players[0].getUsername());

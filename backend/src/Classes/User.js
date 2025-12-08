@@ -11,6 +11,8 @@ class User {
         this.score = 0;
         this.isConnected = false;
         this.currentMatch = null;
+        this.isPlaying = false;
+        this.pendingMatchRequests = new Map();
     }
 
     // Enviar mensaje al jugador vía WebSocket
@@ -47,12 +49,47 @@ class User {
     }
     
     setMatch(match) {
+
         this.currentMatch = match;
     }
 
     unsetMatch() {
         this.currentMatch = null;
     }
+
+    setIsPlaying() {
+        this.isPlaying = true;
+    }
+
+    unsetIsPlaying() {
+        this.isPlaying = false;
+    }
+
+
+
+	addPendingRequest(target_user) {
+		if (!this.pendingMatchRequests.has(target_user.username)) {
+			this.pendingMatchRequests.set(target_user.username, target_user);
+		}
+	}
+
+
+	removePendingRequest(target_user) {
+		const key = target_user.username;
+		this.pendingMatchRequests.delete(key);
+	}
+
+
+	hasPendingRequest(target_user) {
+		const key = target_user.username;
+		return this.pendingMatchRequests.has(key);
+	}
+
+	
+	listPendingRequests() {
+		return Array.from(this.pendingMatchRequests.values());
+	}
+
 
     getId() {return this.id;}
     getUsername() {return this.username;}
@@ -61,6 +98,7 @@ class User {
     getScore() {return this.score;}
     getIsConnected() {return this.isConnected;}
     getCurrentMatch() {return this.currentMatch;}
+    getIsPlaying() {return this.isPlaying;}
 }
 
 module.exports = User;

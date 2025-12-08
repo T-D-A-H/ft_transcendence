@@ -3,21 +3,26 @@ import {
 	usernameInput, passwordInput, logoutButton,
 	registerModal, openRegisterButton, closeRegisterButton, submitRegisterButton,
 	regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput,
-	startMatchButton, searchForMatchButton, createMatchButton, waitingPlayers,
+	startMatchButton, waitingPlayers,
 	activeMatchesModal, playersListUL, renderMatchList,
 	show, hide, canvas, paddle, twoFAModal, twoFAOptionModal, twoFAEmailButton,
-	twoFASkipButton, twoFASubmitButton, twoFAInput, loadAnimation, showLoader, hideLoader} from "./ui.js";
+	twoFASkipButton, twoFASubmitButton, twoFAInput, loadAnimation, showLoader, hideLoader,
+	playAgainstUserButton, playRequestModal, playRequestUsernameInput, playRequestCloseButton,
+	playRequestSendButton, incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton
+} from "./ui.js";
 
 import { registerUser,  loginUser } from "./login-register.js"
 import { initializeWebSocket } from "./websocket.js";
-import { sendKeyPress, playerJoinedMatch, joinMatch, createNewMatch, searchForMatch } from "./events.js";
+import { sendKeyPress, sendInviteToPlayer, sendStartMatch} from "./send-events.js";
 
 
 if (!loginModal || !openLoginButton || !closeLoginButton || !submitLoginButton || !usernameInput || !passwordInput || !logoutButton ||
 	!registerModal || !openRegisterButton || !closeRegisterButton || !submitRegisterButton || !regUsernameInput || !regDisplaynameInput || !regEmailInput || !regPasswordInput ||
-	!startMatchButton || !searchForMatchButton || !createMatchButton || !waitingPlayers || !activeMatchesModal || !playersListUL || !renderMatchList ||
+	!startMatchButton || !waitingPlayers || !activeMatchesModal || !playersListUL || !renderMatchList ||
 	!twoFAModal || !twoFAOptionModal || !twoFAEmailButton || !twoFASkipButton || !twoFASubmitButton || twoFAInput || !loadAnimation ||
-	!show || !hide || !canvas || !paddle) {
+	!show || !hide || !canvas || !paddle || 
+	!playAgainstUserButton || !playRequestModal || !playRequestUsernameInput || !playRequestCloseButton || !playRequestSendButton ||
+	!playRequestSendButton || !incomingPlayRequestModal || !incomingPlayRequestText || !incomingPlayRequestCloseButton || !incomingPlayRequestAcceptButton) {
 		console.error("One or more UI elements are missing");
 }
 
@@ -29,6 +34,8 @@ openLoginButton.onclick = () => show(loginModal);
 closeLoginButton.onclick = () => hide(loginModal);
 openRegisterButton.onclick = () => show(registerModal);
 closeRegisterButton.onclick = () => hide(registerModal);
+playAgainstUserButton.onclick = () => show(playRequestModal);
+incomingPlayRequestCloseButton.onclick = () => hide(incomingPlayRequestModal);
 
 showLoader();
 
@@ -186,17 +193,13 @@ logoutButton.onclick = async () => {
 	let token = localStorage.getItem("token");
 	const res = await fetch("/logout", {
 		method: "POST",
-		headers: { 
-			"Content-Type": "application/json",
-		},
+		headers: { "Content-Type": "application/json",},
 		body: JSON.stringify({ token })
 	});
 
 	const data = await res.json();
 	if (data.status === "ok") {
 		localStorage.removeItem("token");
-		hide(createMatchButton);
-		hide(searchForMatchButton);
 		hide(logoutButton);
 		hide(startMatchButton);
 		show(openLoginButton);
@@ -204,73 +207,100 @@ logoutButton.onclick = async () => {
 	}
 };
 
-createMatchButton.onclick = () => {
-    if (!userSocket) {
-        alert("WebSocket not ready");
-        return;
-    }
+playRequestSendButton.onclick = () => {
 
-	createNewMatch(userSocket!).then((new_match_status) => {
-		if (new_match_status === 0) {
-			alert("Match created");
-			hide(createMatchButton);
-			hide(searchForMatchButton);
-			show(startMatchButton);
-			// hide(createMatchButton);
-		}
-		else if (new_match_status === 1) {
-			alert("Match already created.");
-		}
-		else if (new_match_status === 2) {
-			alert("An error occured creating your match.")
-		}
-	});
-}
+	const target_username = playRequestUsernameInput.value.trim();
+		if (target_username.length === 0) {
+		alert("Username field empty");
+		return ;
+	}
+	sendInviteToPlayer(userSocket!, target_username).then((result) => {
 
-searchForMatchButton.onclick = () => {
-	if (!userSocket) {
-        alert("WebSocket not ready");
-        return;
-    }
-
-	searchForMatch(userSocket!).then((matches) => {
-
-		if (!matches) {
-			alert("No Matches found.");
-			hide(activeMatchesModal);
-			return;
+		if (!result) {
+			alert("No response from server");
+			return ;
 		}
-		const joinButtons = renderMatchList(matches!);
-		for (const btn of joinButtons) {
-			const target = btn.dataset.username!;
-			btn.onclick = () => joinMatch(userSocket!, target).then(() => {
-				hide(activeMatchesModal);
-				hide(createMatchButton);
-				hide(searchForMatchButton);
-				show(startMatchButton);
-			});
+		const { status, msg } = result;
+		if (status !== 200) {
+			alert(msg);
+			return ;
 		}
-		show(activeMatchesModal);
+		alert(msg);
+		hide(playRequestModal);
 	});
 };
 
+
 startMatchButton.onclick = () => {
+
     if (!userSocket) {
         alert("WebSocket not ready");
         return;
     }
 	hide(startMatchButton);
 	show(waitingPlayers);
-    playerJoinedMatch(userSocket!).then((joined_status) => {
-    	if (joined_status === 0) {
-    		hide(waitingPlayers);
-    	}
-    	else if (joined_status === 1) {
-			hide(waitingPlayers);
-			show(startMatchButton);
-    		alert("Player couldnt join match");
-    	}
+    sendStartMatch(userSocket!).then((result) => {
+
+		if (!result) {
+			alert("No response from server");
+			return ;
+		}
+		const { status, msg } = result;
+		if (status !== 200) {
+			alert(msg);
+			return ;
+		}
+		hide(waitingPlayers);
+		sendKeyPress(userSocket!, canvas!, paddle!);
     });
-	hide(waitingPlayers);
-	sendKeyPress(userSocket!, canvas!, paddle!);
 };
+
+// createMatchButton.onclick = () => {
+//     if (!userSocket) {
+//         alert("WebSocket not ready");
+//         return;
+//     }
+
+// 	createNewMatch(userSocket!).then((new_match_status) => {
+// 		if (new_match_status === 0) {
+// 			alert("Match created");
+// 			hide(createMatchButton);
+// 			hide(searchForMatchButton);
+// 			show(startMatchButton);
+// 			// hide(createMatchButton);
+// 		}
+// 		else if (new_match_status === 1) {
+// 			alert("Match already created.");
+// 		}
+// 		else if (new_match_status === 2) {
+// 			alert("An error occured creating your match.")
+// 		}
+// 	});
+// };
+
+// searchForMatchButton.onclick = () => {
+// 	if (!userSocket) {
+//         alert("WebSocket not ready");
+//         return;
+//     }
+
+// 	searchForMatch(userSocket!).then((matches) => {
+
+// 		if (!matches) {
+// 			alert("No Matches found.");
+// 			hide(activeMatchesModal);
+// 			return;
+// 		}
+// 		const joinButtons = renderMatchList(matches!);
+// 		for (const btn of joinButtons) {
+// 			const target = btn.dataset.username!;
+// 			btn.onclick = () => joinMatch(userSocket!, target).then(() => {
+// 				hide(activeMatchesModal);
+// 				hide(createMatchButton);
+// 				hide(searchForMatchButton);
+// 				show(startMatchButton);
+// 			});
+// 		}
+// 		show(activeMatchesModal);
+// 	});
+// };

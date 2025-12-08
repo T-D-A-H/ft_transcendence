@@ -22,6 +22,13 @@ class Match {
 		this.isWaiting = false; 
 	}
 
+	setReady(user) {
+		const i = this.players.indexOf(user);
+		if (i !== -1)
+			this.isReady[i] = true;
+		LOGGER(200, "Match", "setReady", user.getUsername() + " is now ready to start match.");
+	}
+
     broadcast(msg) {
 		const data = JSON.stringify(msg);
 		this.players.forEach(user => {

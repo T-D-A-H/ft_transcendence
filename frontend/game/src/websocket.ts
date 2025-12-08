@@ -1,5 +1,14 @@
-import { receiveMessages } from "./events.js";
-import {openLoginButton, openRegisterButton, createMatchButton, searchForMatchButton, logoutButton, show, hide, showLoader, hideLoader } from "./ui.js"
+import { receiveMessages } from "./receive-events.js";
+import {openLoginButton, openRegisterButton, playAgainstUserButton,
+        logoutButton, show, hide, showLoader, hideLoader} from "./ui.js"
+
+function showButtons() {
+    hideLoader();
+	hide(openLoginButton);
+	hide(openRegisterButton);
+    show(playAgainstUserButton);
+	show(logoutButton);
+}
 
 export function initializeWebSocket(token: string) {
 
@@ -8,13 +17,7 @@ export function initializeWebSocket(token: string) {
         const ws = new WebSocket(`ws://localhost:4000/proxy-game?token=${token}`);
 
         ws.onopen = () => {
-            hideLoader();
-			hide(openLoginButton);
-			hide(openRegisterButton);
-			show(createMatchButton);
-			show(searchForMatchButton);
-			show(logoutButton);
-            console.log("WebSocket connected");
+            showButtons();
             receiveMessages(ws);
             resolve(ws);
         };
@@ -32,3 +35,4 @@ export function initializeWebSocket(token: string) {
         };
     });
 }
+
