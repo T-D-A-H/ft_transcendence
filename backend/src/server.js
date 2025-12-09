@@ -30,26 +30,27 @@ async function startServer() {
 
 	// ✅ UN SOLO ENDPOINT DE LOGIN (unificado y seguro)
 	const loginHandler = buildLoginHandler(db, bcrypt, userManager, fastify);
-	fastify.post("/login", loginHandler);
+	fastify.post("/api/login", loginHandler);
 
 	// ✅ Verificación de código 2FA
 	const verify2FAmail = verify2FACode(userManager, fastify);
-	fastify.post("/verify-2fa-mail", verify2FAmail);
+	fastify.post("/api/verify-2fa-mail", verify2FAmail);
 
 	// ✅ Registro de usuarios
 	const registerHandler = buildRegisterHandler(db, bcrypt, saltRounds, fastify);
-	fastify.post("/register", registerHandler);
+	fastify.post("/api/sign-up", registerHandler);
 
 	// ✅ SET 2FA de usuarios
 	const buildSet2FAHandler = require('./endpoints/set2FA');
-	fastify.post("/set-2fa", buildSet2FAHandler(db, fastify));
+	fastify.post("/api/set-2fa", buildSet2FAHandler(db, fastify));
 
 	// ✅ WebSocket del juego
 	const initGameSocket = buildGameSocketHandler(userManager, fastify);
 	fastify.get("/proxy-game", { websocket: true }, initGameSocket);
 
+	// ✅ Logout del juego
 	const buildLogoutHandler = require('./endpoints/logout');
-	fastify.post("/logout", buildLogoutHandler(userManager, fastify));
+	fastify.post("/api/logout", buildLogoutHandler(userManager, fastify));
 
 	setInterval(() => {
 	    userManager.matches.forEach(match => {

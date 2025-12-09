@@ -12,7 +12,17 @@ export async function registerUser(
 	};
 
 	try {
-		const res = await fetch("/proxy-register", {
+		// ! Descomentar cuando este completo
+/* 		const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+		if (!PASSWORD_REGEX.test(passwordInput.value)) {
+			alert("Contraseña insegura");
+			return { 
+				status: 1
+			};
+		} */
+
+		const res = await fetch("/api/sign-up", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(body),

@@ -13,6 +13,7 @@ import { login } from "./login.js"
 import { createNewMatch, searchForMatch, joinMatch, playerJoinedMatch} from "./match.js"
 import { sendKeyPressEvents } from "./keypress.js";
 import { drawGame } from "./draw.js";
+import { set2FA } from "./set2FA.js";
 
 
 if (!loginModal || !openLogin || !closeLogin || !submitLoginButton ||
@@ -112,7 +113,7 @@ submitLoginButton.onclick = async () => {
 				
 				showLoader();
 				try {
-					const res = await fetch("/verify-2fa-mail", {
+					const res = await fetch("/api/verify-2fa-mail", {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
 						body: JSON.stringify({ 
@@ -170,55 +171,39 @@ submitLoginButton.onclick = async () => {
 };
 
 submitRegisterButton.onclick = async () => {
-	const result = await registerUser(regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput);
+	const result = await registerUser(
+		regUsernameInput,
+		regDisplaynameInput,
+		regEmailInput,
+		regPasswordInput
+	);
 
-	if (result.status === 0 && result.userId && result.setupToken) {
-		show(twoFAOptionModal);
+	if (result.status !== 0 || !result.userId || !result.setupToken) return;
 
-		twoFAEmailButton.onclick = async () => {
-			const res = await fetch("/set-2fa", {
-				method: "POST",
-				headers: { 
-					"Content-Type": "application/json",
-					"Authorization": `Bearer ${result.setupToken}`
-				},
-				body: JSON.stringify({ method: "2FAmail" })
-			});
-			const data = await res.json();
-			if (data.status === "ok") {
-				hide(twoFAOptionModal);
-				hide(registerModal);
-				show(loginModal);
-			} else {
-				alert(data.error || "Error al configurar 2FA");
-			}
+	show(twoFAOptionModal);
+
+	twoFAEmailButton.onclick = async () => {
+		const data = await set2FA("2FAmail", result.setupToken);
+		if (data.status === "ok") {
 			hide(twoFAOptionModal);
 			hide(registerModal);
 			show(loginModal);
-		};
+		} else {
+			alert(data.error || "Error al configurar 2FA");
+		}
+	};
 
-		twoFASkipButton.onclick = async () => {
-			const res = await fetch("/set-2fa", {
-				method: "POST",
-				headers: { 
-					"Content-Type": "application/json",
-					"Authorization": `Bearer ${result.setupToken}`
-				},
-				body: JSON.stringify({ method: "skip" })
-			});
-
-			const data = await res.json();
-			if (data.status === "ok") {
-				hide(twoFAOptionModal);
-				hide(registerModal);
-				show(loginModal);
-			} else {
-				alert(data.error || "Error al configurar 2FA");
-			}
-		};
-	}
+	twoFASkipButton.onclick = async () => {
+		const data = await set2FA("skip", result.setupToken);
+		if (data.status === "ok") {
+			hide(twoFAOptionModal);
+			hide(registerModal);
+			show(loginModal);
+		} else {
+			alert(data.error || "Error al configurar 2FA");
+		}
+	};
 };
-
 
 logoutButton.onclick = async () => {
 	if (userSocket) {
@@ -226,7 +211,7 @@ logoutButton.onclick = async () => {
 		userSocket = null;
 	}
 	let token = localStorage.getItem("token");
-	const res = await fetch("/logout", {
+	const res = await fetch("/api/logout", {
 		method: "POST",
 		headers: { 
 			"Content-Type": "application/json",

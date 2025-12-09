@@ -13,6 +13,16 @@ function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
 		}
 
 		try {
+			// ! Descomentar cuando este completo
+/* 			const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+			
+			if (!PASSWORD_REGEX.test(password)) {
+				return reply.code(400).send({
+					status: "error",
+					error: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo"
+				});
+			} */
+
 			// Hash de la contraseña
 			const hashed = await bcrypt.hash(password, saltRounds);
 
