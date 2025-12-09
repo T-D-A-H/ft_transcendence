@@ -45,7 +45,7 @@ function hideLoader() {
 // Función para inicializar la conexión WebSocket con el token
 function initializeWebSocket(token: string) {
 	showLoader();
-	userSocket = new WebSocket(`ws://localhost:4000/proxy-game?token=${token}`);
+	userSocket = new WebSocket(`wss://localhost:4000/proxy-game?token=${token}`);
 	userSocket.onopen = () => {
 		console.log("User WebSocket connected");
 		show(startMatchButton);
