@@ -34,6 +34,20 @@ services:
     networks:
       - ft_transcendence
 
+  blockchain:
+    container_name: ft_blockchain
+    build:
+      context: ./database/blokchain
+      dockerfile: Dockerfile
+    user: "root"
+    ports:
+      - "8545:8545"
+    volumes:
+      - ./database/blokchain:/app
+    restart: unless-stopped
+    networks:
+      - ft_transcendence
+
   frontend:
     container_name: ft_frontend
     build:
