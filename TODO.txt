@@ -1,0 +1,34 @@
+TORNEOS
+- Crear clase en backend que permite tener varios matches
+- Tener un SCORE por cada partida
+- Poder crear un torneo de 2/3/4/5 jugadores en frotnend y backend
+- 
+
+PARTIDA
+- Buscar players por codigo
+
+
+FRONTEND
+- Tener un listener global de eventos
+- Poder jugar en mismo ordenador
+- Poder jugar contra AI 
+(TODO ESTO TIENE QUE PASAR EN EL BACKEND)
+
+AI
+- contenedor que le manda al backend?
+
+BACKEND
+
+- Aceptar poder mandar movimientos de dos jugadores desde el frontend
+- Gestion de Errores:
+  - usuario intenta hacer doble login
+  - usuario intenta hacer doble registro
+  - usuario intenta hacer doble create match
+  - usuario intenta hacer doble join match
+  (TODO DEBERIA DE FUNCIONAR con intentos en el frontend)
+  (TODO DEBERIA FUNCIONAR a traves de la terminal)
+
+- SQL injections
+
+
+

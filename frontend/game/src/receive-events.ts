@@ -1,21 +1,26 @@
 
-import {show, hide, incomingPlayRequestText, incomingPlayRequestModal, incomingPlayRequestAcceptButton, startMatchButton } from "./ui.js"
-import { replyToInvite } from "./send-events.js"
 
-export interface StatusAndMsg {status: number; msg: string;}
+interface SendInviteResponse         {type: "SEND_INVITE_RESPONSE"; status: number; to: string; msg: string;}
+interface ReplyInviteResponse        {type: "REPLY_INVITE_RESPONSE"; status: number; to: string; msg: string;}
+interface IncomingInviteRequest      {type: "INCOMING_INVITE_REQUEST"; from: string; msg: string;}
+interface IncomingInviteResponse     {type: "INCOMING_INVITE_RESPONSE"; from: string; msg: string;}
+interface StartMatchResponse         {type: "START_MATCH_RESPONSE"; status: number; msg: string;}
+interface DrawMessage                {type: "DRAW"; playerY1: number; ballY: number, ballX: number, playerY2: number;}
 
-interface SendInviteResponse      {type: "SEND_INVITE_RESPONSE"; status: number; to: string; msg: string;}
-interface ReplyInviteResponse     {type: "REPLY_INVITE_RESPONSE"; status: number; to: string; msg: string;}
-interface IncomingInviteRequest   {type: "INCOMING_INVITE_REQUEST"; from: string; msg: string;}
-interface IncomingInviteResponse  {type: "INCOMING_INVITE_RESPONSE"; from: string; msg: string;}
-interface StartMatchResponse      {type: "START_MATCH_RESPONSE"; status: number; msg: string;}
-interface DrawMessage             {type: "DRAW"; playerY1: number; ballY: number, ballX: number, playerY2: number;};
-// interface SearchMatchResponse {type: "SEARCH_MATCH_RESPONSE"; status: number; matches: string[];}
+interface IncomingTournamentResponse {type: "INCOMING_TOURNAMENT_RESPONSE"; status: number; msg: string;}
+interface CreateTournamentResponse   {type: "CREATE_TOURNAMENT_RESPONSE"; status: number; msg: string;}
+interface SearchTournamentResponse   {type: "SEARCH_TOURNAMENT_RESPONSE"; status: number; tournaments: string[];}
+interface JoinTournamentResponse     {type: "JOIN_TOURNAMENT_RESPONSE"; status: number; msg: string;}
+interface StartTournamentResponse    {type: "START_TOURNAMENT_RESPONSE"; status: number; msg: string;}
+
 
 type ServerMessage = 
-SendInviteResponse   | ReplyInviteResponse   |
-IncomingInviteRequest | IncomingInviteResponse |
-StartMatchResponse    | DrawMessage;
+SendInviteResponse         | ReplyInviteResponse      |
+IncomingInviteRequest      | IncomingInviteResponse   |
+StartMatchResponse         | StartTournamentResponse  |
+CreateTournamentResponse   | SearchTournamentResponse |
+IncomingTournamentResponse | JoinTournamentResponse   |
+DrawMessage;
 
 
 const handlers: Record<string, ((data: ServerMessage) => void)[]> = {};
@@ -40,8 +45,6 @@ export function registerHandler<T extends ServerMessage>(type: T["type"], fn: (d
 
 export function receiveMessages(userSocket: WebSocket) {
 
-	incomingInviteRequestHandler(userSocket!);
-	incomingInviteResponsesHandler();
 	userSocket.addEventListener("message", (event: MessageEvent) => {
 
 		let data: ServerMessage;
@@ -56,50 +59,6 @@ export function receiveMessages(userSocket: WebSocket) {
 			fns.slice().forEach(fn => fn(data));
 	});
 }
-
-
-
-function incomingInviteRequestHandler(userSocket: WebSocket) {
-
-// IncomingInviteRequest  {type: "INCOMING_INVITE_REQUEST"; from: string; msg: string;}
-	registerHandler("INCOMING_INVITE_REQUEST", (data) => {
-
-        if (data.type !== "INCOMING_INVITE_REQUEST")
-            return ;
-
-		incomingPlayRequestText.textContent = data.msg;
-		show(incomingPlayRequestModal);
-		incomingPlayRequestAcceptButton.onclick = () => {
-			replyToInvite(userSocket, data.from).then((result) => {
-
-				if (!result) {
-					alert("No response from server");
-					return ;
-				}
-				const { status, msg } = result;
-				// alert(msg);
-				if (status === 200)
-					show(startMatchButton);
-			});
-			hide(incomingPlayRequestModal);
-		};
-	}, false);
-}
-
-
-
-function incomingInviteResponsesHandler() {
-
-// IncomingInviteResponse  {type: "INCOMING_INVITE_RESPONSE"; status: boolean; from: string; msg: string;}
-	registerHandler("INCOMING_INVITE_RESPONSE", (data) => {
-
-        if (data.type !== "INCOMING_INVITE_RESPONSE")
-            return ;
-		alert(data.msg);
-		show(startMatchButton);
-	}, false);
-}
-
 
 
 

@@ -8,7 +8,7 @@
 	<body class="bg-gray-900 text-white h-screen">
 
 		<!-- Loadinf screen -->
-		<div id="initial_loader" class="fixed inset-0 flex items-center justify-center bg-gray-900 z-50">
+		<div id="load_animation_modal" class="fixed inset-0 flex items-center justify-center bg-gray-900 z-50">
 			<div class="text-center">
 				<!-- Spinner animado -->
 				<div class="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mb-4"></div>
@@ -23,7 +23,7 @@
 				<!-- Login button -->
 				<button id="open_login"
 					class="px-4 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm hidden">
-					Sign In
+					Log in
 				</button>
 			
 				<!-- Register button -->
@@ -38,6 +38,17 @@
 					Play Against User
 				</button>
 
+				<!-- Create Tournament Button (hidden) -->
+				<button id="create_tournament"
+					class="px-4 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm hidden">
+					Create Tournament
+				</button>
+
+				<!-- Search Tournament Button (hidden) -->
+				<button id="search_tournament"
+					class="px-4 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm hidden">
+					Search Tournaments
+				</button>
 
 				<!-- Start Match button -->
 				<button id="start_match"
@@ -123,11 +134,11 @@
 
 
 		<!-- Active players modal -->
-		<div id="active_matches_modal"
+		<div id="active_tournaments_modal"
 			class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 hidden">
 			<div class="bg-gray-800 p-6 rounded-lg w-80">
-				<h3 class="mb-2 text-sm">Players Waiting</h3>
-				<ul id="players_list_ul" class="text-xs flex flex-col gap-2"></ul>
+				<h3 class="mb-2 text-sm">Open Tournaments</h3>
+				<ul id="tournament_list_ul" class="text-xs flex flex-col gap-2"></ul>
 			</div>
 		</div>
 

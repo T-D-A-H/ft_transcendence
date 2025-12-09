@@ -1,3 +1,16 @@
+
+export const loadAnimation = // Initial loader Modal
+	document.getElementById("load_animation_modal") as HTMLDivElement;
+
+export function showLoader() { // show Loading animation
+	show(loadAnimation);
+}
+
+export function hideLoader() { // hide Loading animation
+	hide(loadAnimation);
+}
+
+
 export const loginModal = // Login Box element
 	document.getElementById("login_modal") as HTMLDivElement;
 
@@ -16,9 +29,11 @@ export const passwordInput = // Password entered in login box
 export const submitLoginButton = // Submit info in login box
 	document.getElementById("login_submit_button") as HTMLButtonElement;
 
+
+
+
 export const logoutButton = // Logout Button
 	document.getElementById("logout_button") as HTMLButtonElement;
-
 
 
 
@@ -71,17 +86,7 @@ export const twoFAAuthButton =  // 2FA via AUTH Button
 	document.getElementById("twofa_auth_button") as HTMLButtonElement;
 
 
-	
-export const loadAnimation = // Initial loader Modal
-	document.getElementById("initial_loader") as HTMLDivElement;
 
-export function showLoader() {
-	show(loadAnimation);
-}
-
-export function hideLoader() {
-	hide(loadAnimation);
-}
 
 export const startMatchButton = // Start match button element
 	document.getElementById("start_match") as HTMLButtonElement;
@@ -89,15 +94,56 @@ export const startMatchButton = // Start match button element
 export const waitingPlayers = // Waiting for players element
 	document.getElementById("waiting_players") as HTMLButtonElement;
 
-export const activeMatchesModal = // Container showing waiting players
-	document.getElementById("active_matches_modal") as HTMLDivElement;
 
-export const playersListUL = // UL element where usernames will be inserted
-	document.getElementById("players_list_ul") as HTMLUListElement;
 
-export function renderMatchList(matches: string[]): HTMLButtonElement[] {
+export const playAgainstUserButton =
+	document.getElementById("play_against_user") as HTMLButtonElement;
 
-	playersListUL.innerHTML = "";
+export const playRequestModal =
+	document.getElementById("play_request_modal") as HTMLDivElement;
+
+export const playRequestUsernameInput =
+	document.getElementById("play_request_username") as HTMLInputElement;
+
+export const playRequestCloseButton =
+	document.getElementById("close_play_request") as HTMLButtonElement;
+
+export const playRequestSendButton =
+	document.getElementById("send_play_request") as HTMLButtonElement;
+
+	
+
+
+export const incomingPlayRequestModal =
+	document.getElementById("incoming_play_request_modal") as HTMLDivElement;
+
+export const incomingPlayRequestText =
+	document.getElementById("incoming_play_request_text") as HTMLParagraphElement;
+
+export const incomingPlayRequestCloseButton =
+	document.getElementById("incoming_play_request_close") as HTMLButtonElement;
+
+export const incomingPlayRequestAcceptButton =
+	document.getElementById("incoming_play_request_accept") as HTMLButtonElement;
+
+
+
+
+export const createTournamentButton = // Create a match button
+	document.getElementById("create_tournament") as HTMLButtonElement;
+
+export const searchTournamentButton = // Search for matches button
+	document.getElementById("search_tournament") as HTMLButtonElement;
+
+export const activeTournamentsModal = // Container showing waiting players
+	document.getElementById("active_tournaments_modal") as HTMLDivElement;
+
+export const tournamentsListUL = // UL element where usernames will be inserted
+	document.getElementById("tournament_list_ul") as HTMLUListElement;
+
+export function renderTournamentList(matches: string[]): HTMLButtonElement[] {
+
+	tournamentsListUL.innerHTML = "";
 
 	const joinButtons: HTMLButtonElement[] = [];
 
@@ -119,8 +165,7 @@ export function renderMatchList(matches: string[]): HTMLButtonElement[] {
 
 		joinButtons.push(joinBtn);
 	}
-
-	return joinButtons;
+	return (joinButtons);
 }
 
 
@@ -138,34 +183,3 @@ export function show(elem: HTMLElement): void { // show HTML element
 export function hide(elem: HTMLElement): void { // hide HTML
 	elem.classList.add("hidden"); 
 }
-
-
-
-export const playAgainstUserButton =
-	document.getElementById("play_against_user") as HTMLButtonElement;
-
-export const playRequestModal =
-	document.getElementById("play_request_modal") as HTMLDivElement;
-
-export const playRequestUsernameInput =
-	document.getElementById("play_request_username") as HTMLInputElement;
-
-export const playRequestCloseButton =
-	document.getElementById("close_play_request") as HTMLButtonElement;
-
-export const playRequestSendButton =
-	document.getElementById("send_play_request") as HTMLButtonElement;
-
-	
-export const incomingPlayRequestModal =
-	document.getElementById("incoming_play_request_modal") as HTMLDivElement;
-
-export const incomingPlayRequestText =
-	document.getElementById("incoming_play_request_text") as HTMLParagraphElement;
-
-export const incomingPlayRequestCloseButton =
-	document.getElementById("incoming_play_request_close") as HTMLButtonElement;
-
-export const incomingPlayRequestAcceptButton =
-	document.getElementById("incoming_play_request_accept") as HTMLButtonElement;
-

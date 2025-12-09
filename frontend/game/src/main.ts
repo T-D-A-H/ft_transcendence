@@ -1,14 +1,15 @@
 import { 
-	loginModal, openLoginButton, closeLoginButton, submitLoginButton,
-	usernameInput, passwordInput, logoutButton,
-	registerModal, openRegisterButton, closeRegisterButton, submitRegisterButton,
+	loadAnimation, showLoader, hideLoader, 
+	loginModal, openLoginButton, closeLoginButton, logoutButton,
+	usernameInput, passwordInput, submitLoginButton,
+	registerModal, openRegisterButton, closeRegisterButton, submitRegisterButton, 
 	regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput,
-	startMatchButton, waitingPlayers,
-	activeMatchesModal, playersListUL, renderMatchList,
-	show, hide, canvas, paddle, twoFAModal, twoFAOptionModal, twoFAEmailButton,
-	twoFASkipButton, twoFASubmitButton, twoFAInput, loadAnimation, showLoader, hideLoader,
-	playAgainstUserButton, playRequestModal, playRequestUsernameInput, playRequestCloseButton,
-	playRequestSendButton, incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton
+	twoFAModal, twoFAOptionModal, twoFAEmailButton, twoFASubmitButton, twoFASkipButton, twoFAAuthButton, twoFAInput,
+	startMatchButton, waitingPlayers, 
+	playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton,
+	incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton,
+	createTournamentButton, searchTournamentButton, activeTournamentsModal, tournamentsListUL, renderTournamentList,
+	canvas, paddle, show, hide
 } from "./ui.js";
 
 import { registerUser,  loginUser } from "./login-register.js"
@@ -16,13 +17,17 @@ import { initializeWebSocket } from "./websocket.js";
 import { sendKeyPress, sendInviteToPlayer, sendStartMatch} from "./send-events.js";
 
 
-if (!loginModal || !openLoginButton || !closeLoginButton || !submitLoginButton || !usernameInput || !passwordInput || !logoutButton ||
-	!registerModal || !openRegisterButton || !closeRegisterButton || !submitRegisterButton || !regUsernameInput || !regDisplaynameInput || !regEmailInput || !regPasswordInput ||
-	!startMatchButton || !waitingPlayers || !activeMatchesModal || !playersListUL || !renderMatchList ||
-	!twoFAModal || !twoFAOptionModal || !twoFAEmailButton || !twoFASkipButton || !twoFASubmitButton || twoFAInput || !loadAnimation ||
-	!show || !hide || !canvas || !paddle || 
-	!playAgainstUserButton || !playRequestModal || !playRequestUsernameInput || !playRequestCloseButton || !playRequestSendButton ||
-	!playRequestSendButton || !incomingPlayRequestModal || !incomingPlayRequestText || !incomingPlayRequestCloseButton || !incomingPlayRequestAcceptButton) {
+if (!loadAnimation || !showLoader || !hideLoader ||
+	!loginModal || !openLoginButton || !closeLoginButton || !logoutButton ||
+	!usernameInput || !passwordInput || !submitLoginButton ||
+	!registerModal || !openRegisterButton || !closeRegisterButton || !submitRegisterButton || !
+	!regUsernameInput || !regDisplaynameInput || !regEmailInput || !regPasswordInput ||
+	!twoFAModal || !twoFAOptionModal || !twoFAEmailButton || !twoFASubmitButton || !twoFASkipButton || !twoFAAuthButton || !twoFAInput ||
+	!startMatchButton || !waitingPlayers || !
+	!playRequestModal || !playAgainstUserButton || !playRequestUsernameInput || !playRequestCloseButton || !playRequestSendButton ||
+	!incomingPlayRequestModal || !incomingPlayRequestText || !incomingPlayRequestCloseButton || !incomingPlayRequestAcceptButton ||
+	!createTournamentButton || !searchTournamentButton || !activeTournamentsModal || !tournamentsListUL || !renderTournamentList ||
+	!canvas || !paddle || !show || !hide) {
 		console.error("One or more UI elements are missing");
 }
 

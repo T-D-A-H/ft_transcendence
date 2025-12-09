@@ -1,7 +1,9 @@
 
 import { drawGame } from "./draw.js"
-import { registerHandler, StatusAndMsg } from "./receive-events.js"
+import { registerHandler } from "./receive-events.js"
 
+interface StatusAndMsg {status: number; msg: string;}
+interface MsgAndFrom   {from: string; msg: string;}
 
 function sendRequest(userSocket: WebSocket, type: string, payload?: Record<string, any>) {
 
@@ -9,11 +11,9 @@ function sendRequest(userSocket: WebSocket, type: string, payload?: Record<strin
 	userSocket.send(JSON.stringify(msg));
 }
 
-
 export function sendInviteToPlayer(userSocket: WebSocket, target: string): Promise<StatusAndMsg | null> {
 
-// StatusAndMsg {status: number; msg: string;}
-// PlayAgainstResponse  {type: "SEND_INVITE_RESPONSE"; status: number; to: string; msg: string;}
+	// SendInviteResponse {type: "SEND_INVITE_RESPONSE"; status: number; to: string; msg: string;}
 	return new Promise((resolve) => {
 
 		registerHandler("SEND_INVITE_RESPONSE", (data) => {
@@ -29,10 +29,36 @@ export function sendInviteToPlayer(userSocket: WebSocket, target: string): Promi
 }
 
 
+export function incomingInviteResponses(): Promise<StatusAndMsg | null> {
+
+	// IncomingInviteResponse {type: "INCOMING_INVITE_RESPONSE"; from: string; msg: string;}
+	return new Promise((resolve) => {
+
+		registerHandler("INCOMING_INVITE_RESPONSE", (data) => {
+        	if (data.type !== "INCOMING_INVITE_RESPONSE")
+            	return ;
+			resolve({status: data.status, msg: data.msg});
+		}, false);
+	});
+}
+
+
+export function incomingInviteRequests(): Promise<MsgAndFrom | null> {
+
+	//IncomingInviteRequest {type: "INCOMING_INVITE_REQUEST"; from: string; msg: string;}
+	return new Promise((resolve) => {
+		registerHandler("INCOMING_INVITE_REQUEST", (data) => {
+			if (data.type !== "INCOMING_INVITE_REQUEST")
+            	return ;
+			resolve({from: data.from, msg: data.msg});
+		}, false);
+	});
+}
+
+
 export function replyToInvite(userSocket: WebSocket, target: string): Promise<StatusAndMsg | null>  {
 
-// StatusAndMsg {status: number; msg: string;}
-// AcceptInviteResponse  {type: "REPLY_INVITE_RESPONSE"; status: number; to: string; msg: string;}
+	//ReplyInviteResponse {type: "REPLY_INVITE_RESPONSE"; status: number; to: string; msg: string;}
 	return new Promise((resolve) => {
 
 		registerHandler("REPLY_INVITE_RESPONSE", (data) => {
@@ -41,7 +67,7 @@ export function replyToInvite(userSocket: WebSocket, target: string): Promise<St
 			if (data.to !== target)
 				return ;
 			resolve({status: data.status, msg: data.msg});
-		});
+		}, true);
 
 		sendRequest(userSocket, "REPLY_INVITE_REQUEST", { target });
 	});
@@ -50,7 +76,7 @@ export function replyToInvite(userSocket: WebSocket, target: string): Promise<St
 
 export function sendStartMatch(userSocket: WebSocket): Promise<StatusAndMsg | null> {
 
-// StartMatchResponse  {type: "START_MATCH_RESPONSE"; status: number; msg:}
+	// StartMatchResponse {type: "START_MATCH_RESPONSE"; status: number; msg: string;}
 	return new Promise((resolve) => {
 
 		registerHandler("START_MATCH_RESPONSE", (data) => {
@@ -58,17 +84,15 @@ export function sendStartMatch(userSocket: WebSocket): Promise<StatusAndMsg | nu
 			if (data.type !== "START_MATCH_RESPONSE")
 				return;
 			resolve({status: data.status, msg: data.msg});
-		});
+		}, true);
 
 		sendRequest(userSocket, "START_MATCH_REQUEST");
 	});
 }
 
-
 export function sendKeyPress(userSocket: WebSocket, canvas: HTMLCanvasElement, paddle: CanvasRenderingContext2D): void {
 
-// DrawMessage {type: "DRAW"; playerY1: number; ballY: number, ballX: number, playerY2: number;};
-
+	//DrawMessage {type: "DRAW"; playerY1: number; ballY: number, ballX: number, playerY2: number;}
 	registerHandler("DRAW", (data) => {
 
 		if (data.type !== "DRAW")
@@ -90,6 +114,7 @@ export function sendKeyPress(userSocket: WebSocket, canvas: HTMLCanvasElement, p
 			sendRequest(userSocket, "MOVE", { move: "STOP" });
 	});
 }
+
 
 
 // export function searchForMatch(userSocket: WebSocket): Promise<string[] | null> {
