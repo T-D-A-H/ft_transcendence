@@ -52,10 +52,8 @@ async function startServer() {
 
 		if (userManager.matches.length === 0) return;
 	    userManager.matches.forEach(match => {
-	        if (match.isWaiting)
-				return;
-	        if (!match.players[0] || !match.players[1])
-				return;
+	        if (match.isWaiting) return;
+	        if (!match.players[0] || !match.players[1]) return;
 			if (match.isReady[0] === true && match.isReady[1] === true)
 	        	match.sendState(SPEED);
 	    });

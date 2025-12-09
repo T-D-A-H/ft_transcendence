@@ -260,26 +260,13 @@ startMatchButton.onclick = () => {
     });
 };
 
-// createMatchButton.onclick = () => {
+// createTournamentButton.onclick = () => {
 //     if (!userSocket) {
 //         alert("WebSocket not ready");
 //         return;
 //     }
 
-// 	createNewMatch(userSocket!).then((new_match_status) => {
-// 		if (new_match_status === 0) {
-// 			alert("Match created");
-// 			hide(createMatchButton);
-// 			hide(searchForMatchButton);
-// 			show(startMatchButton);
-// 			// hide(createMatchButton);
-// 		}
-// 		else if (new_match_status === 1) {
-// 			alert("Match already created.");
-// 		}
-// 		else if (new_match_status === 2) {
-// 			alert("An error occured creating your match.")
-// 		}
+// 	createNewTournamen(userSocket!).then((result) => {
 // 	});
 // };
 

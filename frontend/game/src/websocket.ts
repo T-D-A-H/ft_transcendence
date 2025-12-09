@@ -1,11 +1,12 @@
 import { receiveMessages } from "./receive-events.js";
 import {openLoginButton, openRegisterButton, playAgainstUserButton, createTournamentButton, searchTournamentButton, logoutButton, 
-        show, hide, showLoader, hideLoader, incomingPlayRequestText, startMatchButton} from "./ui.js"
-import {incomingInviteRequests, replyToInvite, incomingInviteResponses} from "./send-events.js"
+        show, hide, showLoader, hideLoader, incomingPlayRequestText, startMatchButton, incomingPlayRequestModal, incomingPlayRequestAcceptButton} from "./ui.js"
+import {incomingInviteRequests, replyToInvite, incomingInviteResponses, incomingDisconnectMsg} from "./send-events.js"
 
 function showButtons() {
     hideLoader();
 	hide(openLoginButton);
+    hide(startMatchButton);
 	hide(openRegisterButton);
     show(playAgainstUserButton);
     show(createTournamentButton);
@@ -22,8 +23,9 @@ export function initializeWebSocket(token: string) {
         ws.onopen = () => {
             showButtons();
             receiveMessages(ws);
-            incomingInviteRequestHandler(userSocket!);
+            incomingInviteRequestHandler(ws!);
             incomingInviteResponsesHandler();
+            incomingDisconnect();
             resolve(ws);
         };
 
@@ -78,9 +80,22 @@ function incomingInviteResponsesHandler() {
 			alert("No response from server");
 			return ;
 		}
-        const { status, msg } = result;
+        const { from, msg } = result;
         alert(msg);
-        if (status === 200)
-            show(startMatchButton);
+        show(startMatchButton);
+    });
+}
+
+function incomingDisconnect() {
+
+    incomingDisconnectMsg().then((result) => {
+
+		if (!result) {
+			alert("No response from server");
+			return ;
+		}
+        const msg = result;
+        alert(msg);
+        showButtons();
     });
 }

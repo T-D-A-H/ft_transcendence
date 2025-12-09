@@ -5,6 +5,7 @@ import { registerHandler } from "./receive-events.js"
 interface StatusAndMsg {status: number; msg: string;}
 interface MsgAndFrom   {from: string; msg: string;}
 
+
 function sendRequest(userSocket: WebSocket, type: string, payload?: Record<string, any>) {
 
 	const msg = payload ? { type, ...payload } : { type };
@@ -29,15 +30,16 @@ export function sendInviteToPlayer(userSocket: WebSocket, target: string): Promi
 }
 
 
-export function incomingInviteResponses(): Promise<StatusAndMsg | null> {
+export function incomingInviteResponses(): Promise<MsgAndFrom | null> {
 
+	// StatusAndMsg {status: number; msg: string;}
 	// IncomingInviteResponse {type: "INCOMING_INVITE_RESPONSE"; from: string; msg: string;}
 	return new Promise((resolve) => {
 
 		registerHandler("INCOMING_INVITE_RESPONSE", (data) => {
         	if (data.type !== "INCOMING_INVITE_RESPONSE")
             	return ;
-			resolve({status: data.status, msg: data.msg});
+			resolve({from: data.from, msg: data.msg});
 		}, false);
 	});
 }
@@ -87,6 +89,18 @@ export function sendStartMatch(userSocket: WebSocket): Promise<StatusAndMsg | nu
 		}, true);
 
 		sendRequest(userSocket, "START_MATCH_REQUEST");
+	});
+}
+
+export function incomingDisconnectMsg(): Promise<string | null> {
+
+	//IncomingInviteRequest {type: "INCOMING_INVITE_REQUEST"; from: string; msg: string;}
+	return new Promise((resolve) => {
+		registerHandler("DISCONNECT", (data) => {
+			if (data.type !== "DISCONNECT")
+            	return ;
+			resolve(data.msg);
+		}, false);
 	});
 }
 

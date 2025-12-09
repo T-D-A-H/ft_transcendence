@@ -24,7 +24,7 @@ function buildLogoutHandler(userManager, fastify) {
 			if (player) {
 				if (player.socket)
 					player.socket.close();
-				userManager.removeUser(userId);
+				userManager.logoutUser(userId);
 			}
 			LOGGER(200, "server", "handleLogout", "Logged out succesfully");
 			return reply.send({ status: "ok" });

@@ -161,7 +161,7 @@ export function renderTournamentList(matches: string[]): HTMLButtonElement[] {
 
 		li.appendChild(nameSpan);
 		li.appendChild(joinBtn);
-		playersListUL.appendChild(li);
+		tournamentsListUL.appendChild(li);
 
 		joinButtons.push(joinBtn);
 	}

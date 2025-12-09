@@ -68,6 +68,11 @@ class UserManager {
         if (user) {
             LOGGER(200, "UserManager", "logoutUser", user.getUsername());
             user.setConnected(false);
+            const match = user.getCurrentMatch()
+            if (match !== null) {
+                match.broadcast({type: "DISCONNECT", msg: user.getUsername() + " disconnected."});
+                this.removeMatch(match);
+            }
             return true;
         }
         LOGGER(400, "UserManager", "logoutUser", userId + "already logged out.");

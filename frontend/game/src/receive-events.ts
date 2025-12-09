@@ -6,6 +6,8 @@ interface IncomingInviteRequest      {type: "INCOMING_INVITE_REQUEST"; from: str
 interface IncomingInviteResponse     {type: "INCOMING_INVITE_RESPONSE"; from: string; msg: string;}
 interface StartMatchResponse         {type: "START_MATCH_RESPONSE"; status: number; msg: string;}
 interface DrawMessage                {type: "DRAW"; playerY1: number; ballY: number, ballX: number, playerY2: number;}
+interface DisconnectMsg  			 {type: "DISCONNECT"; msg: string;}
+
 
 interface IncomingTournamentResponse {type: "INCOMING_TOURNAMENT_RESPONSE"; status: number; msg: string;}
 interface CreateTournamentResponse   {type: "CREATE_TOURNAMENT_RESPONSE"; status: number; msg: string;}
@@ -20,7 +22,7 @@ IncomingInviteRequest      | IncomingInviteResponse   |
 StartMatchResponse         | StartTournamentResponse  |
 CreateTournamentResponse   | SearchTournamentResponse |
 IncomingTournamentResponse | JoinTournamentResponse   |
-DrawMessage;
+DrawMessage				   | DisconnectMsg;
 
 
 const handlers: Record<string, ((data: ServerMessage) => void)[]> = {};
