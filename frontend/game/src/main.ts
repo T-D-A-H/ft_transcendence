@@ -73,10 +73,10 @@ showLoader();
 const token = localStorage.getItem("token");
 if (!token || token === "null") {
 	// Usuario NO autenticado
-	hide(openLogin);
-	hide(openRegister);
 	hide(logoutButton);
-	// Mostrar solo después de ocultar todo
+	hide(createMatchButton);
+	hide(searchForMatchButton);
+	hide(startMatchButton);
 	show(openLogin);
 	show(openRegister);
 	setTimeout(hideLoader, 300)
@@ -85,9 +85,11 @@ if (!token || token === "null") {
 	hide(openLogin);
 	hide(openRegister);
 	show(logoutButton);
+	show(createMatchButton);
+	show(searchForMatchButton);
+	show(startMatchButton);
 	initializeWebSocket(token);
 }
-
 
 submitLoginButton.onclick = async () => {
 	showLoader();
@@ -131,6 +133,9 @@ submitLoginButton.onclick = async () => {
 						hide(openRegister);
 						hide(openLogin);
 						hide(loginModal);
+						show(createMatchButton);
+						show(searchForMatchButton);
+						show(startMatchButton);
 						show(logoutButton);
 						initializeWebSocket(verifyResult.token);
 						tempToken2FA = null;
@@ -153,6 +158,9 @@ submitLoginButton.onclick = async () => {
 			hide(openRegister);
 			hide(openLogin);
 			hide(loginModal);
+			show(createMatchButton);
+			show(searchForMatchButton);
+			show(startMatchButton);
 			show(logoutButton);
 			initializeWebSocket(result.token);
 			hideLoader();
@@ -163,7 +171,7 @@ submitLoginButton.onclick = async () => {
 			hideLoader();
 		}
 
-		} catch (err) {
+	} catch (err) {
 		console.error(err);
 		alert("Error al iniciar sesión");
 		hideLoader();
@@ -222,9 +230,11 @@ logoutButton.onclick = async () => {
 	const data = await res.json();
 	if (data.status === "ok") {
 		localStorage.removeItem("token");
-		hide(startMatchButton);
-		hide(waitingPlayers);
 		hide(logoutButton);
+		hide(waitingPlayers)
+		hide(createMatchButton);
+		hide(searchForMatchButton);
+		hide(startMatchButton);
 		show(openLogin);
 		show(openRegister);
 	}
