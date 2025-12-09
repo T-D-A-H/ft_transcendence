@@ -104,6 +104,23 @@ export function incomingDisconnectMsg(): Promise<string | null> {
 	});
 }
 
+
+export function playLocallyRequest(userSocket: WebSocket): Promise<StatusAndMsg | null> {
+
+	// SendInviteResponse {type: "SEND_INVITE_RESPONSE"; status: number; to: string; msg: string;}
+	return new Promise((resolve) => {
+
+		registerHandler("PLAY_LOCALLY_RESPONSE", (data) => {
+			if (data.type !== "PLAY_LOCALLY_RESPONSE") 
+				return;
+
+			resolve({status: data.status, msg: data.msg});
+		}, true);
+
+		sendRequest(userSocket, "PLAY_LOCALLY_REQUEST");
+	});
+}
+
 export function sendKeyPress(userSocket: WebSocket, canvas: HTMLCanvasElement, paddle: CanvasRenderingContext2D): void {
 
 	//DrawMessage {type: "DRAW"; playerY1: number; ballY: number, ballX: number, playerY2: number;}
@@ -120,6 +137,7 @@ export function sendKeyPress(userSocket: WebSocket, canvas: HTMLCanvasElement, p
 			sendRequest(userSocket, "MOVE", { move: "UP" });
 		if (e.key === "s")
 			sendRequest(userSocket, "MOVE", { move: "DOWN" });
+
 	});
 
 	document.addEventListener("keyup", (e: KeyboardEvent) => {
@@ -130,6 +148,37 @@ export function sendKeyPress(userSocket: WebSocket, canvas: HTMLCanvasElement, p
 }
 
 
+export function send2KeyPress(userSocket: WebSocket, canvas: HTMLCanvasElement, paddle: CanvasRenderingContext2D): void {
+
+	//DrawMessage {type: "DRAW"; playerY1: number; ballY: number, ballX: number, playerY2: number;}
+	registerHandler("DRAW", (data) => {
+
+		if (data.type !== "DRAW")
+			return;
+		drawGame(canvas, paddle, data.playerY1, data.ballY, data.ballX, data.playerY2);
+	}, false);
+
+	document.addEventListener("keydown", (e: KeyboardEvent) => {
+
+		if (e.key === "w")
+			sendRequest(userSocket, "MOVE2", { move: "UP1" });
+		if (e.key === "s")
+			sendRequest(userSocket, "MOVE2", { move: "DOWN1" });
+		if (e.key === "ArrowUp")
+			sendRequest(userSocket, "MOVE2", { move: "UP2" });
+		if (e.key === "ArrowDown")
+			sendRequest(userSocket, "MOVE2", { move: "DOWN2" });
+
+	});
+
+	document.addEventListener("keyup", (e: KeyboardEvent) => {
+
+		if (e.key === "w" || e.key === "s")
+			sendRequest(userSocket, "MOVE2", { move: "STOP1" });
+		if (e.key === "ArrowUp" || e.key === "ArrowDown")
+			sendRequest(userSocket, "MOVE2", { move: "STOP2" });
+	});
+}
 
 // export function searchForMatch(userSocket: WebSocket): Promise<string[] | null> {
 

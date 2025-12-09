@@ -5,7 +5,7 @@ import {
 	registerModal, openRegisterButton, closeRegisterButton, submitRegisterButton, 
 	regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput,
 	twoFAModal, twoFAOptionModal, twoFAEmailButton, twoFASubmitButton, twoFASkipButton, twoFAAuthButton, twoFAInput,
-	startMatchButton, waitingPlayers, 
+	startMatchButton, waitingPlayers, playLocallyButton,
 	playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton,
 	incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton,
 	createTournamentButton, searchTournamentButton, activeTournamentsModal, tournamentsListUL, renderTournamentList,
@@ -14,7 +14,7 @@ import {
 
 import { registerUser,  loginUser } from "./login-register.js"
 import { initializeWebSocket } from "./websocket.js";
-import { sendKeyPress, sendInviteToPlayer, sendStartMatch} from "./send-events.js";
+import { sendKeyPress, send2KeyPress, sendInviteToPlayer, sendStartMatch, playLocallyRequest} from "./send-events.js";
 
 
 if (!loadAnimation || !showLoader || !hideLoader ||
@@ -23,7 +23,7 @@ if (!loadAnimation || !showLoader || !hideLoader ||
 	!registerModal || !openRegisterButton || !closeRegisterButton || !submitRegisterButton || !
 	!regUsernameInput || !regDisplaynameInput || !regEmailInput || !regPasswordInput ||
 	!twoFAModal || !twoFAOptionModal || !twoFAEmailButton || !twoFASubmitButton || !twoFASkipButton || !twoFAAuthButton || !twoFAInput ||
-	!startMatchButton || !waitingPlayers || !
+	!startMatchButton || !waitingPlayers || !playLocallyButton ||
 	!playRequestModal || !playAgainstUserButton || !playRequestUsernameInput || !playRequestCloseButton || !playRequestSendButton ||
 	!incomingPlayRequestModal || !incomingPlayRequestText || !incomingPlayRequestCloseButton || !incomingPlayRequestAcceptButton ||
 	!createTournamentButton || !searchTournamentButton || !activeTournamentsModal || !tournamentsListUL || !renderTournamentList ||
@@ -41,6 +41,7 @@ openRegisterButton.onclick = () => show(registerModal);
 closeRegisterButton.onclick = () => hide(registerModal);
 playAgainstUserButton.onclick = () => show(playRequestModal);
 incomingPlayRequestCloseButton.onclick = () => hide(incomingPlayRequestModal);
+playRequestCloseButton.onclick = () => hide(playRequestModal);
 
 showLoader();
 
@@ -207,6 +208,9 @@ logoutButton.onclick = async () => {
 		localStorage.removeItem("token");
 		hide(logoutButton);
 		hide(startMatchButton);
+		hide(playAgainstUserButton);
+		hide(createTournamentButton);
+		hide(searchTournamentButton);
 		show(openLoginButton);
 		show(openRegisterButton);
 	}
@@ -230,7 +234,6 @@ playRequestSendButton.onclick = () => {
 			alert(msg);
 			return ;
 		}
-		alert(msg);
 		hide(playRequestModal);
 	});
 };
@@ -259,6 +262,32 @@ startMatchButton.onclick = () => {
 		sendKeyPress(userSocket!, canvas!, paddle!);
     });
 };
+
+playLocallyButton.onclick = () => {
+
+    if (!userSocket) {
+        alert("WebSocket not ready");
+        return;
+    }
+	playLocallyRequest(userSocket!).then((result) => {
+
+
+		if (!result) {
+			alert("No response from server");
+			return ;
+		}
+		const {status, msg} = result;
+		alert(msg);
+		if (status !== 200) {
+			return;
+		}
+		hide(playLocallyButton);
+		hide(playAgainstUserButton);
+		hide(createTournamentButton);
+		hide(searchTournamentButton);
+		send2KeyPress(userSocket!, canvas!, paddle!);
+	});
+}
 
 // createTournamentButton.onclick = () => {
 //     if (!userSocket) {

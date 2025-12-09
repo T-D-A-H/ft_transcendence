@@ -96,6 +96,10 @@ export const waitingPlayers = // Waiting for players element
 
 
 
+export const playLocallyButton =
+	document.getElementById("play_locally") as HTMLButtonElement;
+
+
 export const playAgainstUserButton =
 	document.getElementById("play_against_user") as HTMLButtonElement;
 

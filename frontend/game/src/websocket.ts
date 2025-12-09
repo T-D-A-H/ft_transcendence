@@ -1,6 +1,7 @@
 import { receiveMessages } from "./receive-events.js";
 import {openLoginButton, openRegisterButton, playAgainstUserButton, createTournamentButton, searchTournamentButton, logoutButton, 
-        show, hide, showLoader, hideLoader, incomingPlayRequestText, startMatchButton, incomingPlayRequestModal, incomingPlayRequestAcceptButton} from "./ui.js"
+        show, hide, showLoader, hideLoader, incomingPlayRequestText, startMatchButton, incomingPlayRequestModal, incomingPlayRequestAcceptButton, 
+        playLocallyButton} from "./ui.js"
 import {incomingInviteRequests, replyToInvite, incomingInviteResponses, incomingDisconnectMsg} from "./send-events.js"
 
 function showButtons() {
@@ -8,6 +9,7 @@ function showButtons() {
 	hide(openLoginButton);
     hide(startMatchButton);
 	hide(openRegisterButton);
+    show(playLocallyButton);
     show(playAgainstUserButton);
     show(createTournamentButton);
     show(searchTournamentButton);

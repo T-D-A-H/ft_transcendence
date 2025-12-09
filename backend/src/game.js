@@ -1,41 +1,12 @@
 const LOGGER = require("./LOGGER.js");
 
 
-
-function searchMatchRequest(requestingUser, userManager) {
-
-	const waiting_matches = userManager.getMatches("waiting");
-
-	const matches_names = [];
-	for (const match of waiting_matches) {
-		matches_names.push(match.players[0].getUsername());
-	}
-	if (matches_names.length === 0) {
-		LOGGER(409, "server", "searchMatchRequest", "No available matches found");
-		requestingUser.send({ type: "SEARCH_MATCH_RESPONSE", status: 409});
-		return ;
-	}
-	requestingUser.send({ type: "SEARCH_MATCH_RESPONSE", status: 200, matches: matches_names});
-	LOGGER(200, "server", "searchMatchRequest", "Sent available matches");
-}
-
-function createMatchRequest(requestingUser, userManager) {
-
-	if (requestingUser.getCurrentMatch() !== null) {
-		LOGGER(400, "server", "createInviteRequest", "You are already in a match.");
-		requestingUser.send({type: "CREATE_INVITE_RESPONSE", status: 400, target: target_username, msg: "You are already in a match."});
-		return 1;
-	}
-
-	return 0;
-}
-
 // PlayAgainstResponse  {type: "CREATE_INVITE_RESPONSE"; status: number; to: string; msg: string;}
 // InviteRequest        {type: "INVITE_REQUEST"; from: string;}
 function sendInviteRequest(requestingUser, userManager, username_to_send) {
 
 	if (requestingUser.getCurrentMatch() === null) {
-		const match = userManager.createMatch(requestingUser);
+		const match = userManager.createMatch(requestingUser, false);
 		requestingUser.setMatch(match);
 	}
 	const user_to_send = userManager.getUserByUsername(username_to_send);
@@ -94,6 +65,8 @@ function replyToInviteRequest(requestingUser, userManager, username_to_send) {
 	requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, to: user_to_send.getUsername(), msg: "Unable to send your invite acceptance to " + user_to_send.getUsername()});
 }
 
+
+
 function startMatchRequest(requestingUser) {
 
 	LOGGER(200, "server", "startMatchRequest", "Sent start match request");
@@ -110,6 +83,23 @@ function startMatchRequest(requestingUser) {
 	}
 }
 
+function playLocalGame(requestingUser, userManager) {
+
+	if (requestingUser.getIsConnected() === false) {
+		LOGGER(400, "server", "playLocalGame", "User is offline.")
+		requestingUser.send({type: "PLAY_LOCALLY_RESPONSE", status: 400, msg: "You need to log in to be able to play."});
+		return ;
+	}
+	if (requestingUser.getIsPlaying() === true) {
+
+		LOGGER(400, "server", "playLocalGame", "User already in a match.")
+		requestingUser.send({type: "PLAY_LOCALLY_RESPONSE", status: 400, msg: "You are already in another match."});
+		return ;
+	}
+	const match = userManager.createMatch(requestingUser, true);
+	requestingUser.setMatch(match);
+	requestingUser.send({type: "PLAY_LOCALLY_RESPONSE", status: 200, msg: "Local Match created."});
+}
 
 function handleUserCommands(user, userManager) {
 
@@ -131,8 +121,14 @@ function handleUserCommands(user, userManager) {
 		else if (msg.type === "START_MATCH_REQUEST") {
 			startMatchRequest(user);
 		}
+		else if (msg.type === "PLAY_LOCALLY_REQUEST") {
+			playLocalGame(user, userManager);
+		}
+		else if (msg.type === "MOVE2" && user.currentMatch) {
+			user.currentMatch.set2PlayerMove(user, msg.move);
+		}
 		else if (msg.type === "MOVE" && user.currentMatch) {
-			// console.log("move recv: " + msg.move);
+
 			user.currentMatch.setPlayerMove(user, msg.move);
 		}
 	});
