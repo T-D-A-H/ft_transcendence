@@ -9,7 +9,7 @@ import {
 	playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton,
 	incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton,
 	createTournamentButton, searchTournamentButton, activeTournamentsModal, tournamentsListUL, renderTournamentList,
-	canvas, paddle, show, hide
+	canvas, texture, show, hide
 } from "./ui.js";
 
 import { registerUser,  loginUser } from "./login-register.js"
@@ -27,7 +27,7 @@ if (!loadAnimation || !showLoader || !hideLoader ||
 	!playRequestModal || !playAgainstUserButton || !playRequestUsernameInput || !playRequestCloseButton || !playRequestSendButton ||
 	!incomingPlayRequestModal || !incomingPlayRequestText || !incomingPlayRequestCloseButton || !incomingPlayRequestAcceptButton ||
 	!createTournamentButton || !searchTournamentButton || !activeTournamentsModal || !tournamentsListUL || !renderTournamentList ||
-	!canvas || !paddle || !show || !hide) {
+	!canvas || !texture || !show || !hide) {
 		console.error("One or more UI elements are missing");
 }
 
@@ -259,7 +259,7 @@ startMatchButton.onclick = () => {
 			return ;
 		}
 		hide(waitingPlayers);
-		sendKeyPress(userSocket!, canvas!, paddle!);
+		sendKeyPress(userSocket!, canvas!, texture!);
     });
 };
 
@@ -285,9 +285,18 @@ playLocallyButton.onclick = () => {
 		hide(playAgainstUserButton);
 		hide(createTournamentButton);
 		hide(searchTournamentButton);
-		send2KeyPress(userSocket!, canvas!, paddle!);
+		send2KeyPress(userSocket!, canvas!, texture!);
 	});
-}
+};
+
+import {testGameButton} from "./ui.js"
+import { gameKeyPresses } from "./testgame.js";
+
+testGameButton.onclick = () => {
+
+	gameKeyPresses();
+};
+
 
 // createTournamentButton.onclick = () => {
 //     if (!userSocket) {

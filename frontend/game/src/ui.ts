@@ -1,4 +1,9 @@
 
+
+export const testGameButton = // Display login box element
+	document.getElementById("test_game") as HTMLButtonElement;
+
+
 export const loadAnimation = // Initial loader Modal
 	document.getElementById("load_animation_modal") as HTMLDivElement;
 
@@ -176,7 +181,7 @@ export function renderTournamentList(matches: string[]): HTMLButtonElement[] {
 export const canvas = // Canvas where game is drawn
 	document.getElementById("game_screen") as HTMLCanvasElement;
 
-export const paddle = // Paddle to paint
+export const texture = // Texture to paint
 	canvas.getContext("2d") as CanvasRenderingContext2D;
 
 

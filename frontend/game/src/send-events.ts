@@ -121,14 +121,14 @@ export function playLocallyRequest(userSocket: WebSocket): Promise<StatusAndMsg 
 	});
 }
 
-export function sendKeyPress(userSocket: WebSocket, canvas: HTMLCanvasElement, paddle: CanvasRenderingContext2D): void {
+export function sendKeyPress(userSocket: WebSocket, canvas: HTMLCanvasElement, texture: CanvasRenderingContext2D): void {
 
 	//DrawMessage {type: "DRAW"; playerY1: number; ballY: number, ballX: number, playerY2: number;}
 	registerHandler("DRAW", (data) => {
 
 		if (data.type !== "DRAW")
 			return;
-		drawGame(canvas, paddle, data.playerY1, data.ballY, data.ballX, data.playerY2);
+		drawGame(canvas, texture, data.playerY1, data.ballY, data.ballX, data.playerY2);
 	}, false);
 
 	document.addEventListener("keydown", (e: KeyboardEvent) => {
@@ -148,14 +148,14 @@ export function sendKeyPress(userSocket: WebSocket, canvas: HTMLCanvasElement, p
 }
 
 
-export function send2KeyPress(userSocket: WebSocket, canvas: HTMLCanvasElement, paddle: CanvasRenderingContext2D): void {
+export function send2KeyPress(userSocket: WebSocket, canvas: HTMLCanvasElement, texture: CanvasRenderingContext2D): void {
 
 	//DrawMessage {type: "DRAW"; playerY1: number; ballY: number, ballX: number, playerY2: number;}
 	registerHandler("DRAW", (data) => {
 
 		if (data.type !== "DRAW")
 			return;
-		drawGame(canvas, paddle, data.playerY1, data.ballY, data.ballX, data.playerY2);
+		drawGame(canvas, texture, data.playerY1, data.ballY, data.ballX, data.playerY2);
 	}, false);
 
 	document.addEventListener("keydown", (e: KeyboardEvent) => {
