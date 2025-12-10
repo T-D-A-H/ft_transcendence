@@ -180,18 +180,5 @@ export function send2KeyPress(userSocket: WebSocket, canvas: HTMLCanvasElement, 
 	});
 }
 
-// export function searchForMatch(userSocket: WebSocket): Promise<string[] | null> {
-
-// 	return new Promise((resolve) => {
-
-// 		registerHandler("SEARCH_MATCH_RESPONSE", (data) => {
-// 			if (data.type !== "SEARCH_MATCH_RESPONSE")
-// 				return;
-// 			resolve(data.status === 200 ? data.matches : null);
-// 		});
-
-// 		sendRequest(userSocket, "SEARCH_MATCH_REQUEST");
-// 	});
-// }
 
 

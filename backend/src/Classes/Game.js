@@ -1,4 +1,12 @@
 
+class Game {
+
+    constructor() {}
+
+
+}
+/*
+
 import {texture, canvas} from "./ui.js"
 
 
@@ -210,3 +218,5 @@ function gameLoop() {
 	requestAnimationFrame(gameLoop);
 }
 
+
+*/
