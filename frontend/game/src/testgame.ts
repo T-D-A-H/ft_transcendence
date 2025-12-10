@@ -5,19 +5,21 @@ import {texture, canvas} from "./ui.js"
 interface GameScreen {
     WIDTH: number;
     HEIGHT: number;
+    MID_HEIGHT: number;
+    MID_WIDTH: number;
 };
 
 interface GamePaddle {
     HEIGHT: number;
     WIDTH: number;
-    UP_OFFSET: number;
-    DOWN_OFFSET: number;
+    OFFSET: number;
     SPEED: number;
 };
 
 interface GameBall {
     HEIGHT: number;
     WIDTH: number;
+    OFFSET: number;
     SPEED: number;
     Y: number;
     X: number;
@@ -34,38 +36,41 @@ interface GamePlayer {
 const screen: GameScreen = {
 
     WIDTH: canvas.width,
-    HEIGHT: canvas.height
+    HEIGHT: canvas.height,
+    MID_HEIGHT: canvas.height / 2,
+    MID_WIDTH: canvas.width / 2
 };
  
 const ball: GameBall = {
     HEIGHT: 10,
     WIDTH: 10,
+    OFFSET: 10 / 2,
     SPEED: 2,
-    Y: (screen.HEIGHT / 2),
-    X: (screen.WIDTH / 2),
+    Y: screen.MID_HEIGHT,
+    X: screen.MID_WIDTH,
     YCoord: 0,
-    XCoord: 1
+    XCoord: 0
 };
 
 const paddle: GamePaddle = {
     HEIGHT: 60,
     WIDTH: 10,
-    UP_OFFSET: 30,
-    DOWN_OFFSET: 10,
+    OFFSET: 60 / 2,
     SPEED: 5,
 };
 
 
 const player1: GamePlayer = {
-    Y: [(screen.HEIGHT / 2) - paddle.UP_OFFSET, (screen.HEIGHT / 2) + paddle.UP_OFFSET],
-    X: [paddle.WIDTH, paddle.WIDTH + paddle.WIDTH],
+    Y: [screen.MID_HEIGHT - paddle.OFFSET, screen.MID_HEIGHT + paddle.OFFSET],
+    X: [20, 20],
     YCoord: 0
 
 };
+
 const player2: GamePlayer = {
 
-    Y: [(screen.HEIGHT / 2) - paddle.UP_OFFSET, (screen.HEIGHT / 2) + paddle.UP_OFFSET],
-    X: [screen.WIDTH - paddle.WIDTH, screen.WIDTH - paddle.WIDTH - paddle.WIDTH],
+    Y: [screen.MID_HEIGHT - paddle.OFFSET, screen.MID_HEIGHT + paddle.OFFSET],
+    X: [screen.WIDTH - 20, screen.WIDTH - 20],
     YCoord: 0
 };
 
@@ -100,35 +105,32 @@ function updatePlayers(): void {
 
 }
 
-
-
 function updateBall(): void {
 
-    const LEFT_PADDLE_HITBOX: number = player1.X[1];
     const RIGHT_PADDLE_HITBOX: number = player2.X[0];
+    const LEFT_PADDLE_HITBOX: number = player1.X[0];
 
+    
+    if (ball.X - ball.OFFSET <= LEFT_PADDLE_HITBOX) {
 
-    // ball.X = LEFT_PADDLE_HITBOX;
-    if (ball.X >= LEFT_PADDLE_HITBOX)
-        ball.XCoord -= ball.SPEED;
-    else if (ball.X >= RIGHT_PADDLE_HITBOX)
-        ball.XCoord -= ball.SPEED;
-    // if (ball.Y >= paddle1.Y[0] && ball.Y <= paddle1.Y[1]) {
+        if (ball.Y + ball.OFFSET >= player1.Y[0] && ball.Y - ball.OFFSET <= player1.Y[1]) {
 
+            ball.XCoord += ball.SPEED;
+        }
+    }
+    else if (ball.X + ball.OFFSET >= RIGHT_PADDLE_HITBOX) {
 
-    // }
-    // else if (ball.Y >= paddle2.Y[0] && ball.Y <= paddle2.Y[1]) {
+        if (ball.Y + ball.OFFSET >= player2.Y[0] && ball.Y - ball.OFFSET <= player2.Y[1]) {
 
-
-    // }
-
+            ball.XCoord -= ball.SPEED;
+        }
+    }
     ball.X  += ball.XCoord
-
 }
-
 
 export function gameKeyPresses() {
 
+    ball.XCoord = 1;
     document.addEventListener("keydown", (e: KeyboardEvent) => {
 
         if (e.key === "w")
@@ -158,22 +160,18 @@ function drawAll() {
 	texture.fillStyle = "black";
 	texture.fillRect(0, 0, screen.WIDTH, screen.HEIGHT);
 
+
     // LEFT PADDLE
     texture.fillStyle = "white";
-    texture.fillRect(player1.X[0], player1.Y[0], paddle.WIDTH, paddle.UP_OFFSET);
-    texture.fillStyle = "white";
-    texture.fillRect(player1.X[1], player1.Y[1], -paddle.WIDTH, -paddle.UP_OFFSET);
+    texture.fillRect(player1.X[0], player1.Y[0], -paddle.WIDTH, paddle.HEIGHT);
 
     // RIGHT PADDLE
     texture.fillStyle = "white";
-    texture.fillRect(player2.X[0], player2.Y[0], -paddle.WIDTH, paddle.UP_OFFSET);
-    texture.fillStyle = "white";
-    texture.fillRect(player2.X[1], player2.Y[1], paddle.WIDTH, -paddle.UP_OFFSET);
-
+    texture.fillRect(player2.X[0], player2.Y[0], paddle.WIDTH, paddle.HEIGHT);
 
     // BALL
-    texture.fillStyle = "white";
-	texture.fillRect(ball.X, ball.Y, ball.WIDTH, ball.HEIGHT)
+    texture.fillStyle = "pink";
+	texture.fillRect((ball.X - ball.OFFSET), (ball.Y - ball.OFFSET), ball.WIDTH, ball.HEIGHT)
 }
 
 function drawHitboxes() {
@@ -198,7 +196,7 @@ function gameLoop() {
 	updatePlayers();
     updateBall();
 	drawAll();
-    drawHitboxes();
+    // drawHitboxes();
 	requestAnimationFrame(gameLoop);
 }
 
