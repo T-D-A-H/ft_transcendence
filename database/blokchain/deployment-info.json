@@ -1,0 +1,13 @@
+{
+  "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "deployedAt": "2025-12-09T12:59:50.008Z",
+  "network": "localhost",
+  "fuji": {
+    "network": "fuji",
+    "contractAddress": "0x17816A8DE2032b580c5030855c2Be639eB09a5eF",
+    "deployer": "0x85Ac1Ddbde014a05d439e9526ea0C3DbbEe2d98E",
+    "deploymentTime": "2025-12-10T10:13:19.462Z",
+    "blockNumber": 48810833,
+    "chainId": "43113"
+  }
+}

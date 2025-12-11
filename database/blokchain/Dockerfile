@@ -12,4 +12,6 @@ RUN chmod +x /app/entrypoint-blockchain.sh
 
 EXPOSE 8545
 
+ENV NODE_ENV=production
+
 ENTRYPOINT ["/app/entrypoint-blockchain.sh"]

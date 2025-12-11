@@ -12,10 +12,13 @@ services:
     volumes:
       - ./backend/src:/app/src
       - db_data:/data
+      - ./database/blokchain/artifacts:/app/blockchain/artifacts:ro
     env_file:
       - ./backend/.env
+      - ./database/blokchain/.env
     depends_on:
       - database
+      - blockchain
     restart: unless-stopped
     networks:
       - ft_transcendence
@@ -44,6 +47,11 @@ services:
       - "8545:8545"
     volumes:
       - ./database/blokchain:/app
+    env_file:
+      - ./database/blokchain/.env
+    environment:
+      - RUN_LOCAL_NODE=false
+      - NODE_ENV=production
     restart: unless-stopped
     networks:
       - ft_transcendence

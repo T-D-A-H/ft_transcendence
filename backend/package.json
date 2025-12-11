@@ -11,6 +11,8 @@
     "@fastify/websocket": "^8.3.0",
     "@fastify/static": "^6.10.2",
     "sqlite3": "^5.1.6",
-    "jsonwebtoken": "^9.x"
+    "jsonwebtoken": "^9.x",
+    "ethers": "^6.9.0",
+    "dotenv": "^16.3.1"
   }
 }
