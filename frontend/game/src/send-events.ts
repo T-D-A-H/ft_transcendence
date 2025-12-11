@@ -128,8 +128,12 @@ export function sendKeyPress(userSocket: WebSocket, canvas: HTMLCanvasElement, t
 
 		if (data.type !== "DRAW")
 			return;
-		drawGame(canvas, texture, data.playerY1, data.ballY, data.ballX, data.playerY2);
-	}, false);
+		const [p1X, p1Y] = data.LeftXY;
+		const [p2X, p2Y] = data.RightXY;
+		const [ballX, ballY] = data.BallXY;
+
+		drawGame(canvas, texture, p1X, p1Y, p2X, p2Y, ballX, ballY);
+		}, false);
 
 	document.addEventListener("keydown", (e: KeyboardEvent) => {
 
@@ -155,8 +159,12 @@ export function send2KeyPress(userSocket: WebSocket, canvas: HTMLCanvasElement, 
 
 		if (data.type !== "DRAW")
 			return;
-		drawGame(canvas, texture, data.playerY1, data.ballY, data.ballX, data.playerY2);
-	}, false);
+		const [p1X, p1Y] = data.LeftXY;
+		const [p2X, p2Y] = data.RightXY;
+		const [ballX, ballY] = data.BallXY;
+
+		drawGame(canvas, texture, p1X, p1Y, p2X, p2Y, ballX, ballY);
+		}, false);
 
 	document.addEventListener("keydown", (e: KeyboardEvent) => {
 

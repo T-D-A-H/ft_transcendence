@@ -48,7 +48,6 @@ class Match {
 		});
 	}
 
-
 	sendDraw() {
 		this.broadcast({ 
 			type: "DRAW", 

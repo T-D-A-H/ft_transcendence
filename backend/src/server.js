@@ -17,7 +17,6 @@ const buildLoginHandler        = require("./endpoints/login.js");
 const buildLogoutHandler       = require('./endpoints/logout');
 
 const FRAMES = 1000/60;
-const SPEED  = 8;
 
 fastify.register(require('fastify-jwt'), {secret: process.env.JWT_SECRET});
 
@@ -55,7 +54,7 @@ async function startServer() {
 	        if (match.isWaiting) return;
 	        if (!match.players[0] || !match.players[1]) return;
 			if (match.isReady[0] === true && match.isReady[1] === true)
-	        	match.sendState(SPEED);
+	        	match.sendDraw();
 	    });
 
 	}, FRAMES);

@@ -5,7 +5,7 @@ interface ReplyInviteResponse        {type: "REPLY_INVITE_RESPONSE"; status: num
 interface IncomingInviteRequest      {type: "INCOMING_INVITE_REQUEST"; from: string; msg: string;}
 interface IncomingInviteResponse     {type: "INCOMING_INVITE_RESPONSE"; from: string; msg: string;}
 interface StartMatchResponse         {type: "START_MATCH_RESPONSE"; status: number; msg: string;}
-interface DrawMessage                {type: "DRAW"; playerY1: number; ballY: number, ballX: number, playerY2: number;}
+interface DrawMessage                {type: "DRAW"; LeftXY: [number, number]; RightXY: [number, number]; BallXY: [number, number];}
 interface DisconnectMsg  			 {type: "DISCONNECT"; msg: string;}
 interface PlayLocallyResponse 		 {type: "PLAY_LOCALLY_RESPONSE", status: number; msg: string;}
 
@@ -24,7 +24,7 @@ CreateTournamentResponse   | SearchTournamentResponse |
 IncomingTournamentResponse | JoinTournamentResponse   |
 PlayLocallyResponse		   |
 DrawMessage				   | DisconnectMsg;
-
+// luuismrtn
 
 const handlers: Record<string, ((data: ServerMessage) => void)[]> = {};
 

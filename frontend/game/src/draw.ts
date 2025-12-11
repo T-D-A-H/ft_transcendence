@@ -26,11 +26,11 @@ function drawPlayerTwo(texture: CanvasRenderingContext2D, y: number, x: number) 
 	texture.fillRect(x, y, 10, 60);
 }
 
-export function drawGame(canvas: HTMLCanvasElement, texture: CanvasRenderingContext2D, p1Y: number, bY: number, bX: number, p2Y: number) {
+export function drawGame( canvas: HTMLCanvasElement, texture: CanvasRenderingContext2D, leftX: number, leftY: number, rightX: number, rightY: number, ballX: number, ballY: number) {
 
 	drawBrackground(canvas, texture);
-	drawPlayerOne(texture, p1Y, 10);
-	drawPlayerTwo(texture, p2Y, canvas.width - 20);
-	drawBall(texture, (canvas.height / 2) + bY, (canvas.width / 2) + bX);
+	drawPlayerOne(texture, leftY, leftX);
+	drawPlayerTwo(texture, rightY, rightX);
+	drawBall(texture, ballY, ballX);
 }
 

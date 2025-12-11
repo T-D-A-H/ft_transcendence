@@ -125,11 +125,10 @@ function handleUserCommands(user, userManager) {
 			playLocalGame(user, userManager);
 		}
 		else if (msg.type === "MOVE2" && user.currentMatch) {
-			user.currentMatch.set2PlayerMove(user, msg.move);
+			user.currentMatch.update2PlayerGame(user, msg.move);
 		}
 		else if (msg.type === "MOVE" && user.currentMatch) {
-
-			user.currentMatch.setPlayerMove(user, msg.move);
+			user.currentMatch.updateGame(user, msg.move);
 		}
 	});
 
