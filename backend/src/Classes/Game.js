@@ -1,222 +1,166 @@
 
 class Game {
 
-    constructor() {}
+    static _screen   = { WIDTH: 600, HEIGHT: 400, MID_HEIGHT: (400 / 2), MID_WIDTH: (600 / 2 )};
+	static _paddle   = { HEIGHT: 60, WIDTH: 10, OFFSET: (60 / 2), SPEED: 5, CHUNKS: (60 / 26), MID_HEIGHT: (60 / 2) };
+	static _ball = { HEIGHT: 10, WIDTH: 10, OFFSET: (10 / 2), SPEED: 2 };
+    static _player  = {
+        P0_START_POS: 30, P1_START_POS: (Game._screen.WIDTH - 20),
+        P0_DIR: 1, P1_DIR: -1,
+        P0_Y0: (Game._screen.MID_HEIGHT - Game._paddle.OFFSET), P0_Y1: (Game._screen.MID_HEIGHT + Game._paddle.OFFSET), 
+        P1_Y0: (Game._screen.MID_HEIGHT - Game._paddle.OFFSET), P1_Y1: (Game._screen.MID_HEIGHT + Game._paddle.OFFSET), 
+        P0_X0: 10, P0_X1: 20,
+        P1_X0: (Game._screen.WIDTH - 30), P1_X1: (Game._screen.WIDTH - 20)
+    };
 
+
+    constructor() {
+
+        this.SCORES = [0, 0];
+	    this.ball = {
+	    	HEIGHT: Game._ball.HEIGHT,
+	    	WIDTH: Game._ball.WIDTH,
+	    	OFFSET: Game._ball.OFFSET,
+	    	SPEED: Game._ball.SPEED,
+	    	Y: Game._screen.MID_HEIGHT,
+	    	X: Game._screen.MID_WIDTH,
+	    	YDir: 0,
+	    	XDir: 0
+	    };
+        this.leftPlayer = {
+            DIR: Game._player.P0_DIR,
+            START: Game._player.P0_START_POS,
+            Y: [Game._player.P0_Y0, Game._player.P0_Y1],
+            X: [Game._player.P0_X0, Game._player.P0_X1],
+            YDir: 0
+        };
+        this.rightPlayer = {
+            DIR: Game._player.P1_DIR,
+            START: Game._player.P1_START_POS,
+            Y: [Game._player.P1_Y0, Game._player.P1_Y1],
+            X: [Game._player.P1_X0, Game._player.P1_X1],
+            YDir: 0
+        };
+    }
+
+
+    restartGame(player) {
+
+        this.leftPlayer.X = [Game._player.Y0, Game._player.Y1];
+        this.leftPlayer.Y = [Game._player.X0, Game._player.X0];
+        this.leftPlayer.YDir = 0;
+        this.rightPlayer.X = [Game._player.Y0, Game._player.Y1];
+        this.rightPlayer.Y = [Game._player.X1, Game._player.X1];
+        this.rightPlayer.YDir = 0;
+        this.ball.X  = player.START;
+        this.ball.Y  = Game._screen.MID_HEIGHT;
+        this.ball.XDir = player.DIR;
+        this.ball.YDir = 0;
+    }
+
+    updatePlayerPaddle(playerIndex, newYCoord) {
+
+        const player = (playerIndex === 0) ? this.leftPlayer : this.rightPlayer;
+        
+        player.Y[0] += newYCoord * Game._paddle.SPEED;
+        player.Y[1] += newYCoord * Game._paddle.SPEED;
+
+	    if (player.Y[1] >= Game._screen.HEIGHT) {
+            player.Y[0] = Game._screen.HEIGHT - Game._paddle.HEIGHT;
+            player.Y[1] = Game._screen.HEIGHT;
+        }
+	    if (player.Y[0] <= 0) {
+            player.Y[0] = 0;  
+            player.Y[1] = Game._paddle.HEIGHT;
+        }
+    }
+
+    updateBall() {
+
+        if (this.leftPaddleHitBall()) {
+        
+            this.ball.YDir += getPaddleHitAngle(this.leftPlayer);
+            this.ball.XDir += Game._ball.SPEED;
+        }
+        else if (this.rightPaddleHitBall()) {
+        
+            this.ball.YDir -= getPaddleHitAngle(this.rightPlayer);
+            this.ball.XDir -= Game._ball.SPEED;
+        
+        }
+        else if (this.ballWentThrough()) {
+
+            const player = this.getPlayerWhoSCORESd();
+            this.SCORES[player.INDEX]++;
+            this.restartGame(player);
+        }
+        else if (this.ballBouncedOnWall()) {
+
+            this.ball.YDir = -this.ball.YDir;
+        }
+        this.ball.X  += this.ball.XDir;
+        this.ball.Y  += this.ball.YDir;
+    }
+
+    ballBouncedOnWall() {
+
+        if (this.ball.Y + this.ball.OFFSET >= Game._screen.HEIGHT || this.ball.Y - this.ball.OFFSET <= 0) {
+            return (true);
+        }
+        return (false);
+    }
+
+    ballWentThrough() {
+
+        if (this.ball.X - this.ball.OFFSET <= 0 || this.ball.X + this.ball.OFFSET >= Game._screen.WIDTH) {
+            return (true);
+        }
+        return (false);
+    }
+
+    getPlayerWhoSCORESd() {
+
+        if (this.ball.X + this.ball.OFFSET >= Game._screen.WIDTH) {
+            return (this.leftPlayer);
+        }
+        return (this.rightPlayer);
+    }
+
+    leftPaddleHitBall() {
+
+        if (ball.X - ball.OFFSET <= this.leftPlayer.X[1] && ball.Y + ball.OFFSET >= leftPlayer.Y[0] && ball.Y - ball.OFFSET <= leftPlayer.Y[1]) {
+            return (true);
+        }
+        return (false);
+    }
+
+    rightPaddleHitBall() {
+
+        if (ball.X + ball.OFFSET >= this.rightPlayer.X[0] && ball.Y + ball.OFFSET >= this.rightPlayer.Y[0] && ball.Y - ball.OFFSET <= this.rightPlayer.Y[1]) {
+            return (true);
+        }
+        return (false);
+    }
+
+    getPaddleHitAngle(player) {
+
+        const relative_y = this.ball.Y - player.Y[0];
+        const cur_chunk = Math.floor(relative_y / Game._paddle.CHUNKS);
+        const new_dir = (cur_chunk / 10);
+
+        if (cur_chunk < Game._paddle.MID_HEIGHT) {
+            return (-new_dir)
+        }
+        return (new_dir);     
+    }
+
+    getLeftPlayerXY() {return ([this.leftPlayer.X[0], this.leftPlayer.Y[0] - Game._paddle.WIDTH]);}
+    getRightPlayerXY() {return ([this.rightPlayer.X[0], this.rightPlayer.Y[0]]);}
+    getBallXY() {return ([this.ball.X - Game._ball.OFFSET, this.ball.Y - Game._ball.OFFSET]);}
+
+
+    getPaddleWidthAndHeight() {return ([Game._paddle.WIDTH, Game._paddle.HEIGHT]);}
+    getBallWidthAndHeight() {return ([Game._ball.WIDTH, Game._ball.HEIGHT]);}
+    getScores() {return (this.SCORES);}
 
 }
-/*
-
-import {texture, canvas} from "./ui.js"
-
-
-interface GameScreen {
-    WIDTH: number;
-    HEIGHT: number;
-    MID_HEIGHT: number;
-    MID_WIDTH: number;
-};
-
-interface GamePaddle {
-    HEIGHT: number;
-    WIDTH: number;
-    OFFSET: number;
-    SPEED: number;
-    SEGMENTS: number;
-};
-
-interface GameBall {
-    HEIGHT: number;
-    WIDTH: number;
-    OFFSET: number;
-    SPEED: number;
-    Y: number;
-    X: number;
-    YCoord: number;
-    XCoord: number;
-};
-
-interface GamePlayer {
-    Y: number[];
-    X: number[];
-    YCoord: number;
-};
-
-const screen: GameScreen = {
-
-    WIDTH: canvas.width,
-    HEIGHT: canvas.height,
-    MID_HEIGHT: canvas.height / 2,
-    MID_WIDTH: canvas.width / 2
-};
- 
-const ball: GameBall = {
-    HEIGHT: 10,
-    WIDTH: 10,
-    OFFSET: 10 / 2,
-    SPEED: 2,
-    Y: screen.MID_HEIGHT,
-    X: screen.MID_WIDTH,
-    YCoord: 0,
-    XCoord: 0
-};
-
-const paddle: GamePaddle = {
-    HEIGHT: 60,
-    WIDTH: 10,
-    OFFSET: 60 / 2,
-    SPEED: 5,
-    SEGMENTS: 26
-};
-
-
-const player1: GamePlayer = {
-    Y: [screen.MID_HEIGHT - paddle.OFFSET, screen.MID_HEIGHT + paddle.OFFSET],
-    X: [20, 20],
-    YCoord: 0
-
-};
-
-const player2: GamePlayer = {
-
-    Y: [screen.MID_HEIGHT - paddle.OFFSET, screen.MID_HEIGHT + paddle.OFFSET],
-    X: [screen.WIDTH - 20, screen.WIDTH - 20],
-    YCoord: 0
-};
-
-
-function updatePlayers(): void {
-
-    player1.Y[0] += player1.YCoord * paddle.SPEED;
-    player1.Y[1] += player1.YCoord * paddle.SPEED;
-    player2.Y[0] += player2.YCoord * paddle.SPEED;
-    player2.Y[1] += player2.YCoord * paddle.SPEED;
-
-
-
-	if (player1.Y[1] >= screen.HEIGHT) {
-        player1.Y[1] = screen.HEIGHT;
-        player1.Y[0] = screen.HEIGHT - paddle.HEIGHT;
-    }
-	if (player2.Y[1] >= screen.HEIGHT) {
-        player2.Y[0] = screen.HEIGHT - paddle.HEIGHT;
-        player2.Y[1] = screen.HEIGHT;
-    }
-
-	if (player1.Y[0] <= 0) {
-        player1.Y[0] = 0;  
-        player1.Y[1] = 0 + paddle.HEIGHT;
-    }
-    if (player2.Y[0] <= 0) {
-        player2.Y[0] = 0;  
-        player2.Y[1] = 0 + paddle.HEIGHT;
-    }
-
-}
-
-
-function getSegment(player: GamePlayer): number {
-
-    const paddle_chunks = paddle.HEIGHT / paddle.SEGMENTS;
-    const relative_y = ball.Y - player.Y[0];
-    const chunk = Math.floor(relative_y / paddle_chunks);
-    const res = chunk / 10;
-
-    if (chunk < paddle.SEGMENTS / 2)
-        return (-res)
-    return res;
-}
-
-function updateBall(): void {
-
-    const RIGHT_PADDLE_HITBOX: number = player2.X[0];
-    const LEFT_PADDLE_HITBOX: number = player1.X[0];
-
-   
-    if (ball.Y + ball.OFFSET >= screen.HEIGHT || ball.Y - ball.OFFSET <= 0) {
-
-        ball.YCoord = -ball.YCoord;
-    }
-    else if (ball.X - ball.OFFSET <= 0 || ball.X + ball.OFFSET >= screen.WIDTH) {
-
-        ball.X  = screen.MID_WIDTH;
-        ball.Y  = screen.MID_HEIGHT;
-        ball.XCoord = 1;
-        ball.YCoord = 0;
-    }
-    else if (ball.X - ball.OFFSET <= LEFT_PADDLE_HITBOX && ball.Y + ball.OFFSET >= player1.Y[0] && ball.Y - ball.OFFSET <= player1.Y[1]) {
-
-        ball.YCoord += getSegment(player1);
-        ball.XCoord += ball.SPEED;
-
-    }
-    else if (ball.X + ball.OFFSET >= RIGHT_PADDLE_HITBOX && ball.Y + ball.OFFSET >= player2.Y[0] && ball.Y - ball.OFFSET <= player2.Y[1]) {
-
-
-        ball.YCoord -= getSegment(player2);
-        ball.XCoord -= ball.SPEED;
-
-    }
-    ball.X  += ball.XCoord;
-    ball.Y  += ball.YCoord;
-}
-
-export function gameKeyPresses() {
-
-    ball.XCoord = 1;
-    document.addEventListener("keydown", (e: KeyboardEvent) => {
-
-        if (e.key === "w")
-            player1.YCoord = -1
-        if (e.key === "s")
-			player1.YCoord  = 1;
-        if (e.key === "ArrowUp")
-			player2.YCoord  = -1;
-        if (e.key === "ArrowDown")
-			player2.YCoord  = 1;
-    });
-    document.addEventListener("keyup", (e: KeyboardEvent) => {
-
-        if (e.key === "w" || e.key === "s")
-            player1.YCoord = 0;
-        if (e.key === "ArrowUp" || e.key === "ArrowDown")
-            player2.YCoord = 0;
-    });
-
-	gameLoop();
-}
-
-
-function drawAll() {
-
-    // CLEAR SCREEN
-	texture.clearRect(0, 0, screen.WIDTH, screen.HEIGHT);
-	texture.fillStyle = "black";
-	texture.fillRect(0, 0, screen.WIDTH, screen.HEIGHT);
-
-
-    // LEFT PADDLE
-    texture.fillStyle = "white";
-    texture.fillRect(player1.X[0], player1.Y[0], -paddle.WIDTH, paddle.HEIGHT);
-    
-    // RIGHT PADDLE
-    texture.fillStyle = "white";
-    texture.fillRect(player2.X[0], player2.Y[0], paddle.WIDTH, paddle.HEIGHT);
-
-    // BALL
-    texture.fillStyle = "pink";
-	texture.fillRect((ball.X - ball.OFFSET), (ball.Y - ball.OFFSET), ball.WIDTH, ball.HEIGHT)
-}
-
-
-
-function gameLoop() {
-
-	updatePlayers();
-    updateBall();
-	drawAll();
-	requestAnimationFrame(gameLoop);
-}
-
-
-*/
