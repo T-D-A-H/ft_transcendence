@@ -42,20 +42,19 @@ function createMatchRequest(requestingUser, userManager) {
 }
 
 function handleUserCommands(user, userManager) {
-
 	user.socket.on("message", (raw) => {
+		let msg;
+		try {
+			msg = JSON.parse(raw);
+		} catch (err) {
+			LOGGER("handleUserCommands: invalid json", 500);
+			return;
+		}
 
-	    let msg;
-	    try {
-		    msg = JSON.parse(raw);
-	    } catch (err) {
-		    LOGGER("handleUserCommands: invalid json", 500);
-		    return ;
-	    }
 		if (msg.type === "CREATE_MATCH_REQUEST") {
 			createMatchRequest(user, userManager);
 		}
-        else if (msg.type === "SEARCH_MATCH_REQUEST") {
+		else if (msg.type === "SEARCH_MATCH_REQUEST") {
 			searchMatchRequest(user, userManager);
 		}
 		else if (msg.type === "JOIN_MATCH_REQUEST") {
@@ -72,40 +71,33 @@ function handleUserCommands(user, userManager) {
 			user.send({ type: "PLAYER_JOINED_MATCH"});
 		}
 		else if (msg.type === "MOVE" && user.currentMatch) {
-			// console.log("move recv: " + msg.move);
 			user.currentMatch.setPlayerMove(user, msg.move);
 		}
 	});
-
 }
 
+// ✅ ACTUALIZADO: Ahora recibe userId del backend en lugar de token en URL
 function buildGameSocketHandler(userManager, fastify) {
+	return (conn, req, userId) => {
+		// El userId ya fue verificado en main.js
+		// No necesitamos validar el token aquí
+		
+		if (!userId) {
+			LOGGER(400, "buildGameSocketHandler:", "No userId provided");
+			return conn.socket.close(1008, "No user ID");
+		}
 
-  return (conn, req) => {
+		const user = userManager.getUser(userId);
+		if (!user) {
+			LOGGER(400, "buildGameSocketHandler:", "Could not find user with ID: " + userId);
+			return conn.socket.close(1008, "User not found");
+		}
 
-    const token = req.query.token;
-    if (!token || token === "null") {
-		LOGGER(400, "buildGameSocketHandler:", "couldnt get token");
-		return conn.socket.close(1008);
-	}
-
-    let payload;
-    try {
-		payload = fastify.jwt.verify(token);
-    } catch {
-		LOGGER(400, "buildGameSocketHandler:", "jwt.verify failed");
-		return conn.socket.close(1008);
-    }
-
-    const user = userManager.getUser(payload.id);
-    if (!user) {
-		LOGGER(400, "buildGameSocketHandler:", "couldnt find user");
-		return conn.socket.close(1008);
-	}
-
-    user.connect(conn.socket);
-    handleUserCommands(user, userManager);
-  };
+		LOGGER(200, "buildGameSocketHandler:", "User connected: " + user.getUsername());
+		
+		user.connect(conn.socket);
+		handleUserCommands(user, userManager);
+	};
 }
 
 module.exports = buildGameSocketHandler;

@@ -1,15 +1,25 @@
-function verify2FACode(userManager, fastify) {
+function verify2FACode(userManager, fastify, setTokenCookie) {
 	return async function verify2FAHandler(req, reply) {
-		const { tempToken, code } = req.body;
+		const {  code } = req.body;
 
-		if (!tempToken || !code) {
+		if ( !code) {
 			return reply.code(400).send({ 
-			status: "error",
-			error: "Faltan datos" 
+				status: "error",
+				error: "Faltan datos" 
 			});
 		}
 
 		try {
+			// Obtener el token temporal de la cookie (httpOnly)
+			const tempToken = req.cookies?.temp2FA;
+
+			if (!tempToken) {
+				return reply.code(401).send({ 
+					status: "error",
+					error: "Session expirada - intenta login de nuevo" 
+				});
+			}
+
 			// Verificar token temporal
 			const decoded = fastify.jwt.verify(tempToken);
 			
@@ -44,10 +54,14 @@ function verify2FACode(userManager, fastify) {
 				display_name: decoded.display_name 
 			});
 
+			// Setear cookie de acceso
+			setTokenCookie(reply, token);
+
+			// Limpiar cookie temporal
+			reply.clearCookie('temp2FA');
+
 			return reply.send({ 
-				status: "ok", 
-				token,
-				userId: userId 
+				status: "ok"
 			});
 
 		} catch (err) {

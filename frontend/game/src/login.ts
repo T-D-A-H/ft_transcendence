@@ -1,12 +1,10 @@
 export async function login(
-  usernameInput: HTMLInputElement,
-  passwordInput: HTMLInputElement
+	usernameInput: HTMLInputElement,
+	passwordInput: HTMLInputElement
 ): Promise<{ 
-  status: number | string; 
-  token?: string; 
-  tempToken?: string;
-  method?: string;
-  error?: string;
+	status: number | string; 
+	method?: string;
+	error?: string;
 }> {
 	const body = {
 		display_name: usernameInput.value,
@@ -18,16 +16,16 @@ export async function login(
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(body),
-			credentials: "include"
+			credentials: "include" // ✅ Enviar y recibir cookies
 		});
 
 		const result = await res.json();
 
-		// Caso 1: Login exitoso (sin 2FA o ya validado)
-		if (result.status === "ok" && result.token) {
+		// Caso 1: Login exitoso (sin 2FA)
+		if (result.status === "ok") {
 			return { 
-				status: 0, 
-				token: result.token 
+				status: 0
+				// ✅ Token está en httpOnly cookie, NO lo enviamos al frontend
 			};
 		}
 
@@ -35,12 +33,12 @@ export async function login(
 		if (result.status === "requires_2fa") {
 			return { 
 				status: "requires_2fa",
-				method: result.method, // "email" o "totp"
-				tempToken: result.tempToken 
+				method: result.method // "email"
+				// ✅ Cookie temporal en el servidor, no aquí
 			};
 		}
 
-		// Caso 3: Error (credenciales incorrectas u otro error)
+		// Caso 3: Error (credenciales incorrectas)
 		return { 
 			status: 1,
 			error: result.error || "Error en el inicio de sesión" 
@@ -49,8 +47,8 @@ export async function login(
 	} catch (err) {
 		console.error("Error en login:", err);
 		return { 
-		status: 1,
-		error: "Error de conexión" 
+			status: 1,
+			error: "Error de conexión" 
 		};
 	}
 }
