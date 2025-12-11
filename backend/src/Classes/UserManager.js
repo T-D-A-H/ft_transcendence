@@ -134,10 +134,10 @@ class UserManager {
     }
 
     // Create a new match
-	createMatch(user, locally) {
+	createMatch(user, locally, num_games) {
         LOGGER(200, "UserManager", "createMatch", user.getUsername());
         const match_id = this.match_id;
-		const match = new Match(user, match_id, locally);
+		const match = new Match(user, match_id, locally, num_games);
         this.matches.set(match_id, match);
         this.match_id++;
         return (match);

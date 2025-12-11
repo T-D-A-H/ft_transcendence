@@ -1,77 +1,114 @@
 
+const LOGGER = require("../LOGGER.js");
+
 class Game {
 
-    static _screen   = { WIDTH: 600, HEIGHT: 400, MID_HEIGHT: (400 / 2), MID_WIDTH: (600 / 2 )};
-	static _paddle   = { HEIGHT: 60, WIDTH: 10, OFFSET: (60 / 2), SPEED: 5, CHUNKS: (60 / 26), MID_HEIGHT: (60 / 2) };
-	static _ball = { HEIGHT: 10, WIDTH: 10, OFFSET: (10 / 2), SPEED: 2 };
-    static _player  = {
-        P0_START_POS: 30, P1_START_POS: (Game._screen.WIDTH - 20),
-        P0_DIR: 1, P1_DIR: -1,
-        P0_Y0: (Game._screen.MID_HEIGHT - Game._paddle.OFFSET), P0_Y1: (Game._screen.MID_HEIGHT + Game._paddle.OFFSET), 
-        P1_Y0: (Game._screen.MID_HEIGHT - Game._paddle.OFFSET), P1_Y1: (Game._screen.MID_HEIGHT + Game._paddle.OFFSET), 
-        P0_X0: 10, P0_X1: 20,
-        P1_X0: (Game._screen.WIDTH - 30), P1_X1: (Game._screen.WIDTH - 20)
+    static MaxScore = 8;
+    static Screen = { 
+        WIDTH: 600, 
+        HEIGHT: 400, 
+        MID_HEIGHT: (400 / 2), 
+        MID_WIDTH: (600 / 2)
+    };
+	static Paddle = { 
+        HEIGHT: 60, 
+        WIDTH: 10, 
+        OFFSET: (60 / 2), 
+        SPEED: 8, 
+        CHUNKS: (60 / 12),
+        MID_HEIGHT: (60 / 2) 
+    };
+	static Ball = { 
+        HEIGHT: 10, 
+        WIDTH: 10, 
+        OFFSET: (10 / 2),
+        SPEED: 3,
+        INC: 0.25,
+        MAX_SPEED: 6,
+        START_POS: [30 , (Game.Screen.WIDTH - 30)]
+    };
+    static Player0  = {
+        Y0: (Game.Screen.MID_HEIGHT - Game.Paddle.OFFSET),
+        Y1: (Game.Screen.MID_HEIGHT + Game.Paddle.OFFSET), 
+        X0: 10,
+        X1: 20
+    };
+    static Player1  = {
+        Y0: (Game.Screen.MID_HEIGHT - Game.Paddle.OFFSET), 
+        Y1: (Game.Screen.MID_HEIGHT + Game.Paddle.OFFSET), 
+        X0: (Game.Screen.WIDTH - 20), 
+        X1: (Game.Screen.WIDTH - 10)
     };
 
 
     constructor() {
 
+        LOGGER(200, "Game", "Constructor", "called.");
         this.SCORES = [0, 0];
 	    this.ball = {
-	    	HEIGHT: Game._ball.HEIGHT,
-	    	WIDTH: Game._ball.WIDTH,
-	    	OFFSET: Game._ball.OFFSET,
-	    	SPEED: Game._ball.SPEED,
-	    	Y: Game._screen.MID_HEIGHT,
-	    	X: Game._screen.MID_WIDTH,
+            SPEED: Game.Ball.SPEED,
+	    	Y: Game.Screen.MID_HEIGHT,
+	    	X: Game.Screen.MID_WIDTH,
 	    	YDir: 0,
-	    	XDir: 0
+	    	XDir: 1
 	    };
         this.leftPlayer = {
-            DIR: Game._player.P0_DIR,
-            START: Game._player.P0_START_POS,
-            Y: [Game._player.P0_Y0, Game._player.P0_Y1],
-            X: [Game._player.P0_X0, Game._player.P0_X1],
+            INDEX: 0,
+            DIR: 1,
+            Y: [Game.Player0.Y0, Game.Player0.Y1],
+            X: [Game.Player0.X0, Game.Player0.X1],
             YDir: 0
         };
         this.rightPlayer = {
-            DIR: Game._player.P1_DIR,
-            START: Game._player.P1_START_POS,
-            Y: [Game._player.P1_Y0, Game._player.P1_Y1],
-            X: [Game._player.P1_X0, Game._player.P1_X1],
+            INDEX: 1,
+            DIR: -1,
+            Y: [Game.Player1.Y0, Game.Player1.Y1],
+            X: [Game.Player1.X0, Game.Player1.X1],
             YDir: 0
         };
     }
 
 
-    restartGame(player) {
+    restartGame() {
+        
+        const player = this.getPlayerWhoScored();
+        this.SCORES[player.INDEX]++;
 
-        this.leftPlayer.X = [Game._player.Y0, Game._player.Y1];
-        this.leftPlayer.Y = [Game._player.X0, Game._player.X0];
+        this.leftPlayer.Y = [Game.Player0.Y0, Game.Player0.Y1];
         this.leftPlayer.YDir = 0;
-        this.rightPlayer.X = [Game._player.Y0, Game._player.Y1];
-        this.rightPlayer.Y = [Game._player.X1, Game._player.X1];
+        this.rightPlayer.Y = [Game.Player1.Y0, Game.Player1.Y1];
         this.rightPlayer.YDir = 0;
-        this.ball.X  = player.START;
-        this.ball.Y  = Game._screen.MID_HEIGHT;
+        this.ball.Y  = Game.Screen.MID_HEIGHT;
+        this.ball.X  = Game.Ball.START_POS[player.INDEX];
         this.ball.XDir = player.DIR;
         this.ball.YDir = 0;
+        this.ball.SPEED = Game.Ball.SPEED;
+        LOGGER(200, "Game", "restartGame", "SCORES: " + this.SCORES[0] + ", " + this.SCORES[1]);
     }
 
-    updatePlayerPaddle(playerIndex, newYCoord) {
+    updatePlayerPaddle(newYDir) {
 
-        const player = (playerIndex === 0) ? this.leftPlayer : this.rightPlayer;
-        
-        player.Y[0] += newYCoord * Game._paddle.SPEED;
-        player.Y[1] += newYCoord * Game._paddle.SPEED;
+        this.leftPlayer.Y[0]  += newYDir[0] * Game.Paddle.SPEED;
+        this.leftPlayer.Y[1]  += newYDir[0] * Game.Paddle.SPEED;
+        this.rightPlayer.Y[0] += newYDir[1] * Game.Paddle.SPEED;
+        this.rightPlayer.Y[1] += newYDir[1] * Game.Paddle.SPEED;
 
-	    if (player.Y[1] >= Game._screen.HEIGHT) {
-            player.Y[0] = Game._screen.HEIGHT - Game._paddle.HEIGHT;
-            player.Y[1] = Game._screen.HEIGHT;
+	    if (this.leftPlayer.Y[1] >= Game.Screen.HEIGHT) {
+            this.leftPlayer.Y[0] = Game.Screen.HEIGHT - Game.Paddle.HEIGHT;
+            this.leftPlayer.Y[1] = Game.Screen.HEIGHT;
         }
-	    if (player.Y[0] <= 0) {
-            player.Y[0] = 0;  
-            player.Y[1] = Game._paddle.HEIGHT;
+        if (this.rightPlayer.Y[1] >= Game.Screen.HEIGHT) {
+            this.rightPlayer.Y[0] = Game.Screen.HEIGHT - Game.Paddle.HEIGHT;
+            this.rightPlayer.Y[1] = Game.Screen.HEIGHT;
+        }
+	    if (this.leftPlayer.Y[0] <= 0) {
+            this.leftPlayer.Y[0] = 0;  
+            this.leftPlayer.Y[1] = Game.Paddle.HEIGHT;
+        }
+
+	    if (this.rightPlayer.Y[0] <= 0) {
+            this.rightPlayer.Y[0] = 0;  
+            this.rightPlayer.Y[1] = Game.Paddle.HEIGHT;
         }
     }
 
@@ -79,32 +116,39 @@ class Game {
 
         if (this.leftPaddleHitBall()) {
         
-            this.ball.YDir += getPaddleHitAngle(this.leftPlayer);
-            this.ball.XDir += Game._ball.SPEED;
+            const angle = this.getPaddleHitAngle(this.leftPlayer);
+            this.ball.SPEED += Game.Ball.INC;
+            if (this.ball.SPEED > Game.Ball.MAX_SPEED)
+                this.ball.SPEED = Game.Ball.MAX_SPEED;
+            this.ball.XDir = 1; 
+            this.ball.YDir = angle * this.ball.SPEED;
         }
         else if (this.rightPaddleHitBall()) {
-        
-            this.ball.YDir -= getPaddleHitAngle(this.rightPlayer);
-            this.ball.XDir -= Game._ball.SPEED;
+
+            const angle = this.getPaddleHitAngle(this.rightPlayer);
+            this.ball.SPEED += Game.Ball.INC;
+            if (this.ball.SPEED > Game.Ball.MAX_SPEED)
+                this.ball.SPEED = Game.Ball.MAX_SPEED;
+            this.ball.XDir = -1; 
+            this.ball.YDir = angle * this.ball.SPEED;
         
         }
         else if (this.ballWentThrough()) {
 
-            const player = this.getPlayerWhoSCORESd();
-            this.SCORES[player.INDEX]++;
-            this.restartGame(player);
+            this.restartGame();
+            return ;
         }
         else if (this.ballBouncedOnWall()) {
 
             this.ball.YDir = -this.ball.YDir;
         }
-        this.ball.X  += this.ball.XDir;
+        this.ball.X  += this.ball.XDir * this.ball.SPEED;
         this.ball.Y  += this.ball.YDir;
     }
 
     ballBouncedOnWall() {
 
-        if (this.ball.Y + this.ball.OFFSET >= Game._screen.HEIGHT || this.ball.Y - this.ball.OFFSET <= 0) {
+        if (this.ball.Y + Game.Ball.OFFSET >= Game.Screen.HEIGHT || this.ball.Y - Game.Ball.OFFSET <= 0) {
             return (true);
         }
         return (false);
@@ -112,15 +156,15 @@ class Game {
 
     ballWentThrough() {
 
-        if (this.ball.X - this.ball.OFFSET <= 0 || this.ball.X + this.ball.OFFSET >= Game._screen.WIDTH) {
+        if (this.ball.X - Game.Ball.OFFSET <= 0 || this.ball.X + Game.Ball.OFFSET >= Game.Screen.WIDTH) {
             return (true);
         }
         return (false);
     }
 
-    getPlayerWhoSCORESd() {
+    getPlayerWhoScored() {
 
-        if (this.ball.X + this.ball.OFFSET >= Game._screen.WIDTH) {
+        if (this.ball.X + Game.Ball.OFFSET >= Game.Screen.WIDTH) {
             return (this.leftPlayer);
         }
         return (this.rightPlayer);
@@ -128,7 +172,7 @@ class Game {
 
     leftPaddleHitBall() {
 
-        if (ball.X - ball.OFFSET <= this.leftPlayer.X[1] && ball.Y + ball.OFFSET >= leftPlayer.Y[0] && ball.Y - ball.OFFSET <= leftPlayer.Y[1]) {
+        if (this.ball.X - Game.Ball.OFFSET <= this.leftPlayer.X[1] && this.ball.Y + Game.Ball.OFFSET >= this.leftPlayer.Y[0] && this.ball.Y - Game.Ball.OFFSET <= this.leftPlayer.Y[1]) {
             return (true);
         }
         return (false);
@@ -136,31 +180,40 @@ class Game {
 
     rightPaddleHitBall() {
 
-        if (ball.X + ball.OFFSET >= this.rightPlayer.X[0] && ball.Y + ball.OFFSET >= this.rightPlayer.Y[0] && ball.Y - ball.OFFSET <= this.rightPlayer.Y[1]) {
+        if (this.ball.X + Game.Ball.OFFSET >= this.rightPlayer.X[0] && this.ball.Y + Game.Ball.OFFSET >= this.rightPlayer.Y[0] && this.ball.Y - Game.Ball.OFFSET <= this.rightPlayer.Y[1]) {
             return (true);
         }
         return (false);
     }
-
+    
     getPaddleHitAngle(player) {
 
-        const relative_y = this.ball.Y - player.Y[0];
-        const cur_chunk = Math.floor(relative_y / Game._paddle.CHUNKS);
-        const new_dir = (cur_chunk / 10);
+    	const paddle_center = (player.Y[0] + player.Y[1]) / 2;
+    	const ball_center = this.ball.Y + Game.Ball.OFFSET;
 
-        if (cur_chunk < Game._paddle.MID_HEIGHT) {
-            return (-new_dir)
-        }
-        return (new_dir);     
+    	const relative = ball_center - paddle_center;
+    	const normalized = relative / ((player.Y[1] - player.Y[0]) / 2);
+
+    	return normalized;
     }
 
-    getLeftPlayerXY() {return ([this.leftPlayer.X[0], this.leftPlayer.Y[0] - Game._paddle.WIDTH]);}
+
+    getLeftPlayerXY() {return ([this.leftPlayer.X[0], this.leftPlayer.Y[0]]);}
     getRightPlayerXY() {return ([this.rightPlayer.X[0], this.rightPlayer.Y[0]]);}
-    getBallXY() {return ([this.ball.X - Game._ball.OFFSET, this.ball.Y - Game._ball.OFFSET]);}
+    getBallXY() {return ([this.ball.X - Game.Ball.OFFSET, this.ball.Y - Game.Ball.OFFSET]);}
 
 
-    getPaddleWidthAndHeight() {return ([Game._paddle.WIDTH, Game._paddle.HEIGHT]);}
-    getBallWidthAndHeight() {return ([Game._ball.WIDTH, Game._ball.HEIGHT]);}
+    getPaddleWidthAndHeight() {return ([Game.Paddle.WIDTH, Game.Paddle.HEIGHT]);}
+    getBallWidthAndHeight() {return ([Game.Ball.WIDTH, Game.Ball.HEIGHT]);}
     getScores() {return (this.SCORES);}
+    getIfWin() {
+        if (this.SCORES[0] >= Game.MaxScore)
+            return (0);
+        else if (this.SCORES[1] >= Game.MaxScore)
+            return (1);
+        return (-1);
+    }
 
 }
+
+module.exports = Game;

@@ -9,7 +9,8 @@ import {
 	playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton,
 	incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton,
 	createTournamentButton, searchTournamentButton, activeTournamentsModal, tournamentsListUL, renderTournamentList,
-	canvas, texture, show, hide
+	canvas, texture, show, hide,
+	testGameButton
 } from "./ui.js";
 
 import { registerUser,  loginUser } from "./login-register.js"
@@ -259,7 +260,7 @@ startMatchButton.onclick = () => {
 			return ;
 		}
 		hide(waitingPlayers);
-		sendKeyPress(userSocket!, canvas!, texture!);
+		sendKeyPress(userSocket!);
     });
 };
 
@@ -285,27 +286,30 @@ playLocallyButton.onclick = () => {
 		hide(playAgainstUserButton);
 		hide(createTournamentButton);
 		hide(searchTournamentButton);
-		send2KeyPress(userSocket!, canvas!, texture!);
+		send2KeyPress(userSocket!);
 	});
 };
 
-import {testGameButton} from "./ui.js"
-import { gameKeyPresses } from "./testgame.js";
-
-testGameButton.onclick = () => {
-
-	gameKeyPresses();
-};
-
+// import { gameKeyPresses } from "./testgame.js";
+// testGameButton.onclick = () => {
+// 	gameKeyPresses();
+// };
 
 // createTournamentButton.onclick = () => {
 //     if (!userSocket) {
 //         alert("WebSocket not ready");
 //         return;
 //     }
+// 	alert("No code written for this.");
 
-// 	createNewTournamen(userSocket!).then((result) => {
-// 	});
+// };
+// searchTournamentButton.onclick = () => {
+//     if (!userSocket) {
+//         alert("WebSocket not ready");
+//         return;
+//     }
+// 	alert("No code written for this.");
+
 // };
 
 // searchForMatchButton.onclick = () => {
