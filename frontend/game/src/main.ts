@@ -6,7 +6,7 @@ import {
 	startMatchButton, searchForMatchButton, createMatchButton, waitingPlayers,
 	activeMatchesModal, playersListUL, renderMatchList,
 	show, hide, canvas, paddle, twoFAModal, twoFAOptionModal, twoFAEmailButton,
-	twoFASkipButton, twoFASubmitButton,twoFAInput, initialLoader,} from "./ui.js";
+	twoFASkipButton, twoFASubmitButton,twoFAInput, initialLoader, GoogleButton} from "./ui.js";
 
 import { registerUser } from "./register.js"
 import { login } from "./login.js"
@@ -21,7 +21,7 @@ if (!loginModal || !openLogin || !closeLogin || !submitLoginButton ||
 	!registerModal || !openRegister || !closeRegister || !submitRegisterButton ||
 	!regUsernameInput || !regDisplaynameInput || !regEmailInput || !regPasswordInput ||
 	!waitingPlayers || !startMatchButton || !searchForMatchButton || !createMatchButton ||
-	!activeMatchesModal || !playersListUL || !renderMatchList
+	!activeMatchesModal || !playersListUL || !GoogleButton || !renderMatchList
 	|| !canvas || !paddle) {
 	console.error("One or more UI elements are missing");
 }
@@ -69,26 +69,38 @@ function initializeWebSocket(token: string) {
 
 showLoader();
 
-// Verificar si hay token al cargar la página
-const token = localStorage.getItem("token");
-if (!token || token === "null") {
-	// Usuario NO autenticado
-	hide(logoutButton);
-	hide(createMatchButton);
-	hide(searchForMatchButton);
-	hide(startMatchButton);
-	show(openLogin);
-	show(openRegister);
-	setTimeout(hideLoader, 300)
+const urlParams = new URLSearchParams(window.location.search);
+let token = urlParams.get("token") || localStorage.getItem("token");
+
+if (token && token !== "null") {
+    localStorage.setItem("token", token);
+
+    // Limpiar la URL
+    if (urlParams.get("token")) {
+        window.history.replaceState({}, document.title, "/");
+    }
+
+    // Inicializar UI como logueado
+    hide(openLogin);
+    hide(openRegister);
+    show(logoutButton);
+    show(createMatchButton);
+    show(searchForMatchButton);
+    show(startMatchButton);
+    initializeWebSocket(token);
 } else {
-	// Usuario autenticado
-	hide(openLogin);
-	hide(openRegister);
-	show(logoutButton);
-	show(createMatchButton);
-	show(searchForMatchButton);
-	show(startMatchButton);
-	initializeWebSocket(token);
+    // Usuario NO autenticado
+    hide(logoutButton);
+    hide(createMatchButton);
+    hide(searchForMatchButton);
+    hide(startMatchButton);
+    show(openLogin);
+    show(openRegister);
+    setTimeout(hideLoader, 300);
+}
+
+GoogleButton.onclick = async () => {
+	window.location.href = "/auth/google";
 }
 
 submitLoginButton.onclick = async () => {

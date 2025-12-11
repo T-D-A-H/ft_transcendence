@@ -39,10 +39,12 @@ export async function registerUser(
 			};
 		}
 
+		alert("Usuario o nombre ya registrado");
 		return { 
 			status: 1,
 			error: result.error || "Error en el registro"
 		};
+
 	} catch (err) {
 		console.error("Register error:", err);
 		return { 

@@ -100,7 +100,7 @@ export const twoFASubmitButton = document.getElementById("twofa_submit_button") 
 export const twoFASkipButton = document.getElementById("twofa_skip_button") as HTMLButtonElement;
 
 // VIA AUTH
-export const twoFAAuthButton = document.getElementById("twofa_auth_button") as HTMLButtonElement;
+export const GoogleButton = document.getElementById("google_register") as HTMLButtonElement;
 
 // LOADER
 export const initialLoader = document.getElementById("initial_loader") as HTMLDivElement;

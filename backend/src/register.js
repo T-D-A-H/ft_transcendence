@@ -28,11 +28,11 @@ function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
 
 			// Insertar usuario con twofa por defecto en 'skip'
 			const userId = await new Promise((resolve, reject) => {
-				db.run(
-					"INSERT INTO users (username, display_name, email, password, twofa) VALUES (?,?,?,?,?)",
-					[username, display_name, email, hashed, "skip"],
+			db.run(
+				"INSERT INTO users (username, display_name, email, password, twofa, oauth_provider, oauth_id) VALUES (?,?,?,?,?,?,?)",
+				[username, display_name, email, hashed, "skip", null, null],
 					function(err) {
-					if (err) reject(err);
+						if (err) reject(err);
 						else resolve(this.lastID);
 					}
 				);
@@ -56,7 +56,7 @@ function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
 		}
 		catch (err) {
 			console.error("Error registering user:", err);
-			
+
 			if (err.message && err.message.includes("UNIQUE constraint failed")) {
 			return reply.code(409).send({ 
 					error: "Ya existe una cuenta con estos datos" 

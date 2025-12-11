@@ -12,8 +12,8 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 	try {
 		// 1. Buscar usuario en la BD
 		const user = await new Promise((resolve, reject) => {
-			db.get(
-				"SELECT id, username, display_name, email, password, twofa FROM users WHERE display_name = ?",
+		db.get(
+			"SELECT id, username, display_name, email, password, twofa, oauth_provider, oauth_id FROM users WHERE display_name = ?",
 				[display_name],
 				(err, row) => err ? reject(err) : resolve(row)
 			);
