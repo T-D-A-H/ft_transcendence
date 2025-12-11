@@ -1,6 +1,6 @@
-const User = require("../src/User.js");
+const User = require("./User.js");
 
-function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
+function signupHandler(db, bcrypt, saltRounds, fastify) {
 	return async function registerHandler(req, reply) {
 		const body = req.body || {};
 		const username = body.username;
@@ -68,4 +68,4 @@ function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
 	};
 }
 
-module.exports = { buildRegisterHandler };
+module.exports = signupHandler;

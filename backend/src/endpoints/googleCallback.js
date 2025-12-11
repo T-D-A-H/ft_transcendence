@@ -1,0 +1,97 @@
+const User = require("../User.js");
+
+function googleCallback(userManager, fastify, db, setTokenCookie) {
+    return async function (req, reply) {
+        try {
+            // Obtener token OAuth2
+            const token = await fastify.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
+
+            const userInfo = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+                headers: { Authorization: `Bearer ${token.token.access_token}` }
+            }).then(res => res.json());
+
+            console.log("Google user info:", userInfo);
+
+            // Buscar usuario por email o por oauth_id
+            let user = await new Promise((resolve, reject) => {
+                db.get(`
+                    SELECT id, username, display_name, email, password, twofa, oauth_provider, oauth_id
+                    FROM users
+                    WHERE email = ? OR oauth_id = ?
+                `, [userInfo.email, userInfo.id], (err, row) => {
+                    if (err) return reject(err);
+                    resolve(row);
+                });
+            });
+
+            let userId;
+
+            if (!user) {
+                // Crear usuario nuevo
+                userId = await new Promise((resolve, reject) => {
+                    db.run(
+                        `INSERT INTO users (username, display_name, email, password, twofa, oauth_provider, oauth_id)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                        [
+                            userInfo.given_name || userInfo.name,
+                            userInfo.email.split('@')[0],
+                            userInfo.email,
+                            '',
+                            'skip',
+                            'google',
+                            userInfo.id
+                        ],
+                        function (err) {
+                            if (err) return reject(err);
+                            resolve(this.lastID);
+                        }
+                    );
+                });
+            }
+            else if (user.oauth_provider === "google" && user.oauth_id === userInfo.id) {
+                userId = user.id;
+            }
+            else {
+                // Email existe pero NO está registrado con Google
+                // ! Cambiar a pagina de error o equivalente
+                return reply.redirect(`/`);
+            }
+
+            // UserManager
+            let player = userManager.getUser(userId);
+
+            if (!player) {
+                player = new User({
+                    id: userId,
+                    username: userInfo.given_name || userInfo.name,
+                    display_name: userInfo.email.split('@')[0],
+                    socket: null
+                });
+                userManager.addUser(player);
+            }
+
+            if (userManager.loginUser(userId) === false) {
+                // ! Cambiar a pagina de error o equivalente
+                return reply.redirect(`/`);
+            }
+
+            // Crear JWT
+            const jwtToken = fastify.jwt.sign({
+                id: userId,
+                display_name: userInfo.email.split('@')[0]
+            });
+
+            // Cookie
+            setTokenCookie(reply, jwtToken);
+
+            // Listo
+            reply.redirect(`/`);
+
+        } catch (err) {
+            console.error("Google OAuth error:", err);
+            reply.redirect(`/?oauth_error=server_error`);
+        }
+    };
+}
+
+module.exports = googleCallback;

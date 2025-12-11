@@ -26,7 +26,6 @@ if (!loginModal || !openLogin || !closeLogin || !submitLoginButton ||
 	console.error("One or more UI elements are missing");
 }
 
-let tempToken2FA: string | null | undefined = null;
 let userSocket: WebSocket | null = null;
 
 openLogin.onclick = () => show(loginModal);
@@ -41,6 +40,8 @@ function showLoader() {
 function hideLoader() {
 	hide(initialLoader);
 }
+
+// ! Limpiar main.js, crear archivos para funciones
 
 // Validar si el usuario tiene sesión activa
 async function validateSession(): Promise<boolean> {
@@ -207,7 +208,7 @@ submitLoginButton.onclick = async () => {
 				showLoader();
 
 				try {
-					const res = await fetch("/api/verify-2fa-mail", {
+					const res = await fetch("/api/verify-2fa", {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
 						body: JSON.stringify({ code }),

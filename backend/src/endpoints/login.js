@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
 const User = require("../User.js");
 
-function buildLoginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
+function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 	return async function handleLogin(req, reply) {
 	const { display_name, password } = req.body || {};
 
@@ -138,4 +138,4 @@ function buildLoginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 	};
 }
 
-module.exports = buildLoginHandler;
+module.exports = loginHandler;

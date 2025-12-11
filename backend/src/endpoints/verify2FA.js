@@ -1,4 +1,4 @@
-function verify2FACode(userManager, fastify, setTokenCookie) {
+function verify2FAhandle(userManager, fastify, setTokenCookie) {
 	return async function verify2FAHandler(req, reply) {
 		const {  code } = req.body;
 
@@ -74,4 +74,4 @@ function verify2FACode(userManager, fastify, setTokenCookie) {
 	};
 }
 
-module.exports = verify2FACode;
+module.exports = verify2FAhandle;
