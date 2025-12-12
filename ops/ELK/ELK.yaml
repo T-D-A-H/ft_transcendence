@@ -1,0 +1,69 @@
+
+services:
+  # searchs for logs
+  elasticsearch:
+    build:
+      context: ./Elasticsearch
+      dockerfile: Dockerfile
+    container_name: ft_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - xpack.monitoring.collection.enabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data:/app/data
+    ports:
+      - "9200:9200"
+    networks:
+      - ELK
+    restart: unless-stopped
+
+  # processes and ships logs
+  logstash:
+    build:
+      context: ./Logstash
+      dockerfile: Dockerfile
+    container_name: ft_logstash
+    volumes:
+      - ./Logstash/pipeline:/app/pipeline
+      - ./Logstash/config:/app/config
+    ports:
+      - "5001:5000"
+    depends_on:
+      - elasticsearch
+    networks:
+      - ELK
+    restart: unless-stopped
+
+  # visualizes logs
+  kibana:
+    build:
+      context: ./Kibana
+      dockerfile: Dockerfile
+    container_name: ft_kibana
+    volumes:
+      - ./Kibana/kibana.yml:/app/kibana/config/kibana.yml
+      - kibana_data:/app/data
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - ELK
+    restart: unless-stopped
+
+  # volume for persisting Elasticsearch and Kibana data
+volumes:
+  es_data:
+  kibana_data:
+
+  # network for ELK stack
+networks:
+  ELK:
+    driver: bridge
+
