@@ -1,8 +1,5 @@
 const LOGGER = require("./LOGGER.js");
 
-
-// PlayAgainstResponse  {type: "CREATE_INVITE_RESPONSE"; status: number; to: string; msg: string;}
-// InviteRequest        {type: "INVITE_REQUEST"; from: string;}
 function sendInviteRequest(requestingUser, userManager, username_to_send) {
 
 	if (requestingUser.getCurrentMatch() === null) {

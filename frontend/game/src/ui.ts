@@ -1,8 +1,5 @@
 
 
-export const testGameButton = // Display login box element
-	document.getElementById("test_game") as HTMLButtonElement;
-
 
 export const loadAnimation = // Initial loader Modal
 	document.getElementById("load_animation_modal") as HTMLDivElement;
@@ -191,4 +188,53 @@ export function show(elem: HTMLElement): void { // show HTML element
 
 export function hide(elem: HTMLElement): void { // hide HTML
 	elem.classList.add("hidden"); 
+}
+
+export let SCORES: number[] = [0, 0];
+
+export let INVITE_FROM: string;
+
+export function setInviteFrom(v: string) {
+		INVITE_FROM = v;
+}
+
+export function getInviteFrom(): string {
+	return INVITE_FROM;
+}
+
+export const pongFont = new Promise<void>((resolve) => { // BLOCK FONT
+
+    const Font = new FontFace("BlockFont", "url(game/assets/block_merged.ttf)");
+    Font.load().then((loadedFont) => {
+        document.fonts.add(loadedFont);
+        console.log("BlockFont loaded");
+        resolve();
+    });
+});
+
+export const notificationBox = 
+	document.getElementById("notify-box") as HTMLDivElement;
+
+export const notificationBoxText = 
+	document.getElementById("notify-text") as HTMLDivElement;
+
+
+export function showNotification(text: string)
+{
+
+	if (!notificationBox || !notificationBoxText) return;
+
+	notificationBoxText.textContent = text;
+
+	show(notificationBox);
+	notificationBox.classList.remove("opacity-0", "pointer-events-none");
+	notificationBox.classList.add("opacity-100");
+
+	setTimeout(() => {
+
+		notificationBox.classList.remove("opacity-100");
+		notificationBox.classList.add("opacity-0");
+
+		setTimeout(() => {hide(notificationBox)}, 200);
+	}, 2500);
 }

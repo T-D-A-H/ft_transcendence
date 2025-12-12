@@ -9,13 +9,10 @@ import {
 	playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton,
 	incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton,
 	createTournamentButton, searchTournamentButton, activeTournamentsModal, tournamentsListUL, renderTournamentList,
-	canvas, texture, show, hide,
-	testGameButton
-} from "./ui.js";
-
+	canvas, texture, show, hide, showNotification,} from "./ui.js";
 import { registerUser,  loginUser } from "./login-register.js"
 import { initializeWebSocket } from "./websocket.js";
-import { sendKeyPress, send2KeyPress, sendInviteToPlayer, sendStartMatch, playLocallyRequest} from "./send-events.js";
+import { sendKeyPress, send2KeyPress, sendInviteToPlayer, sendStartMatch, playLocallyRequest, replyToInvite} from "./send-events.js";
 
 
 if (!loadAnimation || !showLoader || !hideLoader ||
@@ -28,7 +25,7 @@ if (!loadAnimation || !showLoader || !hideLoader ||
 	!playRequestModal || !playAgainstUserButton || !playRequestUsernameInput || !playRequestCloseButton || !playRequestSendButton ||
 	!incomingPlayRequestModal || !incomingPlayRequestText || !incomingPlayRequestCloseButton || !incomingPlayRequestAcceptButton ||
 	!createTournamentButton || !searchTournamentButton || !activeTournamentsModal || !tournamentsListUL || !renderTournamentList ||
-	!canvas || !texture || !show || !hide) {
+	!canvas || !texture || !show || !hide || !showNotification) {
 		console.error("One or more UI elements are missing");
 }
 
@@ -210,6 +207,7 @@ logoutButton.onclick = async () => {
 		hide(logoutButton);
 		hide(startMatchButton);
 		hide(playAgainstUserButton);
+		hide(playLocallyButton);
 		hide(createTournamentButton);
 		hide(searchTournamentButton);
 		show(openLoginButton);
@@ -230,9 +228,8 @@ playRequestSendButton.onclick = () => {
 			alert("No response from server");
 			return ;
 		}
-		const { status, msg } = result;
-		if (status !== 200) {
-			alert(msg);
+		if (result.status !== 200) {
+			showNotification(result.msg);
 			return ;
 		}
 		hide(playRequestModal);
@@ -254,9 +251,8 @@ startMatchButton.onclick = () => {
 			alert("No response from server");
 			return ;
 		}
-		const { status, msg } = result;
-		if (status !== 200) {
-			alert(msg);
+		if (result.status !== 200) {
+			showNotification(result.msg);
 			return ;
 		}
 		hide(waitingPlayers);
@@ -277,9 +273,8 @@ playLocallyButton.onclick = () => {
 			alert("No response from server");
 			return ;
 		}
-		const {status, msg} = result;
-		alert(msg);
-		if (status !== 200) {
+		showNotification(result.msg);
+		if (result.status !== 200) {
 			return;
 		}
 		hide(playLocallyButton);
@@ -290,10 +285,21 @@ playLocallyButton.onclick = () => {
 	});
 };
 
-// import { gameKeyPresses } from "./testgame.js";
-// testGameButton.onclick = () => {
-// 	gameKeyPresses();
-// };
+incomingPlayRequestAcceptButton.onclick = () => {
+
+	replyToInvite(userSocket!).then((result) => {
+
+		if (!result) {
+			alert("No response from server");
+			return ;
+		}
+		showNotification(result.msg);
+		if (result.status === 200)
+			show(startMatchButton);
+	});
+	hide(incomingPlayRequestModal);
+};
+
 
 // createTournamentButton.onclick = () => {
 //     if (!userSocket) {

@@ -1,8 +1,9 @@
-import { receiveMessages } from "./receive-events.js";
-import {openLoginButton, openRegisterButton, playAgainstUserButton, createTournamentButton, searchTournamentButton, logoutButton, 
-        show, hide, showLoader, hideLoader, incomingPlayRequestText, startMatchButton, incomingPlayRequestModal, incomingPlayRequestAcceptButton, 
-        playLocallyButton} from "./ui.js"
-import {incomingInviteRequests, replyToInvite, incomingInviteResponses, incomingDisconnectMsg} from "./send-events.js"
+
+import {openLoginButton, openRegisterButton, playAgainstUserButton, createTournamentButton, 
+        searchTournamentButton, logoutButton, show, hide, showLoader, hideLoader, incomingPlayRequestText, 
+        startMatchButton, incomingPlayRequestModal, incomingPlayRequestAcceptButton, playLocallyButton, SCORES} from "./ui.js"
+import {receiveMessages, incomingInviteResponses, incomingInviteRequests, incomingDisconnectMsg, incomingScoreMsg, incomingWinMsg, incomingDrawRequest} from "./receive-events.js"
+import { drawWin } from "./draw.js";
 
 function showButtons() {
     hideLoader();
@@ -11,8 +12,8 @@ function showButtons() {
 	hide(openRegisterButton);
     show(playLocallyButton);
     show(playAgainstUserButton);
-    show(createTournamentButton);
-    show(searchTournamentButton);
+    // show(createTournamentButton);
+    // show(searchTournamentButton);
 	show(logoutButton);
 }
 
@@ -25,9 +26,12 @@ export function initializeWebSocket(token: string) {
         ws.onopen = () => {
             showButtons();
             receiveMessages(ws);
-            incomingInviteRequestHandler(ws!);
-            incomingInviteResponsesHandler();
-            incomingDisconnect();
+            incomingInviteRequests();
+            incomingInviteResponses();
+            incomingDrawRequest();
+            incomingDisconnectMsg();
+            incomingScoreMsg();
+            incomingWinMsg();
             resolve(ws);
         };
 
@@ -45,59 +49,8 @@ export function initializeWebSocket(token: string) {
     });
 }
 
-function incomingInviteRequestHandler(userSocket: WebSocket) {
-
-    incomingInviteRequests().then((result1) => {
-
-        if (!result1) {
-            alert("No reply from server");
-            return ;
-        }
-        const {from, msg} = result1;
-        incomingPlayRequestText.textContent = msg;
-        show(incomingPlayRequestModal);
-        incomingPlayRequestAcceptButton.onclick = () => {
-		    replyToInvite(userSocket!, from).then((result2) => {
-
-				if (!result2) {
-					alert("No response from server");
-					return ;
-				}
-				const { status, msg } = result2;
-                alert(msg);
-				if (status === 200)
-					show(startMatchButton);
-			});
-			hide(incomingPlayRequestModal);
-		};
-    });
-}
 
 
-function incomingInviteResponsesHandler() {
 
-    incomingInviteResponses().then((result) => {
 
-		if (!result) {
-			alert("No response from server");
-			return ;
-		}
-        const { from, msg } = result;
-        alert(msg);
-        show(startMatchButton);
-    });
-}
 
-function incomingDisconnect() {
-
-    incomingDisconnectMsg().then((result) => {
-
-		if (!result) {
-			alert("No response from server");
-			return ;
-		}
-        const msg = result;
-        alert(msg);
-        showButtons();
-    });
-}

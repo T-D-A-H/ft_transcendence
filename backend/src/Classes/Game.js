@@ -25,7 +25,8 @@ class Game {
         SPEED: 3,
         INC: 0.25,
         MAX_SPEED: 6,
-        START_POS: [30 , (Game.Screen.WIDTH - 30)]
+        START_POS: [30 , (Game.Screen.WIDTH - 30)],
+        DIR: [1, -1]
     };
     static Player0  = {
         Y0: (Game.Screen.MID_HEIGHT - Game.Paddle.OFFSET),
@@ -54,14 +55,12 @@ class Game {
 	    };
         this.leftPlayer = {
             INDEX: 0,
-            DIR: 1,
             Y: [Game.Player0.Y0, Game.Player0.Y1],
             X: [Game.Player0.X0, Game.Player0.X1],
             YDir: 0
         };
         this.rightPlayer = {
             INDEX: 1,
-            DIR: -1,
             Y: [Game.Player1.Y0, Game.Player1.Y1],
             X: [Game.Player1.X0, Game.Player1.X1],
             YDir: 0
@@ -69,18 +68,15 @@ class Game {
     }
 
 
-    restartGame() {
+    restartGame(player_index) {
         
-        const player = this.getPlayerWhoScored();
-        this.SCORES[player.INDEX]++;
-
         this.leftPlayer.Y = [Game.Player0.Y0, Game.Player0.Y1];
         this.leftPlayer.YDir = 0;
         this.rightPlayer.Y = [Game.Player1.Y0, Game.Player1.Y1];
         this.rightPlayer.YDir = 0;
         this.ball.Y  = Game.Screen.MID_HEIGHT;
-        this.ball.X  = Game.Ball.START_POS[player.INDEX];
-        this.ball.XDir = player.DIR;
+        this.ball.X  = Game.Ball.START_POS[player_index];
+        this.ball.XDir = Game.Ball.DIR[player_index];
         this.ball.YDir = 0;
         this.ball.SPEED = Game.Ball.SPEED;
         LOGGER(200, "Game", "restartGame", "SCORES: " + this.SCORES[0] + ", " + this.SCORES[1]);
@@ -117,25 +113,22 @@ class Game {
         if (this.leftPaddleHitBall()) {
         
             const angle = this.getPaddleHitAngle(this.leftPlayer);
-            this.ball.SPEED += Game.Ball.INC;
-            if (this.ball.SPEED > Game.Ball.MAX_SPEED)
-                this.ball.SPEED = Game.Ball.MAX_SPEED;
+            this.ball.SPEED += Game.Ball.INC  % Game.Ball.MAX_SPEED;
             this.ball.XDir = 1; 
-            this.ball.YDir = angle * this.ball.SPEED;
+            this.ball.YDir = Math.max(-1, Math.min(1, angle))  * this.ball.SPEED
         }
         else if (this.rightPaddleHitBall()) {
 
-            const angle = this.getPaddleHitAngle(this.rightPlayer);
-            this.ball.SPEED += Game.Ball.INC;
-            if (this.ball.SPEED > Game.Ball.MAX_SPEED)
-                this.ball.SPEED = Game.Ball.MAX_SPEED;
+            const angle = this.getPaddleHitAngle(this.leftPlayer);
+            this.ball.SPEED += Game.Ball.INC  % Game.Ball.MAX_SPEED;
             this.ball.XDir = -1; 
-            this.ball.YDir = angle * this.ball.SPEED;
+            this.ball.YDir = Math.max(-1., Math.min(1, angle))  * this.ball.SPEED;
         
         }
         else if (this.ballWentThrough()) {
 
-            this.restartGame();
+            const player = this.getPlayerWhoScored();
+            this.SCORES[player.INDEX]++;
             return ;
         }
         else if (this.ballBouncedOnWall()) {
@@ -188,13 +181,8 @@ class Game {
     
     getPaddleHitAngle(player) {
 
-    	const paddle_center = (player.Y[0] + player.Y[1]) / 2;
-    	const ball_center = this.ball.Y + Game.Ball.OFFSET;
-
-    	const relative = ball_center - paddle_center;
-    	const normalized = relative / ((player.Y[1] - player.Y[0]) / 2);
-
-    	return normalized;
+    	const relative = (this.ball.Y + Game.Ball.OFFSET) - (player.Y[0] + Game.Paddle.OFFSET);
+    	return (relative / Game.Paddle.OFFSET);
     }
 
 
@@ -206,13 +194,6 @@ class Game {
     getPaddleWidthAndHeight() {return ([Game.Paddle.WIDTH, Game.Paddle.HEIGHT]);}
     getBallWidthAndHeight() {return ([Game.Ball.WIDTH, Game.Ball.HEIGHT]);}
     getScores() {return (this.SCORES);}
-    getIfWin() {
-        if (this.SCORES[0] >= Game.MaxScore)
-            return (0);
-        else if (this.SCORES[1] >= Game.MaxScore)
-            return (1);
-        return (-1);
-    }
 
 }
 

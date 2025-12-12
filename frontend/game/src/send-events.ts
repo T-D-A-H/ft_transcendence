@@ -1,6 +1,7 @@
 
 import { drawGame } from "./draw.js"
 import { registerHandler } from "./receive-events.js"
+import { getInviteFrom } from "./ui.js"
 
 interface StatusAndMsg {status: number; msg: string;}
 interface MsgAndFrom   {from: string; msg: string;}
@@ -11,6 +12,7 @@ function sendRequest(userSocket: WebSocket, type: string, payload?: Record<strin
 	const msg = payload ? { type, ...payload } : { type };
 	userSocket.send(JSON.stringify(msg));
 }
+
 
 export function sendInviteToPlayer(userSocket: WebSocket, target: string): Promise<StatusAndMsg | null> {
 
@@ -30,35 +32,7 @@ export function sendInviteToPlayer(userSocket: WebSocket, target: string): Promi
 }
 
 
-export function incomingInviteResponses(): Promise<MsgAndFrom | null> {
-
-	// StatusAndMsg {status: number; msg: string;}
-	// IncomingInviteResponse {type: "INCOMING_INVITE_RESPONSE"; from: string; msg: string;}
-	return new Promise((resolve) => {
-
-		registerHandler("INCOMING_INVITE_RESPONSE", (data) => {
-        	if (data.type !== "INCOMING_INVITE_RESPONSE")
-            	return ;
-			resolve({from: data.from, msg: data.msg});
-		}, false);
-	});
-}
-
-
-export function incomingInviteRequests(): Promise<MsgAndFrom | null> {
-
-	//IncomingInviteRequest {type: "INCOMING_INVITE_REQUEST"; from: string; msg: string;}
-	return new Promise((resolve) => {
-		registerHandler("INCOMING_INVITE_REQUEST", (data) => {
-			if (data.type !== "INCOMING_INVITE_REQUEST")
-            	return ;
-			resolve({from: data.from, msg: data.msg});
-		}, false);
-	});
-}
-
-
-export function replyToInvite(userSocket: WebSocket, target: string): Promise<StatusAndMsg | null>  {
+export function replyToInvite(userSocket: WebSocket): Promise<StatusAndMsg | null>  {
 
 	//ReplyInviteResponse {type: "REPLY_INVITE_RESPONSE"; status: number; to: string; msg: string;}
 	return new Promise((resolve) => {
@@ -66,12 +40,12 @@ export function replyToInvite(userSocket: WebSocket, target: string): Promise<St
 		registerHandler("REPLY_INVITE_RESPONSE", (data) => {
 			if (data.type !== "REPLY_INVITE_RESPONSE") 
 				return;
-			if (data.to !== target)
+			if (data.to !== getInviteFrom())
 				return ;
 			resolve({status: data.status, msg: data.msg});
 		}, true);
 
-		sendRequest(userSocket, "REPLY_INVITE_REQUEST", { target });
+		sendRequest(userSocket, "REPLY_INVITE_REQUEST", { target: getInviteFrom() });
 	});
 }
 
@@ -92,18 +66,6 @@ export function sendStartMatch(userSocket: WebSocket): Promise<StatusAndMsg | nu
 	});
 }
 
-export function incomingDisconnectMsg(): Promise<string | null> {
-
-	//IncomingInviteRequest {type: "INCOMING_INVITE_REQUEST"; from: string; msg: string;}
-	return new Promise((resolve) => {
-		registerHandler("DISCONNECT", (data) => {
-			if (data.type !== "DISCONNECT")
-            	return ;
-			resolve(data.msg);
-		}, false);
-	});
-}
-
 
 export function playLocallyRequest(userSocket: WebSocket): Promise<StatusAndMsg | null> {
 
@@ -121,31 +83,8 @@ export function playLocallyRequest(userSocket: WebSocket): Promise<StatusAndMsg 
 	});
 }
 
-export function incomingScoreMsg(): Promise<number[] | null> {
-
-	//IncomingInviteRequest {type: "INCOMING_INVITE_REQUEST"; from: string; msg: string;}
-	return new Promise((resolve) => {
-		registerHandler("SCORE", (data) => {
-			if (data.type !== "SCORE")
-            	return ;
-			resolve(data.scores);
-		}, false);
-	});
-}
 
 export function sendKeyPress(userSocket: WebSocket): void {
-
-	//DrawMessage {type: "DRAW"; playerY1: number; ballY: number, ballX: number, playerY2: number;}
-	registerHandler("DRAW", (data) => {
-
-		if (data.type !== "DRAW")
-			return;
-		const [p1X, p1Y] = data.LeftXY;
-		const [p2X, p2Y] = data.RightXY;
-		const [ballX, ballY] = data.BallXY;
-
-		drawGame(p1X, p1Y, p2X, p2Y, ballX, ballY);
-		}, false);
 
 	document.addEventListener("keydown", (e: KeyboardEvent) => {
 
@@ -165,18 +104,6 @@ export function sendKeyPress(userSocket: WebSocket): void {
 
 
 export function send2KeyPress(userSocket: WebSocket): void {
-
-	//DrawMessage {type: "DRAW"; playerY1: number; ballY: number, ballX: number, playerY2: number;}
-	registerHandler("DRAW", (data) => {
-
-		if (data.type !== "DRAW")
-			return;
-		const [p1X, p1Y] = data.LeftXY;
-		const [p2X, p2Y] = data.RightXY;
-		const [ballX, ballY] = data.BallXY;
-
-		drawGame(p1X, p1Y, p2X, p2Y, ballX, ballY);
-		}, false);
 
 	document.addEventListener("keydown", (e: KeyboardEvent) => {
 

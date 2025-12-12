@@ -4,15 +4,14 @@ const Game   = require("./Game.js");
 
 class Match {
 
-	static MatchScoreMax = 3;
-	constructor(user, match_id, locally, num_games) {
+	static ScoreMax = 11;
+	constructor(user, match_id, locally) {
 		
 		LOGGER(200, "Match", "Constructor", "For " + user.getUsername() + " match_id: " + match_id);
 
 		this.id = match_id;
-		this.gameIndex = 0;
-		this.game = Array.from({ length: num_games }, () => new Game());
 		this.locally = locally;
+		this.game = new Game();
 		this.players = [user, null];
 		this.isWaiting = true;
 		this.isReady = [null, null];
@@ -52,48 +51,48 @@ class Match {
 	}
 
 	sendDraw() {
-		
-		this.game[this.gameIndex].updatePlayerPaddle(this.YDir);
-		this.game[this.gameIndex].updateBall();
 		this.broadcast({ 
 			type: "DRAW", 
-			LeftXY: this.game[this.gameIndex].getLeftPlayerXY(),
-			RightXY: this.game[this.gameIndex].getRightPlayerXY(),
-			BallXY: this.game[this.gameIndex].getBallXY()
+			LeftXY: this.game.getLeftPlayerXY(),
+			RightXY: this.game.getRightPlayerXY(),
+			BallXY: this.game.getBallXY()
 		});
-		if (this.game[this.gameIndex].getIfWin() === 1 || this.game[this.gameIndex].getIfWin() === 0) {
-			this.updateMatchScore();
-		}
-
 	}
 
 	sendInitialVars() {
 		this.broadcast({ 
 			type: "VARS", 
-			PaddleWH: this.game[this.gameIndex].getPaddleWidthAndHeight(),
-			BallWH: this.game[this.gameIndex].getBallWidthAndHeight()
+			PaddleWH: this.game.getPaddleWidthAndHeight(),
+			BallWH: this.game.getBallWidthAndHeight()
 		});
 	}
 
 	sendScores() {
-		this.broadcast({ type: "SCORE", scores: this.game[this.gameIndex].getScores()});
+		this.broadcast({ type: "SCORES", scores: this.SCORES});
 	}
 
-	updateMatchScore() {
-		const scoreA = this.game[this.gameIndex].getScores()[0];
-		const scoreB = this.game[this.gameIndex].getScores()[1];
-		if (scoreA > scoreB)
-			this.SCORES[0]++;
-		else if (scoreA < scoreB)
-			this.SCORES[1]++;
-		this.gameIndex++;
-		if (this.SCORES[0] === Match.MatchScoreMax || this.SCORES[1] === Match.MatchScoreMax) {
-			this.DONE = true;
-			this.sendWin();
-		}
-		else 
+	sendWin(user_index) {
+		this.broadcast({ type: "WIN", msg: this.players[user_index].getUsername() + " Won the game." });
+	}
+
+	updateMatch() {
+
+		this.sendDraw();
+		this.game.updatePlayerPaddle(this.YDir);
+		this.game.updateBall();
+
+		const GameScores = this.game.getScores();
+		if (GameScores[0] !== this.SCORES[0] || GameScores[1] !== this.SCORES[1]) {
+			const player_index = (this.SCORES[0] !== GameScores[0]) ? 0 : 1;
+			this.game.restartGame(player_index);
+			this.SCORES = [...GameScores];
 			this.sendScores();
-		
+			if (this.SCORES[0] >= Match.ScoreMax || this.SCORES[1] >= Match.ScoreMax) {
+				const user_index = (this.SCORES[0] >= Match.ScoreMax) ? 0 : 1;
+				this.sendWin(user_index);
+				this.DONE = true;
+			}
+		}
 	}
 
 	updateGame(user, moveDir) {
@@ -131,11 +130,11 @@ class Match {
 			return (false);
 	    if (!this.players[0] || !this.players[1])
 			return (false);
-		if (this.isReady[0] !== true && this.isReady[1] !== true)
-			return (false);
 		if (this.DONE === true)
 			return (false);
-		return (true);
+		if (this.isReady[0] === true && this.isReady[1] === true)
+			return (true);
+		return (false);
 	}
 
 	end() {

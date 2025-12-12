@@ -12,13 +12,11 @@ class UserManager {
         this.match_id = 1;
     }
 
-    // Guardar código 2FA temporal
     set2FACode(userId, code) {
         const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutos de validez
         this.pending2FA.set(userId, { code, expiresAt });
     }
 
-    // Verificar código 2FA
     verify2FACode(userId, code) {
         const record = this.pending2FA.get(userId);
         if (!record) return false;
@@ -36,13 +34,11 @@ class UserManager {
         return true;
     }
 
-    // Agregar usuario
     addUser(user) {
         LOGGER(200, "UserManager", "addUser", user.getUsername());
         this.users.set(user.id, user);
     }
 
-    // Crear y agregar usuario
     createUser(userData) {
         LOGGER(200, "UserManager", "createUser", user.getUsername());
         const user = new User(userData);
@@ -50,7 +46,6 @@ class UserManager {
         return user;
     }
 
-    // Login de usuario
     loginUser(userId) {
         const user = this.users.get(userId);
         if (user && user.isConnected == false) {
@@ -62,7 +57,6 @@ class UserManager {
         return false;
     }
 
-    // Logout de usuario
     logoutUser(userId) {
         const user = this.users.get(userId);
         if (user) {
@@ -70,6 +64,7 @@ class UserManager {
             user.setConnected(false);
             const match = user.getCurrentMatch()
             if (match !== null) {
+                LOGGER(200, "UserManager", "logoutUser", user.getUsername() + " got sent disconnect msg.");
                 match.broadcast({type: "DISCONNECT", msg: user.getUsername() + " disconnected."});
                 this.removeMatch(match);
             }
@@ -79,24 +74,6 @@ class UserManager {
         return false;
     }
 
-    
-
-    // Obtener usuario por ID
-    getUserByID(userId) {
-        return this.users.get(userId);
-    }
-
-    // Obtener usuario por username
-    getUserByUsername(username) {
-        for (const user of this.users.values()) {
-            if (user.display_name === username) {
-                return user;
-            }
-        }
-        return null;
-    }
-
-    // Eliminar usuario
     removeUser(userId) {
 
         const removed = this.users.delete(userId);
@@ -106,41 +83,27 @@ class UserManager {
         return (removed);
     }
 
-    // Obtener todos los usuarios conectados
-    getConnectedUsers() {
-        const connected = [];
-        for (const user of this.users.values()) {
-            if (user.isConnected) {
-                connected.push(user);
-            }
-        }
-        return connected;
-    }
-
-    // Contar usuarios conectados
-    getConnectedCount() {
-        return this.getConnectedUsers().length;
-    }
-
-    // Obtener todos los usuarios
-    getAllUsers() {
-        return Array.from(this.users.values());
-    }
-
-    // Create Match Id
     createMatchId() {
         this.match_id++;
         return (this.match_id);
     }
 
-    // Create a new match
 	createMatch(user, locally, num_games) {
         LOGGER(200, "UserManager", "createMatch", user.getUsername());
         const match_id = this.match_id;
-		const match = new Match(user, match_id, locally, num_games);
+		const match = new Match(user, match_id, locally);
         this.matches.set(match_id, match);
         this.match_id++;
         return (match);
+	}
+
+	removeMatch(match) {
+        LOGGER(200, "UserManager", "removeMatch", match.id);
+        if (match.players[0] !== null)
+            match.players[0].unsetMatch();
+         if (match.players[1] !== null)
+            match.players[1].unsetMatch();
+		this.matches.delete(match.id);
 	}
 
     findMatch(user) {
@@ -157,30 +120,6 @@ class UserManager {
         return (null)
     }
 
-	// Remove a finished match
-	removeMatch(match) {
-        LOGGER(200, "UserManager", "removeMatch", match.id);
-		this.matches.delete(match.id);
-	}
-
-    getAllMatches() {
-        return (Array.from(this.matches.values()));
-    }
-
-    getMatches(all_or_waiting) {
-        let state = null;
-        if (all_or_waiting === "waiting") state = true;
-        else if (all_or_waiting === "all") state = false;
-
-        const current_matches = [];
-        for (const match of this.matches.values()) {
-            if (match.isWaiting === state) {
-                LOGGER(200, "UserManager", "getMatches", "Match[" + match.id + "] with " + match.players[0].getUsername() + " available");
-                current_matches.push(match);
-            }
-        }
-        return (current_matches);
-    }
 
     addToMatch(requestingUser, user) {
 
@@ -202,6 +141,56 @@ class UserManager {
         }
         LOGGER(502, "UserManager", "addToMatch", "Couldnt find match");
         return (null);
+    }
+  
+    getUserByID(userId) {
+        return this.users.get(userId);
+    }
+
+    getUserByUsername(username) {
+        for (const user of this.users.values()) {
+            if (user.display_name === username) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    getConnectedUsers() {
+        const connected = [];
+        for (const user of this.users.values()) {
+            if (user.isConnected) {
+                connected.push(user);
+            }
+        }
+        return connected;
+    }
+
+    getConnectedCount() {
+        return this.getConnectedUsers().length;
+    }
+
+    getAllUsers() {
+        return Array.from(this.users.values());
+    }
+
+    getAllMatches() {
+        return (Array.from(this.matches.values()));
+    }
+
+    getMatches(all_or_waiting) {
+        let state = null;
+        if (all_or_waiting === "waiting") state = true;
+        else if (all_or_waiting === "all") state = false;
+
+        const current_matches = [];
+        for (const match of this.matches.values()) {
+            if (match.isWaiting === state) {
+                LOGGER(200, "UserManager", "getMatches", "Match[" + match.id + "] with " + match.players[0].getUsername() + " available");
+                current_matches.push(match);
+            }
+        }
+        return (current_matches);
     }
 
 }
