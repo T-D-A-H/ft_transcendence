@@ -1,4 +1,4 @@
-const User = require("./User.js");
+const User = require("../User.js");
 
 function signupHandler(db, bcrypt, saltRounds, fastify) {
 	return async function registerHandler(req, reply) {

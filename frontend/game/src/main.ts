@@ -8,12 +8,19 @@ import {
 	show, hide, canvas, paddle, twoFAModal, twoFAOptionModal, twoFAEmailButton,
 	twoFASkipButton, twoFASubmitButton,twoFAInput, initialLoader, GoogleButton} from "./ui.js";
 
-import { registerUser } from "./register.js"
-import { login } from "./login.js"
+import { registerUser } from "./auth/register.js"
+import { login } from "./auth/login.js"
 import { createNewMatch, searchForMatch, joinMatch, playerJoinedMatch} from "./match.js"
 import { sendKeyPressEvents } from "./keypress.js";
 import { drawGame } from "./draw.js";
-import { set2FA } from "./set2FA.js";
+import { set2FA } from "./auth/set2FA.js";
+import {
+	validateSession,
+	startTokenValidationInterval,
+	performLogout,
+	refreshToken,
+	setUserSocket
+} from "./auth/session.js";
 
 
 if (!loginModal || !openLogin || !closeLogin || !submitLoginButton ||
@@ -41,72 +48,11 @@ function hideLoader() {
 	hide(initialLoader);
 }
 
-// ! Limpiar main.js, crear archivos para funciones
-
-// Validar si el usuario tiene sesión activa
-async function validateSession(): Promise<boolean> {
-	try {
-		const res = await fetch("/api/validate-token", {
-			method: "GET",
-			credentials: "include" // Enviar cookies automáticamente
-		});
-
-		if (res.ok) {
-			const data = await res.json();
-			return data.valid === true;
-		}
-		return false;
-	} catch (err) {
-		console.error("Error validating session:", err);
-		return false;
-	}
-}
-
-// Validar token periódicamente (cada 5 minutos)
-function startTokenValidationInterval() {
-	setInterval(async () => {
-		const isValid = await validateSession();
-		if (!isValid) {
-			// Sesión expirada
-			console.log("Session expired, logging out");
-			await performLogout();
-		}
-	}, 5 * 60 * 1000);
-}
-
-// Función reutilizable para hacer logout
-async function performLogout() {
-	if (userSocket) {
-		userSocket.close();
-		userSocket = null;
-	}
-
-	try {
-		const res = await fetch("/api/logout", {
-			method: "POST",
-			credentials: "include"
-		});
-
-		const data = await res.json();
-		if (data.status === "ok") {
-			// Cookies eliminadas automáticamente por el servidor
-			hide(logoutButton);
-			hide(waitingPlayers);
-			hide(createMatchButton);
-			hide(searchForMatchButton);
-			hide(startMatchButton);
-			show(openLogin);
-			show(openRegister);
-		}
-	} catch (err) {
-		console.error("Logout error:", err);
-	}
-}
-
 // Inicializar conexión WebSocket
 function initializeWebSocket() {
 	showLoader();
 	userSocket = new WebSocket(`wss://localhost:4000/proxy-game`);
+	setUserSocket(userSocket);
 
 	userSocket.onopen = () => {
 		console.log("User WebSocket connected");
@@ -130,27 +76,6 @@ function initializeWebSocket() {
 		hideLoader();
 	};
 }
-
-// Refrescar token antes de que expire
-async function refreshToken(): Promise<boolean> {
-	try {
-		const res = await fetch("/api/refresh-token", {
-			method: "POST",
-			credentials: "include"
-		});
-
-		if (res.ok) {
-			console.log("Token refreshed");
-			return true;
-		}
-		return false;
-	} catch (err) {
-		console.error("Error refreshing token:", err);
-		return false;
-	}
-}
-
-setInterval(refreshToken, 5 * 60 * 1000);
 
 // Inicializar UI basado en sesión
 async function initializeUI() {
@@ -181,6 +106,8 @@ async function initializeUI() {
 
 // Inicializar
 initializeUI();
+
+setInterval(refreshToken, 5 * 60 * 1000);
 
 GoogleButton.onclick = async () => {
 	window.location.href = "/auth/google";
@@ -268,7 +195,6 @@ submitLoginButton.onclick = async () => {
 	}
 };
 
-
 // REGISTRO
 submitRegisterButton.onclick = async () => {
 	const result = await registerUser(
@@ -307,31 +233,7 @@ submitRegisterButton.onclick = async () => {
 
 // LOGOUT
 logoutButton.onclick = async () => {
-	if (userSocket) {
-		userSocket.close();
-		userSocket = null;
-	}
-
-	try {
-		const res = await fetch("/api/logout", {
-			method: "POST",
-			credentials: "include" // Enviar cookies
-		});
-
-		const data = await res.json();
-		if (data.status === "ok") {
-			// Cookies eliminadas automáticamente por el servidor
-			hide(logoutButton);
-			hide(waitingPlayers);
-			hide(createMatchButton);
-			hide(searchForMatchButton);
-			hide(startMatchButton);
-			show(openLogin);
-			show(openRegister);
-		}
-	} catch (err) {
-		console.error("Logout error:", err);
-	}
+	await performLogout();
 };
 
 // CREAR MATCH
@@ -358,7 +260,6 @@ searchForMatchButton.onclick = () => {
 		alert("WebSocket not ready. Try again in a moment.");
 		return;
 	}
-
 	searchForMatch(userSocket!).then((matches) => {
 		if (!matches) {
 			alert("No Matches found.");
@@ -398,7 +299,6 @@ startMatchButton.onclick = () => {
 			alert("Error joining match");
 		}
 	});
-
 	sendKeyPressEvents(userSocket!);
 	drawGame(userSocket!, canvas!, paddle!);
 };
