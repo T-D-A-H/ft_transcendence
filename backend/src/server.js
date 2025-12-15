@@ -52,15 +52,15 @@ async function startServer() {
 	await fastify.register(websocket);
 
 	// ✅ Registro de usuarios
-	const signupHandler  = require("./auth/signup.js");
+	const signupHandler  = require("./endpoints/signup.js");
 	fastify.post("/api/sign-up", signupHandler(db, bcrypt, saltRounds, fastify));
 
 	// ✅  Login de usuarios
-	const loginHandler = require("./auth/login.js");;
+	const loginHandler = require("./endpoints/login.js");;
 	fastify.post("/api/login", loginHandler(db, bcrypt, userManager, fastify, setTokenCookie));
 
 	// ✅ Logout del usuario
-	const buildLogoutHandler = require('./auth/logout.js');
+	const buildLogoutHandler = require('./endpoints/logout.js');
 	fastify.post("/api/logout", buildLogoutHandler(userManager, fastify));
 
 	// ✅ WebSocket del juego - extraer token de cookies
@@ -82,23 +82,23 @@ async function startServer() {
 	});
 
 	// ✅ Verificación de código 2FA
-	const verify2FAhandle = require("./auth/verify2FA.js");
+	const verify2FAhandle = require("./endpoints/verify2FA.js");
 	fastify.post("/api/verify-2fa", verify2FAhandle(userManager, fastify, setTokenCookie));
 
 	// ✅ SET 2FA de usuarios
-	const buildSet2FAHandler = require('./auth/set2FA.js');
+	const buildSet2FAHandler = require('./endpoints/set2FA.js');
 	fastify.post("/api/set-2fa", buildSet2FAHandler(db, fastify));
 
 	// ✅ Validar token (verificar si sesión activa)
-	const validateToken = require("./auth/validateToken.js");
+	const validateToken = require("./endpoints/validateToken.js");
 	fastify.get("/api/validate-token", validateToken(userManager, fastify));
 
 	// ✅ Refresh token (generar nuevo accessToken)
-	const refreshToken = require("./auth/refreshToken.js");
+	const refreshToken = require("./endpoints/refreshToken.js");
 	fastify.post("/api/refresh-token", refreshToken(userManager, fastify, setTokenCookie));
 
 	// ✅ Google OAuth - ahora setea cookies
-	const googleCallback = require("./auth/googleCallback.js");
+	const googleCallback = require("./endpoints/googleCallback.js");
 	fastify.get("/auth/google/callback", googleCallback(userManager, fastify, db, setTokenCookie));
 
 	setInterval(() => {

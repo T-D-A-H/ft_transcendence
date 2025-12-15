@@ -13,14 +13,20 @@ import { login } from "./auth/login.js"
 import { createNewMatch, searchForMatch, joinMatch, playerJoinedMatch} from "./match.js"
 import { sendKeyPressEvents } from "./keypress.js";
 import { drawGame } from "./draw.js";
-import { set2FA } from "./auth/set2FA.js";
 import {
 	validateSession,
-	startTokenValidationInterval,
 	performLogout,
+	startTokenValidationInterval,
 	refreshToken,
 	setUserSocket
 } from "./auth/session.js";
+
+import {
+	onLoginSuccess,
+	handle2FAVerification,
+	handle2FASetup,
+	initLoginFlowDependencies
+} from "./auth/loginFlow.js";
 
 
 if (!loginModal || !openLogin || !closeLogin || !submitLoginButton ||
@@ -47,6 +53,12 @@ function showLoader() {
 function hideLoader() {
 	hide(initialLoader);
 }
+
+initLoginFlowDependencies({
+	initializeWebSocket,
+	showLoader,
+	hideLoader
+});
 
 // Inicializar conexión WebSocket
 function initializeWebSocket() {
@@ -103,91 +115,31 @@ async function initializeUI() {
 		hideLoader();
 	}
 }
-
 // Inicializar
 initializeUI();
 
 setInterval(refreshToken, 5 * 60 * 1000);
 
-GoogleButton.onclick = async () => {
+GoogleButton.onclick = () => {
 	window.location.href = "/auth/google";
 }
 
 // LOGIN
 submitLoginButton.onclick = async () => {
 	showLoader();
-
 	try {
 		const result = await login(usernameInput, passwordInput);
-
 		// Caso 1: Requiere 2FA
 		if (result.status === "requires_2fa" && result.method === "email") {
 			hideLoader();
 			show(twoFAModal);
-
-			twoFASubmitButton.onclick = async () => {
-				const code = twoFAInput.value.trim();
-				if (!code) {
-					alert("Ingresa el código 2FA");
-					return;
-				}
-
-				showLoader();
-
-				try {
-					const res = await fetch("/api/verify-2fa", {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ code }),
-						credentials: "include" // Enviar cookies
-					});
-
-					const verifyResult = await res.json();
-
-					if (verifyResult.status === "ok") {
-						// Login completo, sesión en cookie
-						hide(twoFAModal);
-						hide(openRegister);
-						hide(openLogin);
-						hide(loginModal);
-						show(createMatchButton);
-						show(searchForMatchButton);
-						show(startMatchButton);
-						show(logoutButton);
-						initializeWebSocket();
-						startTokenValidationInterval();
-						twoFAInput.value = "";
-					} else {
-						alert(verifyResult.error || "Código 2FA incorrecto");
-						hideLoader();
-					}
-				} catch (err) {
-					console.error(err);
-					alert("Error al verificar 2FA");
-					hideLoader();
-				}
-			};
-
+			twoFASubmitButton.onclick = handle2FAVerification;
 		} else if (result.status === 0) {
-			// Login exitoso sin 2FA
-			hide(twoFAModal);
-			hide(openRegister);
-			hide(openLogin);
-			hide(loginModal);
-			show(createMatchButton);
-			show(searchForMatchButton);
-			show(startMatchButton);
-			show(logoutButton);
-			initializeWebSocket();
-			startTokenValidationInterval();
-			hideLoader();
-
+			onLoginSuccess();
 		} else {
-			// Credenciales incorrectas
 			alert(result.error || "Usuario o contraseña incorrectos");
 			hideLoader();
 		}
-
 	} catch (err) {
 		console.error(err);
 		alert("Error al iniciar sesión");
@@ -203,33 +155,17 @@ submitRegisterButton.onclick = async () => {
 		regEmailInput,
 		regPasswordInput
 	);
-
-	if (result.status !== 0 || !result.userId || !result.setupToken) return;
-
+	if (result.status !== 0 || !result.userId || !result.setupToken)
+		return;
+	const setupToken = result.setupToken;
 	show(twoFAOptionModal);
+	twoFAEmailButton.onclick = () =>
+		handle2FASetup("2FAmail", setupToken);
 
-	twoFAEmailButton.onclick = async () => {
-		const data = await set2FA("2FAmail", result.setupToken);
-		if (data.status === "ok") {
-			hide(twoFAOptionModal);
-			hide(registerModal);
-			show(loginModal);
-		} else {
-			alert(data.error || "Error al configurar 2FA");
-		}
-	};
-
-	twoFASkipButton.onclick = async () => {
-		const data = await set2FA("skip", result.setupToken);
-		if (data.status === "ok") {
-			hide(twoFAOptionModal);
-			hide(registerModal);
-			show(loginModal);
-		} else {
-			alert(data.error || "Error al configurar 2FA");
-		}
-	};
+	twoFASkipButton.onclick = () =>
+		handle2FASetup("skip", setupToken);
 };
+
 
 // LOGOUT
 logoutButton.onclick = async () => {
