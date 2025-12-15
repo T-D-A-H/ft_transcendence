@@ -1,4 +1,5 @@
-import { texture, canvas, pongFont, SCORES } from "./ui.js";
+import { texture, canvas, pongFont } from "./ui.js";
+import { SCORES } from "./vars.js";
 
 
 export async function drawWin(winMsg: string) {

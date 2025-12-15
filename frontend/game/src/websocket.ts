@@ -1,11 +1,10 @@
 
-import {openLoginButton, openRegisterButton, playAgainstUserButton, createTournamentButton, 
-        searchTournamentButton, logoutButton, show, hide, showLoader, hideLoader, incomingPlayRequestText, 
-        startMatchButton, incomingPlayRequestModal, incomingPlayRequestAcceptButton, playLocallyButton, SCORES} from "./ui.js"
-import {receiveMessages, incomingInviteResponses, incomingInviteRequests, incomingDisconnectMsg, incomingScoreMsg, incomingWinMsg, incomingDrawRequest} from "./receive-events.js"
-import { drawWin } from "./draw.js";
+import {openLoginButton, openRegisterButton, playAgainstUserButton, createTournamentButton, searchTournamentButton, 
+        logoutButton, show, hide, showLoader, hideLoader, startMatchButton, playLocallyButton} from "./ui.js"
+import {ConstantEvent, receiveMessages} from "./events.js";
 
 function showButtons() {
+    
     hideLoader();
 	hide(openLoginButton);
     hide(startMatchButton);
@@ -26,12 +25,12 @@ export function initializeWebSocket(token: string) {
         ws.onopen = () => {
             showButtons();
             receiveMessages(ws);
-            incomingInviteRequests();
-            incomingInviteResponses();
-            incomingDrawRequest();
-            incomingDisconnectMsg();
-            incomingScoreMsg();
-            incomingWinMsg();
+            ConstantEvent("INCOMING_INVITE_RESPONSE");
+            ConstantEvent("INCOMING_INVITE_REQUEST");
+            ConstantEvent("DISCONNECT");
+            ConstantEvent("SCORES");
+            ConstantEvent("WIN");
+            ConstantEvent("DRAW");
             resolve(ws);
         };
 

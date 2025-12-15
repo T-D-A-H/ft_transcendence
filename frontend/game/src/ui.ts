@@ -190,17 +190,6 @@ export function hide(elem: HTMLElement): void { // hide HTML
 	elem.classList.add("hidden"); 
 }
 
-export let SCORES: number[] = [0, 0];
-
-export let INVITE_FROM: string;
-
-export function setInviteFrom(v: string) {
-		INVITE_FROM = v;
-}
-
-export function getInviteFrom(): string {
-	return INVITE_FROM;
-}
 
 export const pongFont = new Promise<void>((resolve) => { // BLOCK FONT
 

@@ -9,10 +9,11 @@ import {
 	playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton,
 	incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton,
 	createTournamentButton, searchTournamentButton, activeTournamentsModal, tournamentsListUL, renderTournamentList,
-	canvas, texture, show, hide, showNotification,} from "./ui.js";
+	canvas, texture, show, hide, showNotification} from "./ui.js";
+import {getInviteFrom} from "./vars.js";
 import { registerUser,  loginUser } from "./login-register.js"
 import { initializeWebSocket } from "./websocket.js";
-import { sendKeyPress, send2KeyPress, sendInviteToPlayer, sendStartMatch, playLocallyRequest, replyToInvite} from "./send-events.js";
+import { oneTimeEvent, sendKeyPress, send2KeyPress} from "./events.js";
 
 
 if (!loadAnimation || !showLoader || !hideLoader ||
@@ -215,6 +216,7 @@ logoutButton.onclick = async () => {
 	}
 };
 
+
 playRequestSendButton.onclick = () => {
 
 	const target_username = playRequestUsernameInput.value.trim();
@@ -222,10 +224,19 @@ playRequestSendButton.onclick = () => {
 		alert("Username field empty");
 		return ;
 	}
-	sendInviteToPlayer(userSocket!, target_username).then((result) => {
+	oneTimeEvent(
+		userSocket!, 
+		"SEND_INVITE_REQUEST", 
+		"SEND_INVITE_RESPONSE", 
+		target_username
+	).then((result) => {
 
 		if (!result) {
 			alert("No response from server");
+			return ;
+		}
+		if (result.target !== target_username) {
+			alert("Username response doesnt match invitation target");
 			return ;
 		}
 		if (result.status !== 200) {
@@ -236,7 +247,6 @@ playRequestSendButton.onclick = () => {
 	});
 };
 
-
 startMatchButton.onclick = () => {
 
     if (!userSocket) {
@@ -245,7 +255,10 @@ startMatchButton.onclick = () => {
     }
 	hide(startMatchButton);
 	show(waitingPlayers);
-    sendStartMatch(userSocket!).then((result) => {
+    oneTimeEvent(userSocket!, 
+		"START_MATCH_REQUEST", 
+		"START_MATCH_RESPONSE"
+	).then((result) => {
 
 		if (!result) {
 			alert("No response from server");
@@ -266,8 +279,11 @@ playLocallyButton.onclick = () => {
         alert("WebSocket not ready");
         return;
     }
-	playLocallyRequest(userSocket!).then((result) => {
-
+	oneTimeEvent(
+		userSocket!,
+		"PLAY_LOCALLY_REQUEST", 
+		"PLAY_LOCALLY_RESPONSE"
+	).then((result) => {
 
 		if (!result) {
 			alert("No response from server");
@@ -284,10 +300,15 @@ playLocallyButton.onclick = () => {
 		send2KeyPress(userSocket!);
 	});
 };
-
+ 
 incomingPlayRequestAcceptButton.onclick = () => {
 
-	replyToInvite(userSocket!).then((result) => {
+	oneTimeEvent(
+		userSocket!, 
+		"REPLY_INVITE_REQUEST", 
+		"REPLY_INVITE_RESPONSE", 
+		getInviteFrom()
+	).then((result) => {
 
 		if (!result) {
 			alert("No response from server");
