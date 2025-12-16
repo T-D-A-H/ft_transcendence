@@ -4,15 +4,18 @@ class User {
     
     constructor({ id, username, display_name, socket }) {
         LOGGER(200, "User", "Constructor", "called for " + username);
+
         this.id = id;
         this.username = username;
         this.display_name = display_name;
         this.socket = socket;
-        this.score = 0;
         this.isConnected = false;
+
         this.currentMatch = null;
-        this.isPlaying = false;
         this.pendingMatchRequests = new Map();
+        this.isPlaying = false;
+
+        this.currentTournament = null;
     }
 
     // Enviar mensaje al jugador vía WebSocket
@@ -22,10 +25,6 @@ class User {
         }
     }
 
-    // Actualizar puntaje
-    updateScore(points) {
-        this.score += points;
-    }
 
     // Marcar desconexión
     disconnect() {
@@ -91,14 +90,23 @@ class User {
 	}
 
 
+    setCurrentTournament(currentTournament) {
+        this.currentTournament = currentTournament;
+    }
+
+    unsetCurrentTournament() {
+        this.currentTournament = null;
+    }
+
+
     getId() {return this.id;}
     getUsername() {return this.username;}
     getDisplayName() {return this.display_name;}
     getSocket() {return this.socket;}
-    getScore() {return this.score;}
     getIsConnected() {return this.isConnected;}
     getCurrentMatch() {return this.currentMatch;}
     getIsPlaying() {return this.isPlaying;}
+    getCurrentTournament() {return this.currentTournament;}
 }
 
 module.exports = User;

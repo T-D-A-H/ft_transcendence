@@ -13,7 +13,7 @@ import {
 import {getInviteFrom} from "./vars.js";
 import { registerUser,  loginUser } from "./login-register.js"
 import { initializeWebSocket } from "./websocket.js";
-import { oneTimeEvent, sendKeyPress, send2KeyPress} from "./events.js";
+import { oneTimeEvent, sendKeyPress, send2KeyPress } from "./events.js";
 
 
 if (!loadAnimation || !showLoader || !hideLoader ||

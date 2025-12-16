@@ -1,7 +1,7 @@
 import {showNotification, show, startMatchButton, incomingPlayRequestText, incomingPlayRequestModal} from "./ui.js"
 import {setInviteFrom,  SCORES} from "./vars.js"
-import {drawWin, drawGame, clearBackground} from "./draw.js"
 import type {ServerMessage, StatusMsgTarget} from "./vars.js"
+import {drawWin, drawGame, clearBackground} from "./draw.js"
 
 
 const handlers: Record<string, ((data: ServerMessage) => void)[]> = {};
@@ -18,6 +18,7 @@ export function registerHandler<T extends ServerMessage>(type: T["type"], fn: (d
 	else {
 
 		const wrapped = (data: ServerMessage) => {
+
 			fn(data as T);
 			handlers[type] = handlers[type].filter(h => h !== wrapped);
 		};
@@ -31,8 +32,10 @@ export function receiveMessages(userSocket: WebSocket) {
 	userSocket.addEventListener("message", (event: MessageEvent) => {
 
 		let data: ServerMessage;
-		try { 
+		try {
+
 			data = JSON.parse(event.data); 
+			
 		} catch { 
 
 			return; 

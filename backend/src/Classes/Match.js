@@ -137,6 +137,10 @@ class Match {
 		return (false);
 	}
 
+	getMatchId() {
+		return (this.id);
+	}
+	
 	end() {
 		this.isActive = false;
 		this.players.forEach(player => player.disconnect());

@@ -1,6 +1,7 @@
 const User = require("./User.js");
 const Match = require("./Match.js");
 const LOGGER = require("../LOGGER.js");
+const Tournament = require("./Tournament.js");
 
 class UserManager {
 
@@ -8,8 +9,9 @@ class UserManager {
         LOGGER(200, "UserManager", "Constructor", "Called");
         this.users = new Map();
         this.matches = new Map();
+        this.tournaments = new Map();
+        this.tournament_id = 0;
         this.pending2FA = new Map();
-        this.match_id = 1;
     }
 
     set2FACode(userId, code) {
@@ -39,11 +41,16 @@ class UserManager {
         this.users.set(user.id, user);
     }
 
-    createUser(userData) {
-        LOGGER(200, "UserManager", "createUser", user.getUsername());
-        const user = new User(userData);
-        this.addUser(user);
-        return user;
+    createUser(user_id, user_name, display_name, user_socket) {
+
+        LOGGER(200, "UserManager", "createUser", "Created");
+        const user = new User({
+            id: user_id,
+            username: user_name,
+			display_name: display_name,
+            socket: user_socket
+        });
+        return (user);
     }
 
     loginUser(userId) {
@@ -84,16 +91,16 @@ class UserManager {
     }
 
     createMatchId() {
-        this.match_id++;
-        return (this.match_id);
+
+    	const rand = Math.floor(Math.random() * 0xffff);
+    	const time = Date.now();
+    	return ((time << 16) | rand);
     }
 
-	createMatch(user, locally, num_games) {
+	createMatch(user, locally) {
         LOGGER(200, "UserManager", "createMatch", user.getUsername());
-        const match_id = this.match_id;
+        const match_id = this.createMatchId();
 		const match = new Match(user, match_id, locally);
-        this.matches.set(match_id, match);
-        this.match_id++;
         return (match);
 	}
 
@@ -120,7 +127,6 @@ class UserManager {
         return (null)
     }
 
-
     addToMatch(requestingUser, user) {
 
         const matches = this.getAllMatches();
@@ -143,6 +149,26 @@ class UserManager {
         return (null);
     }
   
+    createTournamentId() {
+    	const rand = Math.floor(Math.random() * 0xffff);
+    	const time = Date.now();
+    	return ((time << 16) | rand);
+    }
+
+    createTournament(alias, numPlayers, locally) {
+
+        LOGGER(200, "UserManager", "createTournament", "created");
+        const tournament_id = this.createTournamentId();
+        const creator_alias = (alias === null) ? "Anonymous" : alias;
+		const tournament = new Tournament(creator_alias, tournament_id, numPlayers, locally);
+        setTournament(tournament_id, tournament);
+        return (tournament);
+    }
+
+    setTournament(tournament_id, tournament) {
+        this.tournaments.set(tournament_id, tournament);
+    }
+
     getUserByID(userId) {
         return this.users.get(userId);
     }
@@ -192,6 +218,43 @@ class UserManager {
         }
         return (current_matches);
     }
+
+    getMatchId() {
+        return (this.match_id);
+    }
+
+    getTournamentById(tournament_id) {
+
+    	if (!this.tournaments.has(tournament_id))
+    		return (null);
+
+    	return (this.tournaments.get(tournament_id));
+    }
+
+    getAvailableTournaments() {
+
+    	const tournaments = [];
+
+    	for (const tournament of this.tournaments.values()) {
+
+    		if (tournament.getIsWaiting() === true) {
+
+    			tournaments.push({
+    				id: tournament.getTournamentId(),
+    				creator: tournament.getCreatorAlias(),
+    				max_size: tournament.getTournamentSize(),
+    				current_size: tournament.getCurrentSize()
+    			});
+    		}
+    	}
+
+    	if (tournaments.length === 0)
+    		return (null);
+
+    	return (matches);
+    }
+
+
 
 }
 

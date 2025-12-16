@@ -3,29 +3,25 @@ const LOGGER = require("./LOGGER.js");
 function sendInviteRequest(requestingUser, userManager, username_to_send) {
 
 	if (requestingUser.getCurrentMatch() === null) {
-		const match = userManager.createMatch(requestingUser, false, 3);
+		const match = userManager.createMatch(requestingUser, false);
 		requestingUser.setMatch(match);
 	}
 	const user_to_send = userManager.getUserByUsername(username_to_send);
-	if (user_to_send !== null) {
-
-		if (user_to_send.getIsConnected() === true) {
-			
-			requestingUser.addPendingRequest(user_to_send);
-			//LOGGER(200, "server", "sendInviteRequest", requestingUser.getUsername() + " sent invite to play to " + username_to_send);
-			requestingUser.send({type: "SEND_INVITE_RESPONSE", status: 200, msg: "sent invite to play with " + username_to_send, target: username_to_send});
-			user_to_send.send({type: "INCOMING_INVITE_REQUEST", msg: requestingUser.getUsername() + " sent you an invite request.", target: requestingUser.getUsername()});
-			return ;
-		}
-		//LOGGER(400, "server", "sendInviteRequest", username_to_send + " is not online.");
-		requestingUser.send({type: "SEND_INVITE_RESPONSE", status: 400, msg: username_to_send + " is not online.", target: username_to_send});
-		return ;
+	if (user_to_send === null) {
+		//LOGGER(400, "server", "sendInviteRequest", username_to_send + " doesnt exist.");
+		requestingUser.send({type: "SEND_INVITE_RESPONSE", status: 400, msg: username_to_send + " doesnt exist.", target: username_to_send});
 	}
-	//LOGGER(400, "server", "sendInviteRequest", username_to_send + " doesnt exist.");
-	requestingUser.send({type: "SEND_INVITE_RESPONSE", status: 400, msg: username_to_send + " doesnt exist.", target: username_to_send});
-	return ;
+	else if (user_to_send.getIsConnected() === false) {
+		//LOGGER(400, "server", "sendInviteRequest", username_to_send + " is not online."
+		requestingUser.send({type: "SEND_INVITE_RESPONSE", status: 400, msg: username_to_send + " is not online.", target: username_to_send});
+	}
+	else {
+		//LOGGER(200, "server", "sendInviteRequest", requestingUser.getUsername() + " sent invite to play to " + username_to_send);
+		requestingUser.addPendingRequest(user_to_send);
+		requestingUser.send({type: "SEND_INVITE_RESPONSE", status: 200, msg: "Sent invite to play with " + username_to_send, target: username_to_send});
+		user_to_send.send({type: "INCOMING_INVITE_REQUEST", msg: requestingUser.getUsername() + " sent you an invite request.", target: requestingUser.getUsername()});
+	}
 }
-
 
 function replyToInviteRequest(requestingUser, userManager, username_to_send) {
 
@@ -33,36 +29,31 @@ function replyToInviteRequest(requestingUser, userManager, username_to_send) {
 	if (user_to_send === null) {
 		//LOGGER(400, "server", "replyToInviteRequest", username_to_send + " couldnt find user.")
 		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " couldnt find user.", target: username_to_send});
-		return ;
 	}
-	if (user_to_send.getIsConnected() === false) {
+	else if (user_to_send.getIsConnected() === false) {
 		//LOGGER(400, "server", "replyToInviteRequest", username_to_send + " is offline.")
 		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " is offline.", target: username_to_send});
-		return ;
 	}
-	if (user_to_send.getIsPlaying() === true) {
+	else if (user_to_send.getIsPlaying() === true) {
 
 		//LOGGER(400, "server", "replyToInviteRequest", username_to_send + " is already in a match.1")
 		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " is already in a match.", target: username_to_send});
-		return ;
 	}
-	if (user_to_send.hasPendingRequest(requestingUser)) {
-
-		if (userManager.addToMatch(requestingUser, user_to_send) === null) {
-			//LOGGER(400, "server", "replyToInviteRequest", username_to_send + " is already in a match.2")
-			requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " is already in a match.", target: username_to_send});
-			return;
-		}
+	else if (user_to_send.hasPendingRequest(requestingUser) === false) {
+			//LOGGER(400, "server", "acceptInviteRequest", "Unable to send your invite acceptance to " + user_to_send.getUsername());
+		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: "Unable to send your invite acceptance to " + user_to_send.getUsername(), target: user_to_send.getUsername()});
+	}
+	else if (userManager.addToMatch(requestingUser, user_to_send) === null) {
+		//LOGGER(400, "server", "replyToInviteRequest", username_to_send + " is already in a match.2")
+		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " is already in a match.", target: username_to_send});
+	}
+	else {
 		//LOGGER(200, "server", "replyToInviteRequest", "You accepted " + username_to_send + "'s invite.");
 		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 200, msg: "You accepted " + username_to_send + "'s invite.", target: username_to_send});
 		user_to_send.send({type: "INCOMING_INVITE_RESPONSE", msg: requestingUser.getUsername() + " accepted your invite.", target: requestingUser.getUsername()});
-		return ;
 	}
-	//LOGGER(400, "server", "acceptInviteRequest", "Unable to send your invite acceptance to " + user_to_send.getUsername());
-	requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: "Unable to send your invite acceptance to " + user_to_send.getUsername(), target: user_to_send.getUsername()});
+
 }
-
-
 
 function startMatchRequest(requestingUser) {
 
@@ -75,6 +66,7 @@ function startMatchRequest(requestingUser) {
 	}
 	match.setReady(requestingUser);
 	if (match.isReady[0] && match.isReady[1]) {
+
 		match.players[0].send({type: "START_MATCH_RESPONSE", status: 200, msg: "Started match against " + match.players[1].getUsername(), target: match.players[1].getUsername()});
 		match.players[1].send({type: "START_MATCH_RESPONSE", status: 200, msg: "Started match against " + match.players[0].getUsername(), target: match.players[0].getUsername()});
 	}
@@ -83,19 +75,65 @@ function startMatchRequest(requestingUser) {
 function playLocalGame(requestingUser, userManager) {
 
 	if (requestingUser.getIsConnected() === false) {
+
 		//LOGGER(400, "server", "playLocalGame", "User is offline.")
 		requestingUser.send({type: "PLAY_LOCALLY_RESPONSE", status: 400, msg: "You need to log in to be able to play.", target: ""});
-		return ;
 	}
-	if (requestingUser.getIsPlaying() === true) {
+	else if (requestingUser.getIsPlaying() === true) {
 
 		//LOGGER(400, "server", "playLocalGame", "User already in a match.")
 		requestingUser.send({type: "PLAY_LOCALLY_RESPONSE", status: 400, msg: "You are already in another match.", target: ""});
-		return ;
 	}
-	const match = userManager.createMatch(requestingUser, true, 3);
-	requestingUser.setMatch(match);
-	requestingUser.send({type: "PLAY_LOCALLY_RESPONSE", status: 200, msg: "Local Match created.", target: ""});
+	else {
+
+		const match = userManager.createMatch(requestingUser, true);
+		requestingUser.setMatch(match);
+		requestingUser.send({type: "PLAY_LOCALLY_RESPONSE", status: 200, msg: "Local Match created.", target: ""});
+	}
+}
+
+function createTournamentRequest(requestingUser, userManager, userAlias, numPlayers, locally) {
+
+
+	if (requestingUser.getCurrentMatch() !== null) {
+
+		requestingUser.send({type: "CREATE_TOURNAMENT_RESPONSE", status: 400, msg: "You are already in a match."});
+	}
+	else if (requestingUser.getCurrentTournament() !== null) {
+
+		requestingUser.send({type: "CREATE_TOURNAMENT_RESPONSE", status: 400, msg: "You are already in a tournament."});
+	}
+	else {
+
+		const tournament = userManager.createTournament(userAlias, numPlayers, false);
+		tournament.addUserToTournament(requestingUser, userAlias);
+		requestingUser.setCurrentTournament(tournament);
+		requestingUser.send({type: "CREATE_TOURNAMENT_RESPONSE", status: 200, msg: "Tournament created!"});
+	}
+}
+
+function searchTournamentRequest(requestingUser, userManager) {
+
+	const available_tournaments = userManager.getAvailableTournaments();
+	if (available_tournaments === null) {
+
+		requestingUser.send({type: "SEARCH_TOURNAMENT_RESPONSE", status: 400, msg: "No tournaments found.", tournaments: []});
+	}
+	else {
+
+		requestingUser.send({type: "SEARCH_TOURNAMENT_RESPONSE", status: 200, msg: "Found tournaments.", tournaments: available_tournaments});
+	}
+}
+
+function joinTournamentRequest(requestingUser, userManager, tournament_id) {
+
+	const tournament = userManager.getTournamentById(tournament_id);
+	if (tournament === null) {
+		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 400, msg: "Couldnt find tournament."});
+	}
+	else {
+		
+	}
 }
 
 function handleUserCommands(user, userManager) {
@@ -120,6 +158,15 @@ function handleUserCommands(user, userManager) {
 		}
 		else if (msg.type === "PLAY_LOCALLY_REQUEST") {
 			playLocalGame(user, userManager);
+		}
+		else if (msg.type === "CREATE_TOURNAMENT_REQUEST") {
+			createTournamentRequest(user, userManager, msg.alias, msg.numPlayers, msg.locally);
+		}
+		else if (msg.type === "SEARCH_TOURNAMENT_REQUEST") {
+			searchTournamentRequest(user, userManager);
+		}
+		else if (msg.type === "JOIN_TOURNAMENT_REQUEST") {
+			joinTournamentRequest(user, userManager, msg.tournament_id);
 		}
 		else if (msg.type === "MOVE2" && user.currentMatch) {
 			user.currentMatch.update2PlayerGame(user, msg.move);

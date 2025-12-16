@@ -98,12 +98,7 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 
 		let player = userManager.getUserByID(user.id);
 		if (!player) {
-			player = new User({
-				id: user.id,
-				username: user.username,
-				display_name: user.display_name,
-				socket: null
-			});
+			player = userManager.createUser(user.id, user.username, user.display_name, null);
 			userManager.addUser(player);
 		}
 
