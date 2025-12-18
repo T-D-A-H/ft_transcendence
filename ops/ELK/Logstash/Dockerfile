@@ -1,26 +1,8 @@
-FROM alpine:3.18
+FROM docker.elastic.co/logstash/logstash:8.11.0
 
-ENV LS_VERSION=8.9.0
-ENV LS_HOME=/app/logstash
-ENV LS_JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+COPY pipeline/ /usr/share/logstash/pipeline/
+COPY config/ /usr/share/logstash/config/
 
-RUN apk add --no-cache openjdk17-jre bash curl && \
-    addgroup -S logstash && \
-    adduser -S -G logstash logstash && \
-    mkdir -p ${LS_HOME} /app/pipeline /app/config && \
-    cd /tmp && \
-    curl -L -O https://artifacts.elastic.co/downloads/logstash/logstash-${LS_VERSION}-linux-x86_64.tar.gz && \
-    tar -xzf logstash-${LS_VERSION}-linux-x86_64.tar.gz -C ${LS_HOME} --strip-components=1 && \
-    rm logstash-${LS_VERSION}-linux-x86_64.tar.gz && \
-    chown -R logstash:logstash /app
+EXPOSE 5069
 
-WORKDIR /app
-
-COPY entrypoint-logstash.sh /app/entrypoint-logstash.sh
-RUN chmod +x /app/entrypoint-logstash.sh
-
-USER logstash
-
-EXPOSE 5000 9600
-
-ENTRYPOINT ["/app/entrypoint-logstash.sh"]
+CMD ["logstash", "-f", "/usr/share/logstash/pipeline/logstash.conf"]

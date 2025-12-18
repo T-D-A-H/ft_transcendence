@@ -1,6 +1,35 @@
 
+# need to create game logs
+
+# logs located at /ops/ELK/Logstash/logs will be processed to create graphs in Kibana
+# access Kibana http://localhost:5601 (page that contains the graphs)
+# kibana dataview needs to be created:
+#  http://localhost:5601/app/management/kibana/dataViews
+
+# access Elasticsearch http://localhost:9200 (to check if ELK is running)
+
+# access Logstash http://localhost:5069 (can't access this page due to being a TCP, but port must be open for Logstash to work)
+
 services:
-  # searchs for logs
+  # processes and ships logs
+  logstash:
+    build:
+      context: ./Logstash
+      dockerfile: Dockerfile
+    container_name: ft_logstash
+    volumes:
+      - ./Logstash/pipeline:/usr/share/logstash/pipeline
+      - ./Logstash/config:/usr/share/logstash/config
+      - ./Logstash/logs:/usr/share/logstash/logs
+    ports:
+      - "5069:5069"
+    depends_on:
+      - elasticsearch
+    networks:
+      - ELK
+    restart: unless-stopped
+
+  # indexes + stores logs
   elasticsearch:
     build:
       context: ./Elasticsearch
@@ -16,39 +45,22 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - es_data:/app/data
+      - es_data:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
     networks:
       - ELK
     restart: unless-stopped
 
-  # processes and ships logs
-  logstash:
-    build:
-      context: ./Logstash
-      dockerfile: Dockerfile
-    container_name: ft_logstash
-    volumes:
-      - ./Logstash/pipeline:/app/pipeline
-      - ./Logstash/config:/app/config
-    ports:
-      - "5001:5000"
-    depends_on:
-      - elasticsearch
-    networks:
-      - ELK
-    restart: unless-stopped
-
-  # visualizes logs
+  # visualizes logs as graphs
   kibana:
     build:
       context: ./Kibana
       dockerfile: Dockerfile
     container_name: ft_kibana
     volumes:
-      - ./Kibana/kibana.yml:/app/kibana/config/kibana.yml
-      - kibana_data:/app/data
+      - ./Kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - kibana_data:/usr/share/kibana/data
     ports:
       - "5601:5601"
     depends_on:
