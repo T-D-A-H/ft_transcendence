@@ -2,13 +2,19 @@
 # need to create game logs
 
 # logs located at /ops/ELK/Logstash/logs will be processed to create graphs in Kibana
-# access Kibana http://localhost:5601 (page that contains the graphs)
-# kibana dataview needs to be created:
-#  http://localhost:5601/app/management/kibana/dataViews
+# Access Kibana:        https://localhost:5601 (username: elastic, password: from .env)
+# Access Elasticsearch: https://localhost:9200 (requires authentication)
+# 
+# Kibana dataview needs to be created:
+#  https://localhost:5601/app/management/kibana/dataViews
+#
+# Logstash secure endpoints:
+#  - TCP (TLS):   port 5069
+#  - HTTP (TLS):  port 8080  
+#  - Beats (TLS): port 5044
 
-# access Elasticsearch http://localhost:9200 (to check if ELK is running)
-
-# access Logstash http://localhost:5069 (can't access this page due to being a TCP, but port must be open for Logstash to work)
+env_file:
+  - .env
 
 services:
   # processes and ships logs
@@ -17,12 +23,19 @@ services:
       context: ./Logstash
       dockerfile: Dockerfile
     container_name: ft_logstash
+    environment:
+      - ELASTICSEARCH_USERNAME=logstash_system
+      - ELASTICSEARCH_PASSWORD=${LOGSTASH_SYSTEM_PASSWORD}
+      - LOGSTASH_WRITER_PASSWORD=${LOGSTASH_WRITER_PASSWORD}
     volumes:
       - ./Logstash/pipeline:/usr/share/logstash/pipeline
       - ./Logstash/config:/usr/share/logstash/config
       - ./Logstash/logs:/usr/share/logstash/logs
+      - ./Elasticsearch/certs:/usr/share/logstash/config/certs:ro
     ports:
       - "5069:5069"
+      - "8080:8080"
+      - "5044:5044"
     depends_on:
       - elasticsearch
     networks:
@@ -37,17 +50,20 @@ services:
     container_name: ft_elasticsearch
     environment:
       - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-      - xpack.security.enabled=false
-      - xpack.monitoring.collection.enabled=true
+      - ES_JAVA_OPTS=${ES_JAVA_OPTS}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - xpack.security.enabled=${XPACK_SECURITY_ENABLED}
+      - xpack.monitoring.collection.enabled=${XPACK_MONITORING_ENABLED}
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
       - es_data:/usr/share/elasticsearch/data
+      - ./Elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./Elasticsearch/certs:/usr/share/elasticsearch/config/certs:ro
     ports:
-      - "9200:9200"
+      - "127.0.0.1:9200:9200"  # Bind to localhost for security
     networks:
       - ELK
     restart: unless-stopped
@@ -58,11 +74,15 @@ services:
       context: ./Kibana
       dockerfile: Dockerfile
     container_name: ft_kibana
+    environment:
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_SYSTEM_PASSWORD}
     volumes:
       - ./Kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - ./Elasticsearch/certs:/usr/share/kibana/config/certs:ro
       - kibana_data:/usr/share/kibana/data
     ports:
-      - "5601:5601"
+      - "127.0.0.1:5601:5601"  # Bind to localhost for security
     depends_on:
       - elasticsearch
     networks:
