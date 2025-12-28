@@ -44,6 +44,9 @@ export const submitRegisterButton = // Submit info in register box
 export const createMatchButton = // Create match button element
 	document.getElementById("create_match") as HTMLButtonElement;
 
+export const createMatchAIButton = // Create match button element
+	document.getElementById("create_match_vs_ai") as HTMLButtonElement;
+
 export const searchForMatchButton = // Look for match button element
 	document.getElementById("search_match") as HTMLButtonElement;
 
