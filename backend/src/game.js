@@ -1,4 +1,5 @@
 const LOGGER = require("./LOGGER.js");
+const SPEED = 8;
 
 function joinMatchRequest(requestingUser, userManager, target_username) {
   const match = userManager.addToMatch(requestingUser, target_username);

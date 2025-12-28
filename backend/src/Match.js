@@ -16,6 +16,7 @@ class Match {
     this.playerY = [150, opts.aiPlayer ? 150 : null];
     this.isWaiting = opts.aiPlayer ? false : true;
     this.isReady = [null, opts.aiPlayer ? true : null];
+    this.ball = { x: 300, y: 200, vx: -4, vy: 3, size: 10 };
   }
 
   addUserToMatch(user) {
@@ -56,6 +57,47 @@ class Match {
     }
   }
 
+  resetBall(direction = -1) {
+    this.ball.x = 300;
+    this.ball.y = 200;
+    this.ball.vx = 4 * direction;
+    this.ball.vy = Math.random() > 0.5 ? 3 : -3;
+  }
+
+  updateBall() {
+    const { size } = this.ball;
+    this.ball.x += this.ball.vx;
+    this.ball.y += this.ball.vy;
+
+    if (this.ball.y <= 0 || this.ball.y + size >= 400) {
+      this.ball.vy *= -1;
+      this.ball.y = Math.max(0, Math.min(400 - size, this.ball.y));
+    }
+
+    // Left paddle collision
+    if (
+      this.ball.x <= 20 &&
+      this.ball.y + size >= this.playerY[0] &&
+      this.ball.y <= this.playerY[0] + 60
+    ) {
+      this.ball.vx = Math.abs(this.ball.vx);
+      this.ball.x = 20;
+    }
+
+    // Right paddle collision
+    if (
+      this.ball.x + size >= 580 &&
+      this.ball.y + size >= this.playerY[1] &&
+      this.ball.y <= this.playerY[1] + 60
+    ) {
+      this.ball.vx = -Math.abs(this.ball.vx);
+      this.ball.x = 580 - size;
+    }
+
+    // Miss: reset to center heading toward scorer
+    if (this.ball.x < -size) this.resetBall(1);
+    if (this.ball.x > 600 + size) this.resetBall(-1);
+  }
 
   updateAIMove() {
     if (!this.isAIMatch || this.playerY[1] === null) return;
@@ -71,10 +113,13 @@ class Match {
   sendState(SPEED) {
     if (this.isAIMatch) this.updateAIMove();
     this.updateCoords(SPEED);
+    this.updateBall();
     this.broadcast({
       type: "MOVE",
       playerY1: this.playerY[0],
       playerY2: this.playerY[1],
+      ballX: this.ball.x,
+      ballY: this.ball.y,
     });
   }
 
