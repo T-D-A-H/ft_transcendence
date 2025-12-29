@@ -9,6 +9,9 @@
 /ops/ELK/Elasticsearch/certs/ca/ca.key
 /ops/ELK/Elasticsearch/certs/ca/ca.srl
 
+# monitoring module
+/ops/monitoring/.env
+
 # Certificate private keys
 *.key
 !**/package-lock.json

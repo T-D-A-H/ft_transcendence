@@ -1,0 +1,20 @@
+
+# scarping is the way prometheus collects metrics from monitored targets
+
+global:
+  scrape_interval: 15s
+  # alerting rules
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:${PROMETHEUS_PORT}']
+
+  - job_name: 'backend'
+    static_configs:
+      - targets: ['localhost:3000']
+
+  - job_name: 'frontend'
+    static_configs:
+      - targets: ['localhost:80']
