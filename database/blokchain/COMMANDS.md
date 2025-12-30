@@ -65,7 +65,7 @@ const blockchainService = require('./backend/src/BlockchainService');
 
 await blockchainService.initialize();
 
-// this is to create a test tournament
+// this is to create a test tournament || need to make it use real data
 const tournamentId = await blockchainService.createTournament(
   "Championship 2025",
   Math.floor(Date.now() / 1000),

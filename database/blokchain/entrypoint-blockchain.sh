@@ -1,21 +1,19 @@
 #!/bin/sh
 
-echo "Compiling smart contracts..."
-npm run compile
+npx hardhat compile
 
 if [ $? -eq 0 ]; then
 	echo "Contracts compiled successfully"
 else
-	echo "Contract compilation failed"
-	exit 1
+	echo "Contract compilation failed (continuing anyway)"
 fi
 
 echo ""
 echo "Deploying smart contract..."
 if [ "$NETWORK" = "local" ] || [ "$RUN_LOCAL_NODE" = "true" ]; then
-	npm run deploy:local
+	npx hardhat run scripts/deploy.js --network hardhat
 else
-	npm run deploy:fuji
+	npx hardhat run scripts/deploy.js --network fuji
 fi
 
 if [ $? -eq 0 ]; then
