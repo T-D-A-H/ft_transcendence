@@ -47,7 +47,11 @@ function searchMatchRequest(requestingUser, userManager) {
   LOGGER(200, "searchMatchRequest: ", "Sent available matches");
 }
 
-function createMatchRequest(requestingUser, userManager) {
+function createMatchRequest(
+  requestingUser,
+  userManager,
+  boardTheme = "classic"
+) {
   if (userManager.findMatch(requestingUser) !== null) {
     LOGGER(409, "createMatchRequest: ", "Already in a match.");
     requestingUser.send({
@@ -57,16 +61,24 @@ function createMatchRequest(requestingUser, userManager) {
     });
     return;
   }
-  userManager.createMatch(requestingUser);
+  userManager.createMatch(requestingUser, { boardTheme });
   requestingUser.send({
     type: "CREATE_MATCH_RESPONSE",
     status: 200,
     msg: "Match created.",
   });
-  LOGGER(200, "createMatchRequest: ", "Sent Match created.");
+  LOGGER(
+    200,
+    "createMatchRequest: ",
+    "Sent Match created with theme: " + boardTheme
+  );
 }
 
-function createMatchAIRequest(requestingUser, userManager) {
+function createMatchAIRequest(
+  requestingUser,
+  userManager,
+  boardTheme = "classic"
+) {
   if (userManager.findMatch(requestingUser) !== null) {
     LOGGER(409, "createMatchAIRequest: ", "Already in a match.");
     requestingUser.send({
@@ -76,7 +88,7 @@ function createMatchAIRequest(requestingUser, userManager) {
     });
     return;
   }
-  const match = userManager.createAIMatch(requestingUser);
+  const match = userManager.createAIMatch(requestingUser, { boardTheme });
   match.isReady[0] = true;
   match.isReady[1] = true;
   match.sendState(SPEED);
@@ -98,9 +110,9 @@ function handleUserCommands(user, userManager) {
       return;
     }
     if (msg.type === "CREATE_MATCH_REQUEST") {
-      createMatchRequest(user, userManager);
+      createMatchRequest(user, userManager, msg.boardTheme);
     } else if (msg.type === "CREATE_MATCH_AI_REQUEST") {
-      createMatchAIRequest(user, userManager);
+      createMatchAIRequest(user, userManager, msg.boardTheme);
     } else if (msg.type === "SEARCH_MATCH_REQUEST") {
       searchMatchRequest(user, userManager);
     } else if (msg.type === "JOIN_MATCH_REQUEST") {

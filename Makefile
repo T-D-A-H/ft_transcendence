@@ -71,6 +71,8 @@ rd: # resetea la base de datos a 0 sin construir imagen
 
 rdb: rd
 
+rfb: rb rf
+
 rall: rfn rd # Recompilar backend, database, frontend, nginx , borrar volumenes y ejecutar scripts
 
 # ----------------------------------------------------------

@@ -122,22 +122,23 @@ class UserManager {
   }
 
   // Create a new match
-  createMatch(user) {
+  createMatch(user, opts = {}) {
     LOGGER(200, "UserManager: ", "createMatch called");
     const match_id = this.match_id;
-    const match = new Match(user, match_id);
+    const match = new Match(user, match_id, opts);
     user.currentMatch = match;
     this.matches.set(match_id, match);
     this.match_id++;
   }
 
-  createAIMatch(user) {
+  createAIMatch(user, opts = {}) {
     LOGGER(200, "UserManager: ", "createAIMatch called");
     const match_id = this.match_id;
     const aiUser = this.buildAIUser(match_id);
     const match = new Match(user, match_id, {
       isAIMatch: true,
       aiPlayer: aiUser,
+      ...opts,
     });
     match.attachAI(aiUser);
     user.currentMatch = match;

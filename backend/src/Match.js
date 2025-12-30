@@ -11,13 +11,14 @@ class Match {
     );
     this.id = match_id;
     this.isAIMatch = opts.isAIMatch || false;
+    this.boardTheme = opts.boardTheme || "classic";
     this.players = [user, opts.aiPlayer || null];
     this.playerCoords = [0, opts.aiPlayer ? 0 : null];
     this.playerY = [150, opts.aiPlayer ? 150 : null];
     this.isWaiting = opts.aiPlayer ? false : true;
     this.isReady = [null, opts.aiPlayer ? true : null];
     this.ball = { x: 300, y: 200, vx: -4, vy: 3, size: 10 };
-    this.difficulty = Math.max(1, Math.min(5, opts.difficulty || 1));
+    this.difficulty = Math.max(1, Math.min(5, opts.difficulty || 5));
     this.aiDecisionIntervalMs = Math.max(
       300,
       1000 - (this.difficulty - 1) * 150

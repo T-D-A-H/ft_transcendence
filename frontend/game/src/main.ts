@@ -33,6 +33,7 @@ import {
   twoFASubmitButton,
   twoFAInput,
   initialLoader,
+  themeOptions,
 } from "./ui.js";
 
 import { registerUser } from "./register.js";
@@ -45,7 +46,7 @@ import {
   playerJoinedMatch,
 } from "./match.js";
 import { sendKeyPressEvents } from "./keypress.js";
-import { drawGame } from "./draw.js";
+import { drawGame, setTheme, drawPreview, drawMiniPreview } from "./draw.js";
 
 if (
   !loginModal ||
@@ -71,18 +72,46 @@ if (
   !playersListUL ||
   !renderMatchList ||
   !canvas ||
-  !paddle
+  !paddle ||
+  !themeOptions ||
+  themeOptions.length === 0
 ) {
   console.error("One or more UI elements are missing");
 }
 
 let tempToken2FA: string | null | undefined = null;
 let userSocket: WebSocket | null = null;
+let selectedTheme: string = "classic";
 
 openLogin.onclick = () => show(loginModal);
 closeLogin.onclick = () => hide(loginModal);
 openRegister.onclick = () => show(registerModal);
 closeRegister.onclick = () => hide(registerModal);
+
+themeOptions.forEach((option) => {
+  const themeName = option.dataset.theme!;
+  const miniCanvas = option.querySelector("canvas") as HTMLCanvasElement;
+  if (miniCanvas) {
+    drawMiniPreview(miniCanvas, themeName);
+  }
+
+  option.onclick = () => {
+    themeOptions.forEach((opt) => {
+      opt.classList.remove("border-blue-500");
+      opt.classList.add("border-gray-600");
+    });
+
+    option.classList.remove("border-gray-600");
+    option.classList.add("border-blue-500");
+
+    selectedTheme = themeName;
+    setTheme(themeName);
+    drawPreview(canvas!, paddle!);
+    console.log("Theme changed to:", themeName);
+  };
+});
+
+drawPreview(canvas!, paddle!);
 
 function showLoader() {
   show(initialLoader);
@@ -301,7 +330,7 @@ createMatchButton.onclick = () => {
     alert("WebSocket not ready. Try again in a moment.");
     return;
   }
-  createNewMatch(userSocket!).then((new_match_status) => {
+  createNewMatch(userSocket!, selectedTheme).then((new_match_status) => {
     if (new_match_status === 0) {
       alert("Match created");
       // hide(createMatchButton);
@@ -318,7 +347,7 @@ createMatchAIButton.onclick = () => {
     alert("WebSocket not ready. Try again in a moment.");
     return;
   }
-  createNewAIMatch(userSocket!).then((status) => {
+  createNewAIMatch(userSocket!, selectedTheme).then((status) => {
     if (status === 0) {
       alert("Match vs AI created");
     } else if (status === 1) {

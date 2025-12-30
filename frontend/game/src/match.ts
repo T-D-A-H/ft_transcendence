@@ -66,12 +66,16 @@ export function searchForMatch(
   });
 }
 
-export function createNewMatch(userSocket: WebSocket): Promise<number> {
+export function createNewMatch(
+  userSocket: WebSocket,
+  boardTheme?: string
+): Promise<number> {
   return new Promise((resolve, reject) => {
     if (userSocket.readyState === WebSocket.OPEN) {
-      sendRequest(userSocket, "CREATE_MATCH_REQUEST");
+      sendRequest(userSocket, "CREATE_MATCH_REQUEST", { boardTheme });
     } else {
-      userSocket.onopen = () => sendRequest(userSocket, "CREATE_MATCH_REQUEST");
+      userSocket.onopen = () =>
+        sendRequest(userSocket, "CREATE_MATCH_REQUEST", { boardTheme });
     }
 
     userSocket.onmessage = (event: MessageEvent) => {
@@ -93,13 +97,16 @@ export function createNewMatch(userSocket: WebSocket): Promise<number> {
   });
 }
 
-export function createNewAIMatch(userSocket: WebSocket): Promise<number> {
+export function createNewAIMatch(
+  userSocket: WebSocket,
+  boardTheme?: string
+): Promise<number> {
   return new Promise((resolve, reject) => {
     if (userSocket.readyState === WebSocket.OPEN) {
-      sendRequest(userSocket, "CREATE_MATCH_AI_REQUEST");
+      sendRequest(userSocket, "CREATE_MATCH_AI_REQUEST", { boardTheme });
     } else {
       userSocket.onopen = () =>
-        sendRequest(userSocket, "CREATE_MATCH_AI_REQUEST");
+        sendRequest(userSocket, "CREATE_MATCH_AI_REQUEST", { boardTheme });
     }
 
     userSocket.onmessage = (event: MessageEvent) => {
