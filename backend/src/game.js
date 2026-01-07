@@ -92,7 +92,7 @@ function playLocalGame(requestingUser, userManager) {
 	}
 }
 
-function createTournamentRequest(requestingUser, userManager, userAlias, numPlayers, locally) {
+function createTournamentRequest(requestingUser, userManager, userAlias, numPlayers) {
 
 
 	if (requestingUser.getCurrentMatch() !== null) {
@@ -105,7 +105,7 @@ function createTournamentRequest(requestingUser, userManager, userAlias, numPlay
 	}
 	else {
 
-		const tournament = userManager.createTournament(userAlias, numPlayers, false);
+		const tournament = userManager.createTournament(userAlias, numPlayers);
 		tournament.addUserToTournament(requestingUser, userAlias);
 		requestingUser.setCurrentTournament(tournament);
 		requestingUser.send({type: "CREATE_TOURNAMENT_RESPONSE", status: 200, msg: "Tournament created!"});
@@ -125,14 +125,18 @@ function searchTournamentRequest(requestingUser, userManager) {
 	}
 }
 
-function joinTournamentRequest(requestingUser, userManager, tournament_id) {
+function joinTournamentRequest(requestingUser, userManager, tournament_id, alias) {
 
 	const tournament = userManager.getTournamentById(tournament_id);
 	if (tournament === null) {
 		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 400, msg: "Couldnt find tournament."});
 	}
+	if (tournament.getIfTournamentFull()) {
+		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 400, msg: "Tournament already full."});
+	}
 	else {
-		
+		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 200, msg: "Joined " + tournament.getCreatorAlias() +  "'s tournament."});
+		tournament.addUserToTournament(requestingUser, alias);
 	}
 }
 
@@ -160,7 +164,7 @@ function handleUserCommands(user, userManager) {
 			playLocalGame(user, userManager);
 		}
 		else if (msg.type === "CREATE_TOURNAMENT_REQUEST") {
-			createTournamentRequest(user, userManager, msg.alias, msg.numPlayers, msg.locally);
+			createTournamentRequest(user, userManager, msg.alias, msg.numPlayers);
 		}
 		else if (msg.type === "SEARCH_TOURNAMENT_REQUEST") {
 			searchTournamentRequest(user, userManager);

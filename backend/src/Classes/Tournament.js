@@ -3,18 +3,17 @@ const LOGGER = require("../LOGGER.js");
 
 class Tournament {
 
-    constructor(creatorAlias, tournament_id, numPlayers, locally) {
+    constructor(creatorAlias, tournament_id, numPlayers) {
 
 		LOGGER(200, "Tournament", "Constructor", "Called");
 		this.id = tournament_id;
 		this.maxPlayers = numPlayers;
 		this.currentPlayerCount = 0;
 		this.creatorAlias = creatorAlias;
-		this.locally = locally;
 		this.players = new Map();
 		this.playerAliases = new Map();
-
 		this.isWaiting = true;
+		this.isReady = false;
 	}
 
 
@@ -40,6 +39,24 @@ class Tournament {
 		return (this.players.size === this.maxPlayers);
 	}
 
+	isWaitingAndReady() {
+
+		if (this.isWaiting === true && this.getIfTournamentFull()) {
+			this.isWaiting = false;
+			this.isReady = true;
+			return (true);
+		}
+		return (false);
+	}
+
+	startMatches() {
+		tournament.isWaiting = false;
+        tournament.isReady = true;
+	}
+	isReady() {
+		return (this.isReady);
+	}
+
 	getTournamentId() {
 		return (this.id);
 	}
@@ -59,6 +76,7 @@ class Tournament {
 	getCreatorAlias() {
 		return (this.creatorAlias);
 	}
+
 }
 
 module.exports = Tournament;

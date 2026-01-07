@@ -135,44 +135,6 @@ export const incomingPlayRequestAcceptButton =
 
 
 
-export const createTournamentButton = // Create a match button
-	document.getElementById("create_tournament") as HTMLButtonElement;
-
-export const searchTournamentButton = // Search for matches button
-	document.getElementById("search_tournament") as HTMLButtonElement;
-
-export const activeTournamentsModal = // Container showing waiting players
-	document.getElementById("active_tournaments_modal") as HTMLDivElement;
-
-export const tournamentsListUL = // UL element where usernames will be inserted
-	document.getElementById("tournament_list_ul") as HTMLUListElement;
-
-export function renderTournamentList(matches: string[]): HTMLButtonElement[] {
-
-	tournamentsListUL.innerHTML = "";
-
-	const joinButtons: HTMLButtonElement[] = [];
-
-	for (const username of matches) {
-		const li = document.createElement("li");
-		li.className = "flex justify-between items-center";
-
-		const nameSpan = document.createElement("span");
-		nameSpan.textContent = username;
-
-		const joinBtn = document.createElement("button");
-		joinBtn.textContent = "Join";
-		joinBtn.className = "px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-xs";
-		joinBtn.dataset.username = username;
-
-		li.appendChild(nameSpan);
-		li.appendChild(joinBtn);
-		tournamentsListUL.appendChild(li);
-
-		joinButtons.push(joinBtn);
-	}
-	return (joinButtons);
-}
 
 
 export const canvas = // Canvas where game is drawn

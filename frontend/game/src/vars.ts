@@ -73,19 +73,42 @@ export interface DisconnectMsg {
     msg: string;
 }
 
+
+
+
+export interface CreateTournamentRequest {
+    type: "CREATE_TOURNAMENT_RESPONSE";
+    status: number;
+    msg: string;
+}
+
+export interface SearchTournamentRequest {
+    type: "SEARCH_TOURNAMENT_RESPONSE";
+    status: number;
+    msg: string;
+    tournaments: [string];
+}
+
+export interface JoinTournamentRequest {
+    type: "JOIN_TOURNAMENT_RESPONSE";
+    status: number;
+    msg: string;
+}
+
+
+
 export type ServerMessage = 
 SendInviteResponse         | ReplyInviteResponse      |
 IncomingInviteRequest      | IncomingInviteResponse   |
 StartMatchResponse         | PlayLocallyResponse      | 
 ScoresMessage              | DrawMessage			  | 
 InitialVarsMessage         | WinMessage               | 
-DisconnectMsg;
+DisconnectMsg              | CreateTournamentRequest  |
+SearchTournamentRequest    | JoinTournamentRequest;
 
 export let SCORES: number[] = [0, 0];
 
-
 export let INVITE_FROM: string;
-
 
 export function setInviteFrom(target: string) {
 	INVITE_FROM = target;

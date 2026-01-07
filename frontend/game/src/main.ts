@@ -8,7 +8,6 @@ import {
 	startMatchButton, waitingPlayers, playLocallyButton,
 	playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton,
 	incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton,
-	createTournamentButton, searchTournamentButton, activeTournamentsModal, tournamentsListUL, renderTournamentList,
 	canvas, texture, show, hide, showNotification} from "./ui.js";
 import {getInviteFrom} from "./vars.js";
 import { registerUser,  loginUser } from "./login-register.js"
@@ -25,7 +24,7 @@ if (!loadAnimation || !showLoader || !hideLoader ||
 	!startMatchButton || !waitingPlayers || !playLocallyButton ||
 	!playRequestModal || !playAgainstUserButton || !playRequestUsernameInput || !playRequestCloseButton || !playRequestSendButton ||
 	!incomingPlayRequestModal || !incomingPlayRequestText || !incomingPlayRequestCloseButton || !incomingPlayRequestAcceptButton ||
-	!createTournamentButton || !searchTournamentButton || !activeTournamentsModal || !tournamentsListUL || !renderTournamentList ||
+	// !createTournamentButton || !searchTournamentButton || !activeTournamentsModal || !tournamentsListUL || !renderTournamentList ||
 	!canvas || !texture || !show || !hide || !showNotification) {
 		console.error("One or more UI elements are missing");
 }
@@ -224,12 +223,7 @@ playRequestSendButton.onclick = () => {
 		alert("Username field empty");
 		return ;
 	}
-	oneTimeEvent(
-		userSocket!, 
-		"SEND_INVITE_REQUEST", 
-		"SEND_INVITE_RESPONSE", 
-		target_username
-	).then((result) => {
+	oneTimeEvent(userSocket!, "SEND_INVITE_REQUEST", "SEND_INVITE_RESPONSE", target_username).then((result) => {
 
 		if (!result) {
 			alert("No response from server");
@@ -255,10 +249,7 @@ startMatchButton.onclick = () => {
     }
 	hide(startMatchButton);
 	show(waitingPlayers);
-    oneTimeEvent(userSocket!, 
-		"START_MATCH_REQUEST", 
-		"START_MATCH_RESPONSE"
-	).then((result) => {
+    oneTimeEvent(userSocket!, "START_MATCH_REQUEST", "START_MATCH_RESPONSE").then((result) => {
 
 		if (!result) {
 			alert("No response from server");
@@ -279,11 +270,7 @@ playLocallyButton.onclick = () => {
         alert("WebSocket not ready");
         return;
     }
-	oneTimeEvent(
-		userSocket!,
-		"PLAY_LOCALLY_REQUEST", 
-		"PLAY_LOCALLY_RESPONSE"
-	).then((result) => {
+	oneTimeEvent(userSocket!,"PLAY_LOCALLY_REQUEST", "PLAY_LOCALLY_RESPONSE").then((result) => {
 
 		if (!result) {
 			alert("No response from server");
@@ -303,12 +290,7 @@ playLocallyButton.onclick = () => {
  
 incomingPlayRequestAcceptButton.onclick = () => {
 
-	oneTimeEvent(
-		userSocket!, 
-		"REPLY_INVITE_REQUEST", 
-		"REPLY_INVITE_RESPONSE", 
-		getInviteFrom()
-	).then((result) => {
+	oneTimeEvent(userSocket!, "REPLY_INVITE_REQUEST", "REPLY_INVITE_RESPONSE", getInviteFrom()).then((result) => {
 
 		if (!result) {
 			alert("No response from server");
@@ -322,46 +304,135 @@ incomingPlayRequestAcceptButton.onclick = () => {
 };
 
 
-// createTournamentButton.onclick = () => {
-//     if (!userSocket) {
-//         alert("WebSocket not ready");
-//         return;
-//     }
-// 	alert("No code written for this.");
 
-// };
-// searchTournamentButton.onclick = () => {
-//     if (!userSocket) {
-//         alert("WebSocket not ready");
-//         return;
-//     }
-// 	alert("No code written for this.");
 
-// };
 
-// searchForMatchButton.onclick = () => {
-// 	if (!userSocket) {
-//         alert("WebSocket not ready");
-//         return;
-//     }
 
-// 	searchForMatch(userSocket!).then((matches) => {
 
-// 		if (!matches) {
-// 			alert("No Matches found.");
-// 			hide(activeMatchesModal);
-// 			return;
-// 		}
-// 		const joinButtons = renderMatchList(matches!);
-// 		for (const btn of joinButtons) {
-// 			const target = btn.dataset.username!;
-// 			btn.onclick = () => joinMatch(userSocket!, target).then(() => {
-// 				hide(activeMatchesModal);
-// 				hide(createMatchButton);
-// 				hide(searchForMatchButton);
-// 				show(startMatchButton);
-// 			});
-// 		}
-// 		show(activeMatchesModal);
-// 	});
-// };
+
+export const openCreateTournamentButton = // Create a match button
+	document.getElementById("create_tournament") as HTMLButtonElement;
+
+const closeCreateTournamentButton =
+	document.getElementById("tournament_create_cancel_button") as HTMLButtonElement;
+
+const submitTournamentCreationButton = // Submit Tournament creation button
+		document.getElementById("tournament_create_submit_button") as HTMLButtonElement;
+	
+const createTournamentModal =
+	document.getElementById("create_tournament_modal") as HTMLDivElement;
+
+
+
+export const openSearchTournamentButton = // Search for matches button
+	document.getElementById("search_tournament") as HTMLButtonElement;
+
+const closeSearchTournamentButton =
+	document.getElementById("tournament_search_cancel_button") as HTMLButtonElement;
+
+const activeTournamentsModal = // Container showing waiting players
+	document.getElementById("active_tournaments_modal") as HTMLDivElement;
+
+const tournamentsListUL = // UL element where usernames will be inserted
+	document.getElementById("tournament_list_ul") as HTMLUListElement;
+
+
+export function renderTournamentList(tournaments: string[]): HTMLButtonElement[] {
+
+	tournamentsListUL.innerHTML = "";
+
+	const joinButtons: HTMLButtonElement[] = [];
+
+	for (const username of tournaments) {
+		const li = document.createElement("li");
+		li.className = "flex justify-between items-center";
+
+		const nameSpan = document.createElement("span");
+		nameSpan.textContent = username;
+
+		const joinBtn = document.createElement("button");
+		joinBtn.textContent = "Join";
+		joinBtn.className = "px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-xs";
+		joinBtn.dataset.username = username;
+
+		li.appendChild(nameSpan);
+		li.appendChild(joinBtn);
+		tournamentsListUL.appendChild(li);
+
+		joinButtons.push(joinBtn);
+	}
+	return (joinButtons);
+}
+
+openCreateTournamentButton.onclick = () => show(createTournamentModal);
+closeCreateTournamentButton.onclick = () => hide(createTournamentModal);
+closeSearchTournamentButton.onclick = () => hide(activeTournamentsModal);
+
+createTournamentButton.onclick = () => {
+
+    if (!userSocket) {
+        alert("WebSocket not ready");
+		hide(createTournamentModal);
+        return;
+    }
+	const target_size = createMatchSizeInput.value.trim();
+	if (target_size.length === 0) {
+		alert("target size field empty");
+		return ;
+	}
+
+	oneTimeEvent(userSocket!, "CREATE_TOURNAMENT_REQUEST", "CREATE_INVITE_RESPONSE", target_size).then((result) => {
+
+		if (!result) {
+			alert("No response from server");
+			return ;
+		}
+		showNotification(result.msg);
+		if (result.status !== 200) {
+			return ;
+		}
+		hide(createTournamentModal);
+	});
+
+};
+
+
+openSearchTournamentButton.onclick = () => {
+
+    if (!userSocket) {
+        alert("WebSocket not ready");
+		hide(activeTournamentsModal);
+        return;
+    }
+	oneTimeEvent(userSocket!, "SEARCH_TOURNAMENT_REQUEST", "SEARCH_TOURNAMENT_RESPONSE").then((result) => {
+		if (!result) {
+			alert("No response from server");
+			return ;
+		}
+		if (result.status !== 200) {
+			showNotification(result.msg);
+			hide(activeMatchesModal);
+			return ;
+		}
+		const joinButtons = renderTournamentList(result.tournaments!);
+		for (const btn of joinButtons) {
+			const target = btn.dataset.username!;
+			btn.onclick = () => {
+				oneTimeEvent(userSocket!, "JOIN_TOURNAMENT_REQUEST", "JOIN_TOURNAMENT_RESPONSE", target).then((result) => {
+
+					if (!result) {
+						alert("No response from server");
+						return ;
+					}
+					showNotification(result.msg);
+					if (result.status !== 200) {
+						return ;
+					}
+					hide(activeMatchesModal);
+				});	
+			};
+		}
+	});	
+	
+};
+

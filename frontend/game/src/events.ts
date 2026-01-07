@@ -60,14 +60,17 @@ export function oneTimeEvent(userSocket: WebSocket, request: string, response: S
 
 		registerHandler(response, (data) => {
 
-			if (data.type === "SEND_INVITE_RESPONSE"  || 
-				data.type === "REPLY_INVITE_RESPONSE" || 
-				data.type === "START_MATCH_RESPONSE"  || 
-				data.type === "PLAY_LOCALLY_RESPONSE") {
+			if (data.type === "SEND_INVITE_RESPONSE"       || 
+				data.type === "REPLY_INVITE_RESPONSE"      || 
+				data.type === "START_MATCH_RESPONSE"       || 
+				data.type === "PLAY_LOCALLY_RESPONSE"      ||
+				data.type === "CREATE_TOURNAMENT_RESPONSE" ||
+				data.type === "SEARCH_TOURNAMENT_RESPONSE" ||
+				data.type === "JOIN_TOURNAMENT_RESPONSE") {
 
 				resolve({status: data.status, msg: data.msg, target: data.target});
 			}
-
+			
 			resolve(null);
 
 		}, false);

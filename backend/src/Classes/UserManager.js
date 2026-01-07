@@ -155,12 +155,12 @@ class UserManager {
     	return ((time << 16) | rand);
     }
 
-    createTournament(alias, numPlayers, locally) {
+    createTournament(alias, numPlayers) {
 
         LOGGER(200, "UserManager", "createTournament", "created");
         const tournament_id = this.createTournamentId();
         const creator_alias = (alias === null) ? "Anonymous" : alias;
-		const tournament = new Tournament(creator_alias, tournament_id, numPlayers, locally);
+		const tournament = new Tournament(creator_alias, tournament_id, numPlayers);
         setTournament(tournament_id, tournament);
         return (tournament);
     }
@@ -190,6 +190,42 @@ class UserManager {
             }
         }
         return connected;
+    }
+
+    updateMatches() {
+
+        if (this.matches.length !== 0) return;
+        this.matches.forEach(match => {
+
+			if (match.DONE === true) {
+				this.removeMatch(match);
+				return ;
+		    }
+			if (match.shouldContinuePlaying())
+				match.updateMatch();		
+        });
+    }
+
+    updateTournaments() {
+
+        if (this.tournaments.length !== 0) return;
+        this.tournaments.forEach(tournament => {
+            if (tournaments.isWaitingAndReady()) {
+                tournament.startMatches();
+
+            }
+			if (tournament.isReady() === true) {
+				tournament.matches.forEach(match => {
+					if (match.DONE === true) {
+						userManager.removeMatch(match);
+						return ;
+					}
+					if (match.shouldContinuePlaying())
+						match.updateMatch();	
+				});
+			}
+		});
+
     }
 
     getConnectedCount() {
@@ -251,7 +287,7 @@ class UserManager {
     	if (tournaments.length === 0)
     		return (null);
 
-    	return (matches);
+    	return (tournaments);
     }
 
 

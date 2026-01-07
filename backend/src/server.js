@@ -49,15 +49,20 @@ async function startServer() {
 	
 	setInterval(() => {
 
-		if (userManager.matches.length === 0) return;
-	    userManager.matches.forEach(match => {
-			if (match.DONE === true) {
-				userManager.removeMatch(match);
-				return ;
+		userManager.updateMatches();
+
+		userManager.tournaments.forEach(tournament => {
+			if (tournament.isReadyToStart() === true) {
+				userManager.tournaments.matches.forEach(match => {
+					if (match.DONE === true) {
+						userManager.removeMatch(match);
+						return ;
+					}
+					if (match.shouldContinuePlaying())
+						match.updateMatch();	
+				});
 			}
-			if (match.shouldContinuePlaying())
-				match.updateMatch();		
-	    });
+		});
 
 	}, FRAMES);
 
