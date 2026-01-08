@@ -2,6 +2,7 @@ import {showNotification, show, startMatchButton, incomingPlayRequestText, incom
 import {setInviteFrom,  SCORES} from "./vars.js"
 import type {ServerMessage, StatusMsgTarget} from "./vars.js"
 import {drawWin, drawGame, clearBackground} from "./draw.js"
+import { userSocket } from "./main.js"
 
 
 const handlers: Record<string, ((data: ServerMessage) => void)[]> = {};
@@ -47,14 +48,18 @@ export function receiveMessages(userSocket: WebSocket) {
 }
 
 
-function sendRequest(userSocket: WebSocket, type: string, payload?: Record<string, any>) {
+function sendRequest(type: string, payload?: Record<string, any>) {
 
+	if (!userSocket) {
+		alert("websocket not ready");
+		return ;
+	}
 	const msg = payload ? { type, ...payload } : { type };
 	userSocket.send(JSON.stringify(msg));
 }
 
 
-export function oneTimeEvent(userSocket: WebSocket, request: string, response: ServerMessage["type"], target?: string): Promise<StatusMsgTarget | null> {
+export function oneTimeEvent(request: string, response: ServerMessage["type"], target?: string): Promise<StatusMsgTarget | null> {
 
 	return new Promise((resolve) => {
 
@@ -75,7 +80,7 @@ export function oneTimeEvent(userSocket: WebSocket, request: string, response: S
 
 		}, false);
 
-		sendRequest(userSocket, request, { target });
+		sendRequest(request, { target });
 	});
 }
 
@@ -119,45 +124,45 @@ export function ConstantEvent(response: ServerMessage["type"]){
 
 }
 
-export function sendKeyPress(userSocket: WebSocket): void {
+export function sendKeyPress(): void {
 
 	document.addEventListener("keydown", (e: KeyboardEvent) => {
 
 		if (e.key === "w")
-			sendRequest(userSocket, "MOVE", { move: "UP" });
+			sendRequest("MOVE", { move: "UP" });
 		if (e.key === "s")
-			sendRequest(userSocket, "MOVE", { move: "DOWN" });
+			sendRequest("MOVE", { move: "DOWN" });
 
 	});
 
 	document.addEventListener("keyup", (e: KeyboardEvent) => {
 
 		if (e.key === "w" || e.key === "s")
-			sendRequest(userSocket, "MOVE", { move: "STOP" });
+			sendRequest("MOVE", { move: "STOP" });
 	});
 }
 
-export function send2KeyPress(userSocket: WebSocket): void {
+export function send2KeyPress(): void {
 
 	document.addEventListener("keydown", (e: KeyboardEvent) => {
 
 		if (e.key === "w")
-			sendRequest(userSocket, "MOVE2", { move: "UP1" });
+			sendRequest("MOVE2", { move: "UP1" });
 		if (e.key === "s")
-			sendRequest(userSocket, "MOVE2", { move: "DOWN1" });
+			sendRequest("MOVE2", { move: "DOWN1" });
 		if (e.key === "ArrowUp")
-			sendRequest(userSocket, "MOVE2", { move: "UP2" });
+			sendRequest("MOVE2", { move: "UP2" });
 		if (e.key === "ArrowDown")
-			sendRequest(userSocket, "MOVE2", { move: "DOWN2" });
+			sendRequest("MOVE2", { move: "DOWN2" });
 
 	});
 
 	document.addEventListener("keyup", (e: KeyboardEvent) => {
 
 		if (e.key === "w" || e.key === "s")
-			sendRequest(userSocket, "MOVE2", { move: "STOP1" });
+			sendRequest("MOVE2", { move: "STOP1" });
 		if (e.key === "ArrowUp" || e.key === "ArrowDown")
-			sendRequest(userSocket, "MOVE2", { move: "STOP2" });
+			sendRequest("MOVE2", { move: "STOP2" });
 	});
 }
 

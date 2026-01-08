@@ -3,8 +3,7 @@ const LOGGER = require("./LOGGER.js");
 function sendInviteRequest(requestingUser, userManager, username_to_send) {
 
 	if (requestingUser.getCurrentMatch() === null) {
-		const match = userManager.createMatch(requestingUser, false);
-		requestingUser.setMatch(match);
+		userManager.createMatch(requestingUser, false);
 	}
 	const user_to_send = userManager.getUserByUsername(username_to_send);
 	if (user_to_send === null) {
@@ -43,7 +42,7 @@ function replyToInviteRequest(requestingUser, userManager, username_to_send) {
 			//LOGGER(400, "server", "acceptInviteRequest", "Unable to send your invite acceptance to " + user_to_send.getUsername());
 		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: "Unable to send your invite acceptance to " + user_to_send.getUsername(), target: user_to_send.getUsername()});
 	}
-	else if (userManager.addToMatch(requestingUser, user_to_send) === null) {
+	else if (userManager.addToMatch(requestingUser, user_to_send.getCurrentMatch()) === null) {
 		//LOGGER(400, "server", "replyToInviteRequest", username_to_send + " is already in a match.2")
 		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " is already in a match.", target: username_to_send});
 	}
@@ -86,13 +85,12 @@ function playLocalGame(requestingUser, userManager) {
 	}
 	else {
 
-		const match = userManager.createMatch(requestingUser, true);
-		requestingUser.setMatch(match);
+		userManager.createMatch(requestingUser, true);
 		requestingUser.send({type: "PLAY_LOCALLY_RESPONSE", status: 200, msg: "Local Match created.", target: ""});
 	}
 }
 
-function createTournamentRequest(requestingUser, userManager, userAlias, numPlayers) {
+function createTournamentRequest(requestingUser, userManager, userAlias) {
 
 
 	if (requestingUser.getCurrentMatch() !== null) {
@@ -105,9 +103,7 @@ function createTournamentRequest(requestingUser, userManager, userAlias, numPlay
 	}
 	else {
 
-		const tournament = userManager.createTournament(userAlias, numPlayers);
-		tournament.addUserToTournament(requestingUser, userAlias);
-		requestingUser.setCurrentTournament(tournament);
+		userManager.createTournament(requestingUser, userAlias);
 		requestingUser.send({type: "CREATE_TOURNAMENT_RESPONSE", status: 200, msg: "Tournament created!"});
 	}
 }
@@ -129,12 +125,15 @@ function joinTournamentRequest(requestingUser, userManager, tournament_id, alias
 
 	const tournament = userManager.getTournamentById(tournament_id);
 	if (tournament === null) {
+
 		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 400, msg: "Couldnt find tournament."});
 	}
 	if (tournament.getIfTournamentFull()) {
+
 		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 400, msg: "Tournament already full."});
 	}
 	else {
+		
 		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 200, msg: "Joined " + tournament.getCreatorAlias() +  "'s tournament."});
 		tournament.addUserToTournament(requestingUser, alias);
 	}
@@ -164,7 +163,7 @@ function handleUserCommands(user, userManager) {
 			playLocalGame(user, userManager);
 		}
 		else if (msg.type === "CREATE_TOURNAMENT_REQUEST") {
-			createTournamentRequest(user, userManager, msg.alias, msg.numPlayers);
+			createTournamentRequest(user, userManager, msg.alias);
 		}
 		else if (msg.type === "SEARCH_TOURNAMENT_REQUEST") {
 			searchTournamentRequest(user, userManager);

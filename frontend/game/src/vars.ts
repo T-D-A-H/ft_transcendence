@@ -1,8 +1,15 @@
 
+export interface TournamentInfo {
+	id: number;
+	creator: string;
+	max_size: number;
+	current_size: number;
+}
+
 export interface StatusMsgTarget {
     status: number; 
     msg: string; 
-    target?: string;
+    target?: string | TournamentInfo[] | null;
 }
 
 export interface SendInviteResponse {
@@ -80,19 +87,23 @@ export interface CreateTournamentRequest {
     type: "CREATE_TOURNAMENT_RESPONSE";
     status: number;
     msg: string;
+    target?: null;
 }
+
+
 
 export interface SearchTournamentRequest {
     type: "SEARCH_TOURNAMENT_RESPONSE";
     status: number;
     msg: string;
-    tournaments: [string];
+    target: TournamentInfo[] | null;
 }
 
 export interface JoinTournamentRequest {
     type: "JOIN_TOURNAMENT_RESPONSE";
     status: number;
     msg: string;
+    target?: null;
 }
 
 

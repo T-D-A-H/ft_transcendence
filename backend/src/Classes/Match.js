@@ -140,6 +140,10 @@ class Match {
 	getMatchId() {
 		return (this.id);
 	}
+
+	getCreatorUser() {
+		return (this.players[0]);
+	}
 	
 	end() {
 		this.isActive = false;

@@ -9,7 +9,7 @@ import {
 	playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton,
 	incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton,
 	canvas, texture, show, hide, showNotification} from "./ui.js";
-import {getInviteFrom} from "./vars.js";
+import {getInviteFrom, TournamentInfo} from "./vars.js";
 import { registerUser,  loginUser } from "./login-register.js"
 import { initializeWebSocket } from "./websocket.js";
 import { oneTimeEvent, sendKeyPress, send2KeyPress } from "./events.js";
@@ -24,14 +24,14 @@ if (!loadAnimation || !showLoader || !hideLoader ||
 	!startMatchButton || !waitingPlayers || !playLocallyButton ||
 	!playRequestModal || !playAgainstUserButton || !playRequestUsernameInput || !playRequestCloseButton || !playRequestSendButton ||
 	!incomingPlayRequestModal || !incomingPlayRequestText || !incomingPlayRequestCloseButton || !incomingPlayRequestAcceptButton ||
-	// !createTournamentButton || !searchTournamentButton || !activeTournamentsModal || !tournamentsListUL || !renderTournamentList ||
+	// !createTournamentButton || !searchTournamentButton || !searchTournamentsModal || !tournamentsListUL || !renderTournamentList ||
 	!canvas || !texture || !show || !hide || !showNotification) {
 		console.error("One or more UI elements are missing");
 }
 
 
 let tempToken2FA: string | null | undefined = null;
-let userSocket: WebSocket | null = null;
+export let userSocket: WebSocket | null = null;
 
 openLoginButton.onclick = () => show(loginModal);
 closeLoginButton.onclick = () => hide(loginModal);
@@ -208,13 +208,12 @@ logoutButton.onclick = async () => {
 		hide(startMatchButton);
 		hide(playAgainstUserButton);
 		hide(playLocallyButton);
-		hide(createTournamentButton);
-		hide(searchTournamentButton);
+		// hide(createTournamentButton);
+		// hide(searchTournamentButton);
 		show(openLoginButton);
 		show(openRegisterButton);
 	}
 };
-
 
 playRequestSendButton.onclick = () => {
 
@@ -223,9 +222,9 @@ playRequestSendButton.onclick = () => {
 		alert("Username field empty");
 		return ;
 	}
-	oneTimeEvent(userSocket!, "SEND_INVITE_REQUEST", "SEND_INVITE_RESPONSE", target_username).then((result) => {
+	oneTimeEvent("SEND_INVITE_REQUEST", "SEND_INVITE_RESPONSE", target_username).then((result) => {
 
-		if (!result) {
+		if (!result || !result.target) {
 			alert("No response from server");
 			return ;
 		}
@@ -243,13 +242,10 @@ playRequestSendButton.onclick = () => {
 
 startMatchButton.onclick = () => {
 
-    if (!userSocket) {
-        alert("WebSocket not ready");
-        return;
-    }
+
 	hide(startMatchButton);
 	show(waitingPlayers);
-    oneTimeEvent(userSocket!, "START_MATCH_REQUEST", "START_MATCH_RESPONSE").then((result) => {
+    oneTimeEvent("START_MATCH_REQUEST", "START_MATCH_RESPONSE").then((result) => {
 
 		if (!result) {
 			alert("No response from server");
@@ -260,17 +256,14 @@ startMatchButton.onclick = () => {
 			return ;
 		}
 		hide(waitingPlayers);
-		sendKeyPress(userSocket!);
+		sendKeyPress();
     });
 };
 
 playLocallyButton.onclick = () => {
 
-    if (!userSocket) {
-        alert("WebSocket not ready");
-        return;
-    }
-	oneTimeEvent(userSocket!,"PLAY_LOCALLY_REQUEST", "PLAY_LOCALLY_RESPONSE").then((result) => {
+
+	oneTimeEvent("PLAY_LOCALLY_REQUEST", "PLAY_LOCALLY_RESPONSE").then((result) => {
 
 		if (!result) {
 			alert("No response from server");
@@ -282,15 +275,15 @@ playLocallyButton.onclick = () => {
 		}
 		hide(playLocallyButton);
 		hide(playAgainstUserButton);
-		hide(createTournamentButton);
-		hide(searchTournamentButton);
-		send2KeyPress(userSocket!);
+		// hide(createTournamentButton);
+		// hide(searchTournamentButton);
+		send2KeyPress();
 	});
 };
  
 incomingPlayRequestAcceptButton.onclick = () => {
 
-	oneTimeEvent(userSocket!, "REPLY_INVITE_REQUEST", "REPLY_INVITE_RESPONSE", getInviteFrom()).then((result) => {
+	oneTimeEvent("REPLY_INVITE_REQUEST", "REPLY_INVITE_RESPONSE", getInviteFrom()).then((result) => {
 
 		if (!result) {
 			alert("No response from server");
@@ -322,66 +315,24 @@ const submitTournamentCreationButton = // Submit Tournament creation button
 const createTournamentModal =
 	document.getElementById("create_tournament_modal") as HTMLDivElement;
 
+const aliasTournamentInput = 
+	document.getElementById("tournament_alias") as HTMLInputElement;
 
-
-export const openSearchTournamentButton = // Search for matches button
-	document.getElementById("search_tournament") as HTMLButtonElement;
-
-const closeSearchTournamentButton =
-	document.getElementById("tournament_search_cancel_button") as HTMLButtonElement;
-
-const activeTournamentsModal = // Container showing waiting players
-	document.getElementById("active_tournaments_modal") as HTMLDivElement;
-
-const tournamentsListUL = // UL element where usernames will be inserted
-	document.getElementById("tournament_list_ul") as HTMLUListElement;
-
-
-export function renderTournamentList(tournaments: string[]): HTMLButtonElement[] {
-
-	tournamentsListUL.innerHTML = "";
-
-	const joinButtons: HTMLButtonElement[] = [];
-
-	for (const username of tournaments) {
-		const li = document.createElement("li");
-		li.className = "flex justify-between items-center";
-
-		const nameSpan = document.createElement("span");
-		nameSpan.textContent = username;
-
-		const joinBtn = document.createElement("button");
-		joinBtn.textContent = "Join";
-		joinBtn.className = "px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-xs";
-		joinBtn.dataset.username = username;
-
-		li.appendChild(nameSpan);
-		li.appendChild(joinBtn);
-		tournamentsListUL.appendChild(li);
-
-		joinButtons.push(joinBtn);
-	}
-	return (joinButtons);
-}
 
 openCreateTournamentButton.onclick = () => show(createTournamentModal);
 closeCreateTournamentButton.onclick = () => hide(createTournamentModal);
-closeSearchTournamentButton.onclick = () => hide(activeTournamentsModal);
 
-createTournamentButton.onclick = () => {
+submitTournamentCreationButton.onclick = () => {
 
-    if (!userSocket) {
-        alert("WebSocket not ready");
-		hide(createTournamentModal);
-        return;
-    }
-	const target_size = createMatchSizeInput.value.trim();
-	if (target_size.length === 0) {
-		alert("target size field empty");
+
+
+	const alias = aliasTournamentInput.value.trim();
+	if (alias.length === 0) {
+		alert("alias field empty");
 		return ;
 	}
 
-	oneTimeEvent(userSocket!, "CREATE_TOURNAMENT_REQUEST", "CREATE_INVITE_RESPONSE", target_size).then((result) => {
+	oneTimeEvent("CREATE_TOURNAMENT_REQUEST", "CREATE_TOURNAMENT_RESPONSE", alias).then((result) => {
 
 		if (!result) {
 			alert("No response from server");
@@ -397,28 +348,88 @@ createTournamentButton.onclick = () => {
 };
 
 
+
+
+export const openSearchTournamentButton = // Search for matches button
+	document.getElementById("search_tournament") as HTMLButtonElement;
+
+const closeSearchTournamentButton =
+	document.getElementById("tournament_search_cancel_button") as HTMLButtonElement;
+
+const searchTournamentsModal = // Container showing waiting players
+	document.getElementById("search_tournaments_modal") as HTMLDivElement;
+
+const tournamentsListUL = // UL element where usernames will be inserted
+	document.getElementById("tournament_list_ul") as HTMLUListElement;
+
+
+function renderTournamentList(tournaments: TournamentInfo[]): HTMLButtonElement[]
+{
+	tournamentsListUL.innerHTML = "";
+
+	const joinButtons: HTMLButtonElement[] = [];
+
+	for (const tournament of tournaments)
+	{
+		const li = document.createElement("li");
+		li.className = "flex justify-between items-center gap-4";
+
+		const infoDiv = document.createElement("div");
+		infoDiv.className = "flex flex-col text-sm";
+
+		const nameSpan = document.createElement("span");
+		nameSpan.textContent = `Creator: ${tournament.creator}`;
+
+		const sizeSpan = document.createElement("span");
+		sizeSpan.textContent =
+			`Players: ${tournament.current_size}/${tournament.max_size}`;
+
+		const idSpan = document.createElement("span");
+		idSpan.textContent = `ID: ${tournament.id}`;
+
+		infoDiv.appendChild(nameSpan);
+		infoDiv.appendChild(sizeSpan);
+		infoDiv.appendChild(idSpan);
+
+		const joinBtn = document.createElement("button");
+		joinBtn.textContent = "Join";
+		joinBtn.className =
+			"px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-xs";
+
+		joinBtn.dataset.creator = tournament.creator;
+		joinBtn.dataset.id = String(tournament.id);
+
+		li.appendChild(infoDiv);
+		li.appendChild(joinBtn);
+
+		tournamentsListUL.appendChild(li);
+		joinButtons.push(joinBtn);
+	}
+
+	return (joinButtons);
+}
+
+closeSearchTournamentButton.onclick = () => hide(searchTournamentsModal);
+
 openSearchTournamentButton.onclick = () => {
 
-    if (!userSocket) {
-        alert("WebSocket not ready");
-		hide(activeTournamentsModal);
-        return;
-    }
-	oneTimeEvent(userSocket!, "SEARCH_TOURNAMENT_REQUEST", "SEARCH_TOURNAMENT_RESPONSE").then((result) => {
+
+	oneTimeEvent("SEARCH_TOURNAMENT_REQUEST", "SEARCH_TOURNAMENT_RESPONSE").then((result) => {
 		if (!result) {
 			alert("No response from server");
 			return ;
 		}
 		if (result.status !== 200) {
 			showNotification(result.msg);
-			hide(activeMatchesModal);
+			hide(searchTournamentsModal);
 			return ;
 		}
-		const joinButtons = renderTournamentList(result.tournaments!);
+		const joinButtons = renderTournamentList(result.target as TournamentInfo[]);
 		for (const btn of joinButtons) {
-			const target = btn.dataset.username!;
+
+			const tournament_id = btn.dataset.id!;
 			btn.onclick = () => {
-				oneTimeEvent(userSocket!, "JOIN_TOURNAMENT_REQUEST", "JOIN_TOURNAMENT_RESPONSE", target).then((result) => {
+				oneTimeEvent("JOIN_TOURNAMENT_REQUEST", "JOIN_TOURNAMENT_RESPONSE", tournament_id).then((result) => {
 
 					if (!result) {
 						alert("No response from server");
@@ -428,7 +439,7 @@ openSearchTournamentButton.onclick = () => {
 					if (result.status !== 200) {
 						return ;
 					}
-					hide(activeMatchesModal);
+					hide(searchTournamentsModal);
 				});	
 			};
 		}

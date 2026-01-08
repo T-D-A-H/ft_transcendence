@@ -10,7 +10,6 @@ class UserManager {
         this.users = new Map();
         this.matches = new Map();
         this.tournaments = new Map();
-        this.tournament_id = 0;
         this.pending2FA = new Map();
     }
 
@@ -101,6 +100,8 @@ class UserManager {
         LOGGER(200, "UserManager", "createMatch", user.getUsername());
         const match_id = this.createMatchId();
 		const match = new Match(user, match_id, locally);
+        this.matches.set(match_id, match);
+        user.setMatch(match);
         return (match);
 	}
 
@@ -127,26 +128,10 @@ class UserManager {
         return (null)
     }
 
-    addToMatch(requestingUser, user) {
+    addToMatch(requestingUser, match) {
 
-        const matches = this.getAllMatches();
-        for (const match of matches) {
-
-            if (match.players[0] === user) {
-
-                if (match.players[1] === null) {
-                    match.addUserToMatch(requestingUser);
-                    match.players[0].setMatch(match);
-                    match.players[1].setMatch(match);
-                    LOGGER(200, "UserManager", "addToMatch", "Added " + user.getUsername() + " to match["  + match.id + "] against " + match.players[0].getUsername());
-                    return (match);
-                }
-                LOGGER(502, "UserManager", "addToMatch", "match already full");
-                return (null);
-            }
-        }
-        LOGGER(502, "UserManager", "addToMatch", "Couldnt find match");
-        return (null);
+        match.addUserToMatch(requestingUser);
+        requestingUser.setMatch(match);
     }
   
     createTournamentId() {
@@ -155,14 +140,16 @@ class UserManager {
     	return ((time << 16) | rand);
     }
 
-    createTournament(alias, numPlayers) {
+    createTournament(user, alias) {
 
         LOGGER(200, "UserManager", "createTournament", "created");
         const tournament_id = this.createTournamentId();
         const creator_alias = (alias === null) ? "Anonymous" : alias;
-		const tournament = new Tournament(creator_alias, tournament_id, numPlayers);
-        setTournament(tournament_id, tournament);
-        return (tournament);
+		const tournament = new Tournament(creator_alias, tournament_id);
+
+        this.setTournament(tournament_id, tournament);
+        tournament.addUserToTournament(user, creator_alias);
+		user.setCurrentTournament(tournament);
     }
 
     setTournament(tournament_id, tournament) {
@@ -192,10 +179,9 @@ class UserManager {
         return connected;
     }
 
-    updateMatches() {
+    updateMatches(matches) {
 
-        if (this.matches.length !== 0) return;
-        this.matches.forEach(match => {
+        matches.forEach(match => {
 
 			if (match.DONE === true) {
 				this.removeMatch(match);
@@ -206,27 +192,43 @@ class UserManager {
         });
     }
 
-    updateTournaments() {
 
-        if (this.tournaments.length !== 0) return;
-        this.tournaments.forEach(tournament => {
-            if (tournaments.isWaitingAndReady()) {
-                tournament.startMatches();
+    updateGame() {
 
-            }
-			if (tournament.isReady() === true) {
-				tournament.matches.forEach(match => {
-					if (match.DONE === true) {
-						userManager.removeMatch(match);
-						return ;
-					}
-					if (match.shouldContinuePlaying())
-						match.updateMatch();	
-				});
-			}
-		});
+        if (this.matches.length !== 0) {
+            this.updateMatches(this.matches);
+        }
+        if (this.tournaments.length !== 0) {
 
+            this.tournaments.forEach(tournament => {
+
+                if (tournament.isWaitingAndFull()) {
+
+                    this.createTournamentMatches(tournament);
+                }
+                
+
+            });
+        }
     }
+
+
+    createTournamentMatches(tournament) {
+
+        tournament.setReady();
+        const shuffled_players = tournament.shufflePlayers();
+		const tournamentMatches = [];
+
+		for (let i = 0; i < shuffled_players.length; i += 2) {
+
+			const match = this.createMatch(shuffled_players[i], false);
+			if (i + 1 < shuffled_players.length) {
+				this.addToMatch(shuffled_players[i + 1], match);
+			}
+			tournamentMatches.push(match);
+		}
+		tournament.setMatches(tournamentMatches);
+	}
 
     getConnectedCount() {
         return this.getConnectedUsers().length;

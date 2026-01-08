@@ -1,37 +1,34 @@
 
 const LOGGER = require("../LOGGER.js");
+const Match = require("./Match.js");
 
 class Tournament {
 
-    constructor(creatorAlias, tournament_id, numPlayers) {
+    constructor(creatorAlias, tournament_id) {
 
 		LOGGER(200, "Tournament", "Constructor", "Called");
 		this.id = tournament_id;
-		this.maxPlayers = numPlayers;
+		this.maxPlayers = 4;
 		this.currentPlayerCount = 0;
 		this.creatorAlias = creatorAlias;
 		this.players = new Map();
-		this.playerAliases = new Map();
 		this.isWaiting = true;
 		this.isReady = false;
+		this.matches = null;
 	}
 
 
-	addUserToTournament(user, alias) {
+	addUserToTournament(requestingUser, requestingAlias) {
 
 		if (this.players.size >= this.maxPlayers)
 			return (false);
-
-		if (this.players.has(user.id))
-			return (false);
-
-		this.players.set(user.id, user);
-		this.playerAliases.set(user.id, alias);
+		this.players.set(requestingUser, {alias: requestingAlias, score: 0});
+		this.currentPlayerCount++;
 		return (true);
 	}
 
-	removeUserFromTournament(userId) {
-		return this.players.delete(userId);
+	removeUserFromTournament(requestingUser) {
+		return this.players.delete(requestingUser);
 	}
 
 
@@ -39,21 +36,40 @@ class Tournament {
 		return (this.players.size === this.maxPlayers);
 	}
 
-	isWaitingAndReady() {
+	isWaitingAndFull() {
 
 		if (this.isWaiting === true && this.getIfTournamentFull()) {
-			this.isWaiting = false;
-			this.isReady = true;
 			return (true);
 		}
 		return (false);
 	}
 
-	startMatches() {
-		tournament.isWaiting = false;
-        tournament.isReady = true;
+	setReady() {
+
+		this.isWaiting = false;
+		this.isReady = true;
 	}
-	isReady() {
+
+	shufflePlayers() {
+
+
+		const entries = Array.from(this.players.entries());
+
+		for (let i = entries.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[entries[i], entries[j]] = [entries[j], entries[i]];
+		}
+
+		this.players = new Map(entries);
+		return (Array.from(this.players.keys()));
+
+	}
+
+	getPlayers() {
+		return (this.players);
+	}
+
+	getIsReady() {
 		return (this.isReady);
 	}
 
@@ -75,6 +91,10 @@ class Tournament {
 
 	getCreatorAlias() {
 		return (this.creatorAlias);
+	}
+
+	setMatches(matches) {
+		this.matches = matches;
 	}
 
 }

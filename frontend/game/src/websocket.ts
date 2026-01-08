@@ -2,7 +2,7 @@
 import {openLoginButton, openRegisterButton, playAgainstUserButton,
         logoutButton, show, hide, showLoader, hideLoader, startMatchButton, playLocallyButton} from "./ui.js"
 import {ConstantEvent, receiveMessages} from "./events.js";
-import {createTournamentButton, searchTournamentButton} from "./main.js";
+import {openCreateTournamentButton, openSearchTournamentButton} from "./main.js";
 function showButtons() {
     
     hideLoader();
@@ -13,8 +13,8 @@ function showButtons() {
     show(playAgainstUserButton);
     
     
-    show(createTournamentButton);
-    show(searchTournamentButton);
+    show(openCreateTournamentButton);
+    show(openSearchTournamentButton);
     
 	show(logoutButton);
 }
