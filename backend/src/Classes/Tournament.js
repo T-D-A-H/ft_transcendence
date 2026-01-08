@@ -1,15 +1,15 @@
 
 const LOGGER = require("../LOGGER.js");
-const Match = require("./Match.js");
+const UserManager = require("./UserManager.js");
 
 class Tournament {
 
-    constructor(creatorAlias, tournament_id) {
+    constructor(tournament_id, creatorAlias) {
 
 		LOGGER(200, "Tournament", "Constructor", "Called");
 		this.id = tournament_id;
 		this.maxPlayers = 4;
-		this.currentPlayerCount = 0;
+		this.currentPlayerCount = 1;
 		this.creatorAlias = creatorAlias;
 		this.players = new Map();
 		this.isWaiting = true;
@@ -30,7 +30,6 @@ class Tournament {
 	removeUserFromTournament(requestingUser) {
 		return this.players.delete(requestingUser);
 	}
-
 
 	getIfTournamentFull() {
 		return (this.players.size === this.maxPlayers);
@@ -63,6 +62,23 @@ class Tournament {
 		this.players = new Map(entries);
 		return (Array.from(this.players.keys()));
 
+	}
+
+	createTournamentMatches() {
+
+        this.setReady();
+        const shuffled_players = this.shufflePlayers();
+		const tournamentMatches = [];
+
+		for (let i = 0; i < shuffled_players.length; i += 2) {
+
+			const match = UserManager.createMatch(shuffled_players[i], false, this);
+			if (i + 1 < shuffled_players.length) {
+				UserManager.addToMatch(shuffled_players[i + 1], match);
+			}
+			tournamentMatches.push(match);
+		}
+		this.setMatches(tournamentMatches);
 	}
 
 	getPlayers() {

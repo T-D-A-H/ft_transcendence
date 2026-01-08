@@ -3,7 +3,7 @@ const LOGGER = require("./LOGGER.js");
 function sendInviteRequest(requestingUser, userManager, username_to_send) {
 
 	if (requestingUser.getCurrentMatch() === null) {
-		userManager.createMatch(requestingUser, false);
+		userManager.createMatch(requestingUser, false, null);
 	}
 	const user_to_send = userManager.getUserByUsername(username_to_send);
 	if (user_to_send === null) {
@@ -85,7 +85,7 @@ function playLocalGame(requestingUser, userManager) {
 	}
 	else {
 
-		userManager.createMatch(requestingUser, true);
+		userManager.createMatch(requestingUser, true, null);
 		requestingUser.send({type: "PLAY_LOCALLY_RESPONSE", status: 200, msg: "Local Match created.", target: ""});
 	}
 }

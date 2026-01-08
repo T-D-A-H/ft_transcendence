@@ -96,10 +96,10 @@ class UserManager {
     	return ((time << 16) | rand);
     }
 
-	createMatch(user, locally) {
+	createMatch(user, locally, tournament) {
         LOGGER(200, "UserManager", "createMatch", user.getUsername());
         const match_id = this.createMatchId();
-		const match = new Match(user, match_id, locally);
+		const match = new Match(user, match_id, locally, tournament);
         this.matches.set(match_id, match);
         user.setMatch(match);
         return (match);
@@ -145,16 +145,13 @@ class UserManager {
         LOGGER(200, "UserManager", "createTournament", "created");
         const tournament_id = this.createTournamentId();
         const creator_alias = (alias === null) ? "Anonymous" : alias;
-		const tournament = new Tournament(creator_alias, tournament_id);
+		const tournament = new Tournament(tournament_id, creator_alias);
 
-        this.setTournament(tournament_id, tournament);
+        this.tournaments.set(tournament_id, tournament);
         tournament.addUserToTournament(user, creator_alias);
 		user.setCurrentTournament(tournament);
     }
 
-    setTournament(tournament_id, tournament) {
-        this.tournaments.set(tournament_id, tournament);
-    }
 
     getUserByID(userId) {
         return this.users.get(userId);
@@ -179,11 +176,24 @@ class UserManager {
         return connected;
     }
 
+    stopMatch(match, userWINNER) {
+
+        const tournament = match.getTournament();
+        if (tournament !== null) {
+
+            tournament.matches
+        }
+
+    }
+
+
     updateMatches(matches) {
 
+        if (this.matches.length !== 0) return ;
         matches.forEach(match => {
 
-			if (match.DONE === true) {
+			if (match.WIN !== null) {
+                this.stopMatch(match, match.WIN)
 				this.removeMatch(match);
 				return ;
 		    }
@@ -193,7 +203,7 @@ class UserManager {
     }
 
 
-    updateGame() {
+    updateTournaments() {
 
         if (this.matches.length !== 0) {
             this.updateMatches(this.matches);
@@ -221,7 +231,7 @@ class UserManager {
 
 		for (let i = 0; i < shuffled_players.length; i += 2) {
 
-			const match = this.createMatch(shuffled_players[i], false);
+			const match = this.createMatch(shuffled_players[i], false, tournament);
 			if (i + 1 < shuffled_players.length) {
 				this.addToMatch(shuffled_players[i + 1], match);
 			}

@@ -1,15 +1,17 @@
 
 const LOGGER = require("../LOGGER.js");
 const Game   = require("./Game.js");
+const Tournament = require("./Tournament.js");
 
 class Match {
 
 	static ScoreMax = 11;
-	constructor(user, match_id, locally) {
+	constructor(user, match_id, locally, tournament) {
 		
 		LOGGER(200, "Match", "Constructor", "For " + user.getUsername() + " match_id: " + match_id);
 
 		this.id = match_id;
+		this.tournament = tournament;
 		this.locally = locally;
 		this.game = new Game();
 		this.players = [user, null];
@@ -17,7 +19,7 @@ class Match {
 		this.isReady = [null, null];
 		this.YDir = [0, 0];
 		this.SCORES = [0, 0];
-		this.DONE = false;
+		this.WIN = null;
 		if (locally === true) {
 			this.players[1] = user;
 			this.isWaiting = false;
@@ -90,7 +92,7 @@ class Match {
 			if (this.SCORES[0] >= Match.ScoreMax || this.SCORES[1] >= Match.ScoreMax) {
 				const user_index = (this.SCORES[0] >= Match.ScoreMax) ? 0 : 1;
 				this.sendWin(user_index);
-				this.DONE = true;
+				this.WIN = this.players[user_index];
 			}
 		}
 	}
@@ -145,6 +147,10 @@ class Match {
 		return (this.players[0]);
 	}
 	
+	getTournament() {
+		return (this.tournament);
+	}
+
 	end() {
 		this.isActive = false;
 		this.players.forEach(player => player.disconnect());
