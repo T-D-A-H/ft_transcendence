@@ -7,10 +7,13 @@ services:
     image: grafana/grafana:latest
     container_name: grafana_service
     ports:
-      - "3000:3000"
+      - "3001:3000"
     volumes:
       - grafana_data:/var/lib/grafana
       - grafana_logs:/var/log/grafana
+      - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./grafana/system-metrics.json:/etc/grafana/provisioning/dashboards/system-metrics.json:ro
     env_file:
       - .env
     environment:
@@ -30,10 +33,11 @@ services:
     image: prom/prometheus:latest
     container_name: prometheus_service
     ports:
-      - "${PROMETHEUS_PORT}:9090"
+      - "9091:9090"
     volumes:
       - prometheus_data:/prometheus
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
     env_file:
       - .env
     command:
