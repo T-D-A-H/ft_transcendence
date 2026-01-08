@@ -10,11 +10,8 @@
 #
 # Logstash secure endpoints:
 #  - TCP (TLS):   port 5069
-#  - HTTP (TLS):  port 8080  
+#  - HTTP (TLS):  port 8080
 #  - Beats (TLS): port 5044
-
-env_file:
-  - .env
 
 services:
   # processes and ships logs
@@ -23,6 +20,8 @@ services:
       context: ./Logstash
       dockerfile: Dockerfile
     container_name: ft_logstash
+    env_file:
+      - .env
     environment:
       - ELASTICSEARCH_USERNAME=logstash_system
       - ELASTICSEARCH_PASSWORD=${LOGSTASH_SYSTEM_PASSWORD}
@@ -48,6 +47,8 @@ services:
       context: ./Elasticsearch
       dockerfile: Dockerfile
     container_name: ft_elasticsearch
+    env_file:
+      - .env
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=${ES_JAVA_OPTS}
@@ -74,6 +75,8 @@ services:
       context: ./Kibana
       dockerfile: Dockerfile
     container_name: ft_kibana
+    env_file:
+      - .env
     environment:
       - ELASTICSEARCH_USERNAME=kibana_system
       - ELASTICSEARCH_PASSWORD=${KIBANA_SYSTEM_PASSWORD}
