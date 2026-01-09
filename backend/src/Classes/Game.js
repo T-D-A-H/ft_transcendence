@@ -155,14 +155,6 @@ class Game {
         return (false);
     }
 
-    getPlayerWhoScored() {
-
-        if (this.ball.X + Game.Ball.OFFSET >= Game.Screen.WIDTH) {
-            return (this.leftPlayer);
-        }
-        return (this.rightPlayer);
-    }
-
     leftPaddleHitBall() {
 
         if (this.ball.X - Game.Ball.OFFSET <= this.leftPlayer.X[1] && this.ball.Y + Game.Ball.OFFSET >= this.leftPlayer.Y[0] && this.ball.Y - Game.Ball.OFFSET <= this.leftPlayer.Y[1]) {
@@ -184,7 +176,14 @@ class Game {
     	const relative = (this.ball.Y + Game.Ball.OFFSET) - (player.Y[0] + Game.Paddle.OFFSET);
     	return (relative / Game.Paddle.OFFSET);
     }
+    
+    getPlayerWhoScored() {
 
+        if (this.ball.X + Game.Ball.OFFSET >= Game.Screen.WIDTH) {
+            return (this.leftPlayer);
+        }
+        return (this.rightPlayer);
+    }
 
     getLeftPlayerXY() {return ([this.leftPlayer.X[0], this.leftPlayer.Y[0]]);}
     getRightPlayerXY() {return ([this.rightPlayer.X[0], this.rightPlayer.Y[0]]);}

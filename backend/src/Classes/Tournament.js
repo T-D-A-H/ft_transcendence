@@ -1,34 +1,80 @@
 
 const LOGGER = require("../LOGGER.js");
-const UserManager = require("./UserManager.js");
+
 
 class Tournament {
 
-    constructor(tournament_id, creatorAlias) {
+    constructor(tournament_id) {
 
 		LOGGER(200, "Tournament", "Constructor", "Called");
 		this.id = tournament_id;
 		this.maxPlayers = 4;
 		this.currentPlayerCount = 1;
-		this.creatorAlias = creatorAlias;
-		this.players = new Map();
+		this.matchDoneCount = 0;
+		this.creatorAlias = null;
 		this.isWaiting = true;
 		this.isReady = false;
-		this.matches = null;
+		
+		this.players = new Map();
+		this.matches = new Map();
+		this.winners = new Map();
 	}
 
+	addCreatorAlias(alias) {
+		this.creatorAlias = alias;
+	}
 
 	addUserToTournament(requestingUser, requestingAlias) {
 
 		if (this.players.size >= this.maxPlayers)
 			return (false);
-		this.players.set(requestingUser, {alias: requestingAlias, score: 0});
+		this.players.set(requestingUser, {alias: requestingAlias});
 		this.currentPlayerCount++;
 		return (true);
 	}
 
 	removeUserFromTournament(requestingUser) {
 		return this.players.delete(requestingUser);
+	}
+
+
+	updateWinner(requestedMatch, userWhoWon) {
+
+		const match = this.matches.get(requestedMatch);
+		if (!match)
+			return false;
+		this.winners.set(userWhoWon, this.players.get(userWhoWon));
+		this.matchDoneCount++;
+		return true;
+	}
+
+	prepareNextRound() {
+
+		const nextPlayers = new Map(this.winners);
+
+		this.matches.clear();
+		this.players = nextPlayers;
+		this.winners.clear();
+		this.matchDoneCount = 0;
+
+		return (nextPlayers);
+	}
+
+	isRoundFinished() {
+
+		return  (this.matchDoneCount == this.matches.size);
+	}
+
+	isTournamentFinished() {
+
+		return (this.players.size === 1 && this.matches.size === 0);
+	}
+
+	getWinner() {
+		
+	    if (this.isTournamentFinished())
+	        return [...this.players.keys()][0];
+	    return null;
 	}
 
 	getIfTournamentFull() {
@@ -47,38 +93,6 @@ class Tournament {
 
 		this.isWaiting = false;
 		this.isReady = true;
-	}
-
-	shufflePlayers() {
-
-
-		const entries = Array.from(this.players.entries());
-
-		for (let i = entries.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[entries[i], entries[j]] = [entries[j], entries[i]];
-		}
-
-		this.players = new Map(entries);
-		return (Array.from(this.players.keys()));
-
-	}
-
-	createTournamentMatches() {
-
-        this.setReady();
-        const shuffled_players = this.shufflePlayers();
-		const tournamentMatches = [];
-
-		for (let i = 0; i < shuffled_players.length; i += 2) {
-
-			const match = UserManager.createMatch(shuffled_players[i], false, this);
-			if (i + 1 < shuffled_players.length) {
-				UserManager.addToMatch(shuffled_players[i + 1], match);
-			}
-			tournamentMatches.push(match);
-		}
-		this.setMatches(tournamentMatches);
 	}
 
 	getPlayers() {
@@ -107,10 +121,6 @@ class Tournament {
 
 	getCreatorAlias() {
 		return (this.creatorAlias);
-	}
-
-	setMatches(matches) {
-		this.matches = matches;
 	}
 
 }

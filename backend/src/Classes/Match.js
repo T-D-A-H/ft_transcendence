@@ -1,7 +1,6 @@
 
 const LOGGER = require("../LOGGER.js");
 const Game   = require("./Game.js");
-const Tournament = require("./Tournament.js");
 
 class Match {
 
@@ -19,7 +18,7 @@ class Match {
 		this.isReady = [null, null];
 		this.YDir = [0, 0];
 		this.SCORES = [0, 0];
-		this.WIN = null;
+		this.WINNNER = null;
 		if (locally === true) {
 			this.players[1] = user;
 			this.isWaiting = false;
@@ -84,17 +83,40 @@ class Match {
 		this.game.updateBall();
 
 		const GameScores = this.game.getScores();
-		if (GameScores[0] !== this.SCORES[0] || GameScores[1] !== this.SCORES[1]) {
-			const player_index = (this.SCORES[0] !== GameScores[0]) ? 0 : 1;
-			this.game.restartGame(player_index);
-			this.SCORES = [...GameScores];
+		if (this.playerScored(GameScores) === true) {
+
+			const winner_index = (this.SCORES[0] !== GameScores[0]) ? 0 : 1;
+			this.game.restartGame(winner_index);
+			this.updateScores(GameScores);
 			this.sendScores();
-			if (this.SCORES[0] >= Match.ScoreMax || this.SCORES[1] >= Match.ScoreMax) {
-				const user_index = (this.SCORES[0] >= Match.ScoreMax) ? 0 : 1;
-				this.sendWin(user_index);
-				this.WIN = this.players[user_index];
-			}
 		}
+		if (this.playerWonMatch() === true) {
+
+			const winner_index = (this.SCORES[0] >= Match.ScoreMax) ? 0 : 1;
+			this.WINNNER = this.players[winner_index];
+			this.sendWin(winner_index);
+		}
+	}
+
+	playerScored(GameScores) {
+
+		if (GameScores[0] !== this.SCORES[0] || GameScores[1] !== this.SCORES[1]) {
+			return (true);
+		}
+		return (false);
+	}
+
+	playerWonMatch() {
+
+		if (this.SCORES[0] >= Match.ScoreMax || this.SCORES[1] >= Match.ScoreMax) {
+			return (true);
+		}
+		return (false);
+	}
+
+	updateScores(GameScores) {
+
+		this.SCORES = [...GameScores];
 	}
 
 	updateGame(user, moveDir) {
@@ -111,7 +133,7 @@ class Match {
 		
 	}
     
-	update2PlayerGame(user, moveDir) {
+	update2PlayerGame(moveDir) {
 
 		if (moveDir === "UP1") 
             this.YDir[0] = -1;
@@ -132,11 +154,22 @@ class Match {
 			return (false);
 	    if (!this.players[0] || !this.players[1])
 			return (false);
-		if (this.DONE === true)
+		if (this.WINNNER === null)
 			return (false);
 		if (this.isReady[0] === true && this.isReady[1] === true)
 			return (true);
 		return (false);
+	}
+
+	someoneWon() {
+		if (this.WINNNER === null) {
+			return (false);
+		}
+		return (true);
+	}
+
+	getWinner() {
+		return (this.WINNNER);
 	}
 
 	getMatchId() {
@@ -151,10 +184,6 @@ class Match {
 		return (this.tournament);
 	}
 
-	end() {
-		this.isActive = false;
-		this.players.forEach(player => player.disconnect());
-	}
 }
 
 module.exports = Match;

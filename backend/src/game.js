@@ -172,7 +172,7 @@ function handleUserCommands(user, userManager) {
 			joinTournamentRequest(user, userManager, msg.tournament_id);
 		}
 		else if (msg.type === "MOVE2" && user.currentMatch) {
-			user.currentMatch.update2PlayerGame(user, msg.move);
+			user.currentMatch.update2PlayerGame(msg.move);
 		}
 		else if (msg.type === "MOVE" && user.currentMatch) {
 			user.currentMatch.updateGame(user, msg.move);

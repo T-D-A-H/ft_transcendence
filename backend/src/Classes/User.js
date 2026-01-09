@@ -13,9 +13,9 @@ class User {
 
         this.currentMatch = null;
         this.pendingMatchRequests = new Map();
+        this.currentTournament = null;
         this.isPlaying = false;
 
-        this.currentTournament = null;
     }
 
     // Enviar mensaje al jugador vía WebSocket
@@ -43,7 +43,7 @@ class User {
         this.socket = socket;
     }
 
-    setConnected(isConnected) {
+    setConnected() {
         this.isConnected = true;
     }
     
