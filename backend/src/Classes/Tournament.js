@@ -8,8 +8,8 @@ class Tournament {
 
 		LOGGER(200, "Tournament", "Constructor", "Called");
 		this.id = tournament_id;
-		this.maxPlayers = 4;
-		this.currentPlayerCount = 1;
+		this.maxPlayers = 2;
+		this.currentPlayerCount = 0;
 		this.matchDoneCount = 0;
 		this.creatorAlias = null;
 		this.isWaiting = true;
@@ -33,6 +33,7 @@ class Tournament {
 		}
 		this.players.set(requestingUser, {alias: requestingAlias});
 		this.currentPlayerCount++;
+		console.log("Tournament", "addUserToTournament", "currentPlayerCount: " + this.currentPlayerCount);
 		return (true);
 	}
 
@@ -135,7 +136,7 @@ class Tournament {
 	}
 
 	getId() {
-		return (this->tournament_id);
+		return (this.id);
 	}
 
 }

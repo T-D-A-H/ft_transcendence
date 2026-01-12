@@ -329,7 +329,7 @@ submitTournamentCreationButton.onclick = () => {
 		alert("alias field empty");
 		return ;
 	}
-
+	alert("alias inputted: " + alias);
 	oneTimeEvent("CREATE_TOURNAMENT_REQUEST", "CREATE_TOURNAMENT_RESPONSE", alias).then((result) => {
 
 		if (!result) {
@@ -341,6 +341,7 @@ submitTournamentCreationButton.onclick = () => {
 			return ;
 		}
 		hide(createTournamentModal);
+		show(startMatchButton);
 	});
 
 };
@@ -423,6 +424,7 @@ openSearchTournamentButton.onclick = () => {
 			return ;
 		}
 		const joinButtons = renderTournamentList(result.target as TournamentInfo[]);
+		show(searchTournamentsModal);
 		for (const btn of joinButtons) {
 
 			const tournament_id = btn.dataset.id!;
@@ -438,6 +440,7 @@ openSearchTournamentButton.onclick = () => {
 						return ;
 					}
 					hide(searchTournamentsModal);
+					show(startMatchButton);
 				});	
 			};
 		}

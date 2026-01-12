@@ -155,7 +155,7 @@ class Match {
 			return (false);
 	    if (!this.players[0] || !this.players[1])
 			return (false);
-		if (this.WINNNER === null)
+		if (this.WINNNER !== null)
 			return (false);
 		if (this.isReady[0] === true && this.isReady[1] === true)
 			return (true);

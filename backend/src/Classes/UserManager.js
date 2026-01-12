@@ -136,7 +136,6 @@ class UserManager {
 
     updateMatches() {
 
-        if (this.matches.length !== 0) return ;
         this.matches.forEach(match => {
 
 			if (match.someoneWon() === true) {
@@ -176,7 +175,7 @@ class UserManager {
                 tournament.setReady();
     			this.createNewTournamentMatches(tournament.getPlayers(), tournament);
     		}
-    		if (tournament.isRoundFinished()) {
+    		else if (tournament.getIsReady() === true && tournament.isRoundFinished()) {
 
     			const winners = tournament.prepareNextRound();
 
@@ -282,7 +281,7 @@ class UserManager {
 
     	const rand = Math.floor(Math.random() * 0xffff);
     	const time = Date.now();
-    	return ((time << 16) | rand);
+    	return (((time << 16) | rand).toString());
     }
 
     getUserByID(userId) {
