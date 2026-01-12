@@ -134,10 +134,10 @@ class UserManager {
         this.removeMatch(match);
     }
 
-    updateMatches(matches) {
+    updateMatches() {
 
         if (this.matches.length !== 0) return ;
-        matches.forEach(match => {
+        this.matches.forEach(match => {
 
 			if (match.someoneWon() === true) {
                 this.stopMatch(match)
@@ -155,9 +155,9 @@ class UserManager {
 
     createTournament(user, alias) {
 
-        LOGGER(200, "UserManager", "createTournament", "created");
-
+        
         const creator_alias = (alias === null) ? "Anonymous" : alias;
+        LOGGER(200, "UserManager", "createTournament", "Called by user alias: " + creator_alias);
         const tournament_id = this.createId();
 		const tournament = new Tournament(tournament_id);
 
@@ -168,9 +168,6 @@ class UserManager {
     }
 
     updateTournaments() {
-
-    	if (this.matches.length !== 0)
-    		this.updateMatches(this.matches);
 
     	this.tournaments.forEach(tournament => {
 
@@ -187,16 +184,23 @@ class UserManager {
     				this.createNewTournamentMatches(winners, tournament);
 
                 if (tournament.isTournamentFinished()) {
-                    tournament.isReady = false;
-                    tournament.isWaiting = false;
+                    tournament.unsetReady();
+                    this.removeTournament(tournament.getId());
                 }
     		}
     	});
     }
 
+    removeTournament(tournament_id) {
+
+        LOGGER(200, "UserManager", "removeTournament", "deleted tournament id: " + tournament_id);
+        this.tournaments.delete(tournament_id);
+    }
+
 
     createNewTournamentMatches(playerMap, tournament) {
 
+        LOGGER(200, "UserManager", "createNewTournamentMatches", "Called");
 	    const players = Array.from(playerMap.keys());
 
 	    for (let i = 0; i < players.length; i += 2) {
@@ -215,23 +219,16 @@ class UserManager {
                 tournament.matchDoneCount++;
             }
 	    }
-}
-
-
-//----------------------------------------------------------------------------------------TOURNAMENT 
-//----------------------------------------------------------------------------------------UTILS  
-
-    getAllMatches() {
-        return (Array.from(this.matches.values()));
     }
 
     getAvailableTournaments() {
 
+        LOGGER(200, "UserManager", "getAvailableTournaments", "Called");
     	const tournaments = [];
 
     	for (const tournament of this.tournaments.values()) {
 
-    		if (tournament.getIsWaiting() === true) {
+    		if (tournament.isWaitingAndFull() === false) {
 
     			tournaments.push({
     				id: tournament.getTournamentId(),
@@ -242,11 +239,36 @@ class UserManager {
     		}
     	}
 
-    	if (tournaments.length === 0)
+    	if (tournaments.length === 0) {
+            LOGGER(501, "UserManager", "getAvailableTournaments", "Called with NO available tournaments");
     		return (null);
-
+        }
+        LOGGER(200, "UserManager", "getAvailableTournaments", "Called with available tournaments: " + tournaments);
     	return (tournaments);
     }
+
+
+//----------------------------------------------------------------------------------------TOURNAMENT 
+//----------------------------------------------------------------------------------------UTILS  
+
+    updateGames() {
+
+        if (this.matches.length !== 0) {
+
+    		this.updateMatches();
+        }
+        if (this.tournaments.length !== 0) {
+
+            this.updateTournaments();
+        }
+
+    }
+
+    getAllMatches() {
+        return (Array.from(this.matches.values()));
+    }
+
+  
 
     getTournamentById(tournament_id) {
 

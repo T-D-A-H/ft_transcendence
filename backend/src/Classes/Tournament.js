@@ -26,20 +26,25 @@ class Tournament {
 
 	addUserToTournament(requestingUser, requestingAlias) {
 
-		if (this.players.size >= this.maxPlayers)
+		LOGGER(200, "Tournament", "addUserToTournament", "Added user: " + requestingAlias);
+		if (this.players.size >= this.maxPlayers) {
+			LOGGER(400, "Tournament", "addUserToTournament", "Tournament already full.");
 			return (false);
+		}
 		this.players.set(requestingUser, {alias: requestingAlias});
 		this.currentPlayerCount++;
 		return (true);
 	}
 
 	removeUserFromTournament(requestingUser) {
-		return this.players.delete(requestingUser);
+		LOGGER(200, "Tournament", "removeUserFromTournament", "Removed user: " + this.players.values(requestingUser));
+		this.players.delete(requestingUser);
 	}
 
 
 	updateWinner(requestedMatch, userWhoWon) {
 
+		LOGGER(200, "Tournament", "updateWinner", "Called");
 		const match = this.matches.get(requestedMatch);
 		if (!match)
 			return false;
@@ -50,6 +55,7 @@ class Tournament {
 
 	prepareNextRound() {
 
+		LOGGER(200, "Tournament", "prepareNextRound", "Called");
 		const nextPlayers = new Map(this.winners);
 
 		this.matches.clear();
@@ -95,6 +101,11 @@ class Tournament {
 		this.isReady = true;
 	}
 
+	unsetReady() {
+		this.isReady = false;
+        this.isWaiting = false;
+	}
+
 	getPlayers() {
 		return (this.players);
 	}
@@ -121,6 +132,10 @@ class Tournament {
 
 	getCreatorAlias() {
 		return (this.creatorAlias);
+	}
+
+	getId() {
+		return (this->tournament_id);
 	}
 
 }

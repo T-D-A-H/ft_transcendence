@@ -49,7 +49,7 @@ async function startServer() {
 	
 	setInterval(() => {
 
-		userManager.updateGame();
+		userManager.updateGames();
 
 	}, FRAMES);
 

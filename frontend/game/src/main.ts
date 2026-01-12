@@ -324,8 +324,6 @@ closeCreateTournamentButton.onclick = () => hide(createTournamentModal);
 
 submitTournamentCreationButton.onclick = () => {
 
-
-
 	const alias = aliasTournamentInput.value.trim();
 	if (alias.length === 0) {
 		alert("alias field empty");
