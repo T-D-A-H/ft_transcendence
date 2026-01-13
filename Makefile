@@ -23,7 +23,7 @@ DATABASE_CONTAINER = ft_database
 FRONT_SERVICE     = frontend
 FRONT_CONTAINER   = ft_frontend
 FRONT_SCRIPT      = /usr/local/bin/entrypoint-frontend.sh
-FRONT_TAILWINDCSS = /frontend/game/styles/tailwind.css
+FRONT_TAILWINDCSS = ./frontend/game/styles/tailwind.css
 
 NGINX_SERVICE     = nginx
 NGINX_CONTAINER   = ft_nginx

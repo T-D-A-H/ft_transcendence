@@ -69,14 +69,25 @@ class UserManager {
     logoutUser(userId) {
         const user = this.users.get(userId);
         if (user) {
+
             LOGGER(200, "UserManager", "logoutUser", user.getUsername());
             user.setConnected(false);
+            const tournament = user.getCurrentTournament();
             const match = user.getCurrentMatch()
+
+
+            if (tournament !== null) {
+                tournament.removeUserFromTournament(user);
+                user.unsetCurrentTournament();
+            }
+
             if (match !== null) {
                 LOGGER(200, "UserManager", "logoutUser", user.getUsername() + " got sent disconnect msg.");
                 match.broadcast({type: "DISCONNECT", msg: user.getUsername() + " disconnected."});
-                this.removeMatch(match);
+                user.unsetMatch();
+                this.stopMatch(match);
             }
+
             return true;
         }
         LOGGER(400, "UserManager", "logoutUser", userId + "already logged out.");
@@ -117,7 +128,7 @@ class UserManager {
         LOGGER(200, "UserManager", "removeMatch", match.id);
         if (match.players[0] !== null)
             match.players[0].unsetMatch();
-         if (match.players[1] !== null)
+        if (match.players[1] !== null)
             match.players[1].unsetMatch();
 		this.matches.delete(match.id);
 	}
@@ -128,7 +139,9 @@ class UserManager {
 
         if (tournament !== null) {
             tournament.updateWinner(match, match.getWinner());
+            match.getLoser().unsetCurrentTournament();
         }
+        match.sendWin(match.getWinner());
         this.removeMatch(match);
     }
 
@@ -150,7 +163,8 @@ class UserManager {
 //----------------------------------------------------------------------------------------TOURNAMENT  
 
 
-    createTournament(user, alias) { LOGGER(200, "UserManager", "createTournament", "Called by user alias: " + creator_alias);
+
+    createTournament(user, alias) { LOGGER(200, "UserManager", "createTournament", "Called by user alias: " + alias);
 
         
         const tournament_id = this.createId();
@@ -160,6 +174,22 @@ class UserManager {
         tournament.addUserToTournament(user, alias);
         this.tournaments.set(tournament_id, tournament);
 		user.setCurrentTournament(tournament);
+    }
+
+
+    removeTournament(tournament_id) { LOGGER(200, "UserManager", "removeTournament", "deleted tournament id: " + tournament_id);
+
+        this.tournaments.delete(tournament_id);
+    }
+
+    stopTournament(tournament) {
+
+        const winner_user = tournament.getWinner();
+        const winner_alias = tournament.players.get(winner_user).alias;
+        LOGGER(200, "UserManager", "updateTournaments", "User: " + winner_alias + " won the game!");
+
+        winner_user.unsetCurrentTournament();
+        this.removeTournament(tournament.getId());
     }
 
     updateTournaments() {
@@ -179,17 +209,12 @@ class UserManager {
     				this.createNewTournamentMatches(winners, tournament);
                 }
                 else {
-                    tournament.unsetReady();
-                    this.removeTournament(tournament.getId());
+                    this.stopTournament(tournament);
                 }
     		}
     	});
     }
 
-    removeTournament(tournament_id) { LOGGER(200, "UserManager", "removeTournament", "deleted tournament id: " + tournament_id);
-
-        this.tournaments.delete(tournament_id);
-    }
 
 
     createNewTournamentMatches(playerMap, tournament) {
@@ -260,8 +285,6 @@ class UserManager {
     getAllMatches() {
         return (Array.from(this.matches.values()));
     }
-
-  
 
     getTournamentById(tournament_id) {
 

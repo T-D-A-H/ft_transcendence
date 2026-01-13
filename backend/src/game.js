@@ -57,10 +57,11 @@ function replyToInviteRequest(requestingUser, userManager, username_to_send) {
 function startMatchRequest(requestingUser) {
 
 	LOGGER(200, "server", "startMatchRequest", "Sent start match request");
+
 	const match = requestingUser.getCurrentMatch();
 	if (!match) {
 		LOGGER(400, "server", "startMatchRequest", "Not in a match.");
-		user.send({type: "START_MATCH_RESPONSE", status: 400, msg: "You are not in a match.", target: requestingUser.getUsername()});
+		requestingUser.send({type: "START_MATCH_RESPONSE", status: 400, msg: "You are not in a match.", target: requestingUser.getUsername()});
 		return;
 	}
 	match.setReady(requestingUser);
@@ -143,8 +144,9 @@ function joinTournamentRequest(requestingUser, userManager, tournament_id, alias
 	}
 	else {
 		
-		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 200, msg: "Joined " + tournament.getCreatorAlias() +  "'s tournament."});
 		tournament.addUserToTournament(requestingUser, "Anonymous");
+		requestingUser.setCurrentTournament(tournament);
+		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 200, msg: "Joined " + tournament.getCreatorAlias() +  "'s tournament."});
 	}
 }
 

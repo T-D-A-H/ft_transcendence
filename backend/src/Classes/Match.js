@@ -19,6 +19,7 @@ class Match {
 		this.YDir = [0, 0];
 		this.SCORES = [0, 0];
 		this.WINNER = null;
+		this.LOSER = null; // TESTING
 		if (locally === true) {
 			this.players[1] = user;
 			this.isWaiting = false;
@@ -67,8 +68,12 @@ class Match {
 		this.broadcast({ type: "SCORES", scores: this.SCORES});
 	}
 
-	sendWin(user_index) {
-		this.broadcast({ type: "WIN", msg: this.players[user_index].getUsername() + " Won the game." });
+	sendWin(user) {
+		this.broadcast({ type: "WIN", msg: user.getUsername() + " Won the game" });
+	}
+
+	sendDisconnect(user) {
+		this.broadcast({type: "DISCONNECT", msg: user.getUsername() + " disconnected."});
 	}
 
 	updateMatch() {
@@ -88,8 +93,9 @@ class Match {
 		if (this.playerWonMatch() === true) {
 
 			const winner_index = (this.SCORES[0] >= Match.ScoreMax) ? 0 : 1;
+			const loser_index = (this.SCORES[0] >= Match.ScoreMax) ? 1 : 0;
 			this.WINNER = this.players[winner_index];
-			this.sendWin(winner_index);
+			this.LOSER = this.players[loser_index];
 		}
 	}
 
@@ -165,6 +171,10 @@ class Match {
 
 	getWinner() {
 		return (this.WINNER);
+	}
+
+	getLoser() {
+		return (this.LOSER);
 	}
 
 	getMatchId() {

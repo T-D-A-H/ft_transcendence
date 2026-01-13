@@ -251,8 +251,8 @@ startMatchButton.onclick = () => {
 			alert("No response from server");
 			return ;
 		}
+		showNotification(result.msg);
 		if (result.status !== 200) {
-			showNotification(result.msg);
 			return ;
 		}
 		hide(waitingPlayers);
@@ -331,10 +331,13 @@ submitTournamentCreationButton.onclick = () => {
 			alert("No response from server");
 			return ;
 		}
-		showNotification(result.msg);
+		
 		if (result.status !== 200) {
+			hide(createTournamentModal);
+			showNotification(result.msg);
 			return ;
 		}
+		showNotification(result.msg);
 		hide(createTournamentModal);
 		show(startMatchButton);
 	});
@@ -429,6 +432,7 @@ openSearchTournamentButton.onclick = () => {
 					}
 					showNotification(result.msg);
 					if (result.status !== 200) {
+						hide(searchTournamentsModal);
 						return ;
 					}
 					hide(searchTournamentsModal);

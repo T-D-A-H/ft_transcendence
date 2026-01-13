@@ -115,6 +115,7 @@ export function ConstantEvent(response: ServerMessage["type"]){
 
 			drawWin(data.msg);
 			showNotification(data.msg);
+			show(startMatchButton);
 		}
 		else if (data.type === "DRAW") {
 

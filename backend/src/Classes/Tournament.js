@@ -1,6 +1,6 @@
 
 const LOGGER = require("../LOGGER.js");
-
+const Match = require("./Match.js");
 
 class Tournament {
 
@@ -19,14 +19,19 @@ class Tournament {
 		this.players = new Map();
 		this.matches = new Map();
 		this.winners = new Map();
+
 	}
 
-	addCreatorAlias(alias) {
+	sendWin(match, user) {
+		match.broadcast({ type: "WIN", msg: this.getPlayerAlias(user) + " Won the tournament game." });
+	}
+
+	addCreatorAlias(alias = null) {
 		const creator_alias = (alias === null) ? "Anonymous" : alias;
 		this.creatorAlias = creator_alias;
 	}
 
-	addUserToTournament(requestingUser, alias) { LOGGER(200, "Tournament", "addUserToTournament", "Added user: " + requestingAlias);
+	addUserToTournament(requestingUser, alias = null) { LOGGER(200, "Tournament", "addUserToTournament", "Added user: " + alias);
 
 		
 		if (this.players.size >= this.maxPlayers) { LOGGER(400, "Tournament", "addUserToTournament", "Tournament already full.");
@@ -64,9 +69,9 @@ class Tournament {
 		this.winners.clear();
 		this.matchDoneCount = 0;
 		if (nextPlayers.size === 1) {
-			this.WINNER = nextPlayers.keys()[0];
+			const entry = nextPlayers.keys().next().value;
+			this.WINNER = entry;
 		}
-		match.count++;
 		return (nextPlayers);
 	}
 
