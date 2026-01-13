@@ -81,16 +81,12 @@ export interface DisconnectMsg {
 }
 
 
-
-
 export interface CreateTournamentRequest {
     type: "CREATE_TOURNAMENT_RESPONSE";
     status: number;
     msg: string;
     target?: null;
 }
-
-
 
 export interface SearchTournamentRequest {
     type: "SEARCH_TOURNAMENT_RESPONSE";

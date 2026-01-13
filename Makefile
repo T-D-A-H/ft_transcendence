@@ -23,6 +23,7 @@ DATABASE_CONTAINER = ft_database
 FRONT_SERVICE     = frontend
 FRONT_CONTAINER   = ft_frontend
 FRONT_SCRIPT      = /usr/local/bin/entrypoint-frontend.sh
+FRONT_TAILWINDCSS = /frontend/game/styles/tailwind.css
 
 NGINX_SERVICE     = nginx
 NGINX_CONTAINER   = ft_nginx
@@ -42,6 +43,7 @@ up-logs:  # Ejecutar contenedores con LOGS
 	$(D_COMPOSE) up $(REMOVE_ORPH)
 
 down: #Tirar contenedores y borrar volumenes
+	rm -rf $(FRONT_TAILWINDCSS)
 	$(D_COMPOSE) down -v --remove-orphans
 
 fclean: down #Borrar builds antiguos y borrar volumenes

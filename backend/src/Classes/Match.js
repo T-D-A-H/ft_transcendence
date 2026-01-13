@@ -4,7 +4,7 @@ const Game   = require("./Game.js");
 
 class Match {
 
-	static ScoreMax = 11;
+	static ScoreMax = 2;
 	constructor(user, match_id, locally, tournament) {
 		
 		LOGGER(200, "Match", "Constructor", "For " + user.getUsername() + " match_id: " + match_id);
@@ -18,7 +18,7 @@ class Match {
 		this.isReady = [null, null];
 		this.YDir = [0, 0];
 		this.SCORES = [0, 0];
-		this.WINNNER = null;
+		this.WINNER = null;
 		if (locally === true) {
 			this.players[1] = user;
 			this.isWaiting = false;
@@ -29,7 +29,9 @@ class Match {
 	addUserToMatch(user) {
 		LOGGER(200, "Match", "addUserToMatch", "For " + user.getUsername() + " match_id: " + this.id);
 		this.players[1] = user;
-		this.isWaiting = false; 
+		this.isWaiting = false;
+		this.sendDraw();
+		this.sendScores();
 	}
 
 	setReady(user) {
@@ -61,14 +63,6 @@ class Match {
 		});
 	}
 
-	sendInitialVars() {
-		this.broadcast({ 
-			type: "VARS", 
-			PaddleWH: this.game.getPaddleWidthAndHeight(),
-			BallWH: this.game.getBallWidthAndHeight()
-		});
-	}
-
 	sendScores() {
 		this.broadcast({ type: "SCORES", scores: this.SCORES});
 	}
@@ -94,7 +88,7 @@ class Match {
 		if (this.playerWonMatch() === true) {
 
 			const winner_index = (this.SCORES[0] >= Match.ScoreMax) ? 0 : 1;
-			this.WINNNER = this.players[winner_index];
+			this.WINNER = this.players[winner_index];
 			this.sendWin(winner_index);
 		}
 	}
@@ -155,7 +149,7 @@ class Match {
 			return (false);
 	    if (!this.players[0] || !this.players[1])
 			return (false);
-		if (this.WINNNER !== null)
+		if (this.WINNER !== null)
 			return (false);
 		if (this.isReady[0] === true && this.isReady[1] === true)
 			return (true);
@@ -163,14 +157,14 @@ class Match {
 	}
 
 	someoneWon() {
-		if (this.WINNNER === null) {
+		if (this.WINNER === null) {
 			return (false);
 		}
 		return (true);
 	}
 
 	getWinner() {
-		return (this.WINNNER);
+		return (this.WINNER);
 	}
 
 	getMatchId() {

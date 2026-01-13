@@ -1,3 +1,4 @@
 /backend/.env
 /frontend/game/public
 .env
+/frontend/game/styles/tailwind.css

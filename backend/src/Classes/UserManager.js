@@ -124,12 +124,10 @@ class UserManager {
 
     stopMatch(match) {
 
-        const WINNER = match.getWinner();
         const tournament = match.getTournament();
 
         if (tournament !== null) {
-
-            tournament.updateWinner(match, WINNER);
+            tournament.updateWinner(match, match.getWinner());
         }
         this.removeMatch(match);
     }
@@ -152,17 +150,15 @@ class UserManager {
 //----------------------------------------------------------------------------------------TOURNAMENT  
 
 
-    createTournament(user, alias) {
+    createTournament(user, alias) { LOGGER(200, "UserManager", "createTournament", "Called by user alias: " + creator_alias);
 
         
-        const creator_alias = (alias === null) ? "Anonymous" : alias;
-        LOGGER(200, "UserManager", "createTournament", "Called by user alias: " + creator_alias);
         const tournament_id = this.createId();
 		const tournament = new Tournament(tournament_id);
 
-        tournament.addCreatorAlias(creator_alias);
+        tournament.addCreatorAlias(alias);
+        tournament.addUserToTournament(user, alias);
         this.tournaments.set(tournament_id, tournament);
-        tournament.addUserToTournament(user, creator_alias);
 		user.setCurrentTournament(tournament);
     }
 
@@ -175,14 +171,14 @@ class UserManager {
                 tournament.setReady();
     			this.createNewTournamentMatches(tournament.getPlayers(), tournament);
     		}
-    		else if (tournament.getIsReady() === true && tournament.isRoundFinished()) {
+    		else if (tournament.isRoundFinished()) {
 
     			const winners = tournament.prepareNextRound();
 
-    			if (winners.size > 1)
+    			if (winners.size > 1) {
     				this.createNewTournamentMatches(winners, tournament);
-
-                if (tournament.isTournamentFinished()) {
+                }
+                else {
                     tournament.unsetReady();
                     this.removeTournament(tournament.getId());
                 }
@@ -190,9 +186,8 @@ class UserManager {
     	});
     }
 
-    removeTournament(tournament_id) {
+    removeTournament(tournament_id) { LOGGER(200, "UserManager", "removeTournament", "deleted tournament id: " + tournament_id);
 
-        LOGGER(200, "UserManager", "removeTournament", "deleted tournament id: " + tournament_id);
         this.tournaments.delete(tournament_id);
     }
 
@@ -214,15 +209,14 @@ class UserManager {
 	    	tournament.matches.set(match, {user1 , user2});
 
             if (!user2) {
-                tournament.winners.set(user1, tournament.players.get(user1));
-                tournament.matchDoneCount++;
+                this.stopMatch(match);
             }
 	    }
     }
 
-    getAvailableTournaments() {
+    getAvailableTournaments() { LOGGER(200, "UserManager", "getAvailableTournaments", "Called");
 
-        LOGGER(200, "UserManager", "getAvailableTournaments", "Called");
+        
     	const tournaments = [];
 
     	for (const tournament of this.tournaments.values()) {
@@ -238,8 +232,8 @@ class UserManager {
     		}
     	}
 
-    	if (tournaments.length === 0) {
-            LOGGER(501, "UserManager", "getAvailableTournaments", "Called with NO available tournaments");
+    	if (tournaments.length === 0) { LOGGER(501, "UserManager", "getAvailableTournaments", "Called with NO available tournaments");
+            
     		return (null);
         }
         LOGGER(200, "UserManager", "getAvailableTournaments", "Called with available tournaments: " + tournaments);

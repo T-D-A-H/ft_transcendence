@@ -3,7 +3,6 @@ const LOGGER = require("../LOGGER.js");
 
 class Game {
 
-    static MaxScore = 8;
     static Screen = { 
         WIDTH: 600, 
         HEIGHT: 400, 

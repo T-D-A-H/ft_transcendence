@@ -300,9 +300,6 @@ incomingPlayRequestAcceptButton.onclick = () => {
 
 
 
-
-
-
 export const openCreateTournamentButton = // Create a match button
 	document.getElementById("create_tournament") as HTMLButtonElement;
 
@@ -326,10 +323,8 @@ submitTournamentCreationButton.onclick = () => {
 
 	const alias = aliasTournamentInput.value.trim();
 	if (alias.length === 0) {
-		alert("alias field empty");
 		return ;
 	}
-	alert("alias inputted: " + alias);
 	oneTimeEvent("CREATE_TOURNAMENT_REQUEST", "CREATE_TOURNAMENT_RESPONSE", alias).then((result) => {
 
 		if (!result) {
@@ -383,12 +378,9 @@ function renderTournamentList(tournaments: TournamentInfo[]): HTMLButtonElement[
 		sizeSpan.textContent =
 			`Players: ${tournament.current_size}/${tournament.max_size}`;
 
-		const idSpan = document.createElement("span");
-		idSpan.textContent = `ID: ${tournament.id}`;
 
 		infoDiv.appendChild(nameSpan);
 		infoDiv.appendChild(sizeSpan);
-		infoDiv.appendChild(idSpan);
 
 		const joinBtn = document.createElement("button");
 		joinBtn.textContent = "Join";

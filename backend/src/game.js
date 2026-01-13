@@ -7,15 +7,15 @@ function sendInviteRequest(requestingUser, userManager, username_to_send) {
 	}
 	const user_to_send = userManager.getUserByUsername(username_to_send);
 	if (user_to_send === null) {
-		//LOGGER(400, "server", "sendInviteRequest", username_to_send + " doesnt exist.");
+		LOGGER(400, "server", "sendInviteRequest", username_to_send + " doesnt exist.");
 		requestingUser.send({type: "SEND_INVITE_RESPONSE", status: 400, msg: username_to_send + " doesnt exist.", target: username_to_send});
 	}
 	else if (user_to_send.getIsConnected() === false) {
-		//LOGGER(400, "server", "sendInviteRequest", username_to_send + " is not online."
+		LOGGER(400, "server", "sendInviteRequest", username_to_send + " is not online.");
 		requestingUser.send({type: "SEND_INVITE_RESPONSE", status: 400, msg: username_to_send + " is not online.", target: username_to_send});
 	}
 	else {
-		//LOGGER(200, "server", "sendInviteRequest", requestingUser.getUsername() + " sent invite to play to " + username_to_send);
+		LOGGER(200, "server", "sendInviteRequest", requestingUser.getUsername() + " sent invite to play to " + username_to_send);
 		requestingUser.addPendingRequest(user_to_send);
 		requestingUser.send({type: "SEND_INVITE_RESPONSE", status: 200, msg: "Sent invite to play with " + username_to_send, target: username_to_send});
 		user_to_send.send({type: "INCOMING_INVITE_REQUEST", msg: requestingUser.getUsername() + " sent you an invite request.", target: requestingUser.getUsername()});
@@ -26,28 +26,28 @@ function replyToInviteRequest(requestingUser, userManager, username_to_send) {
 
 	const user_to_send = userManager.getUserByUsername(username_to_send);
 	if (user_to_send === null) {
-		//LOGGER(400, "server", "replyToInviteRequest", username_to_send + " couldnt find user.")
+		LOGGER(400, "server", "replyToInviteRequest", username_to_send + " couldnt find user.")
 		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " couldnt find user.", target: username_to_send});
 	}
 	else if (user_to_send.getIsConnected() === false) {
-		//LOGGER(400, "server", "replyToInviteRequest", username_to_send + " is offline.")
+		LOGGER(400, "server", "replyToInviteRequest", username_to_send + " is offline.")
 		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " is offline.", target: username_to_send});
 	}
 	else if (user_to_send.getIsPlaying() === true) {
 
-		//LOGGER(400, "server", "replyToInviteRequest", username_to_send + " is already in a match.1")
+		LOGGER(400, "server", "replyToInviteRequest", username_to_send + " is already in a match.1")
 		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " is already in a match.", target: username_to_send});
 	}
 	else if (user_to_send.hasPendingRequest(requestingUser) === false) {
-			//LOGGER(400, "server", "acceptInviteRequest", "Unable to send your invite acceptance to " + user_to_send.getUsername());
+			LOGGER(400, "server", "acceptInviteRequest", "Unable to send your invite acceptance to " + user_to_send.getUsername());
 		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: "Unable to send your invite acceptance to " + user_to_send.getUsername(), target: user_to_send.getUsername()});
 	}
 	else if (userManager.addToMatch(requestingUser, user_to_send.getCurrentMatch()) === null) {
-		//LOGGER(400, "server", "replyToInviteRequest", username_to_send + " is already in a match.2")
+		LOGGER(400, "server", "replyToInviteRequest", username_to_send + " is already in a match.2")
 		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " is already in a match.", target: username_to_send});
 	}
 	else {
-		//LOGGER(200, "server", "replyToInviteRequest", "You accepted " + username_to_send + "'s invite.");
+		LOGGER(200, "server", "replyToInviteRequest", "You accepted " + username_to_send + "'s invite.");
 		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 200, msg: "You accepted " + username_to_send + "'s invite.", target: username_to_send});
 		user_to_send.send({type: "INCOMING_INVITE_RESPONSE", msg: requestingUser.getUsername() + " accepted your invite.", target: requestingUser.getUsername()});
 	}
@@ -75,12 +75,12 @@ function playLocalGame(requestingUser, userManager) {
 
 	if (requestingUser.getIsConnected() === false) {
 
-		//LOGGER(400, "server", "playLocalGame", "User is offline.")
+		LOGGER(400, "server", "playLocalGame", "User is offline.")
 		requestingUser.send({type: "PLAY_LOCALLY_RESPONSE", status: 400, msg: "You need to log in to be able to play.", target: ""});
 	}
 	else if (requestingUser.getIsPlaying() === true) {
 
-		//LOGGER(400, "server", "playLocalGame", "User already in a match.")
+		LOGGER(400, "server", "playLocalGame", "User already in a match.")
 		requestingUser.send({type: "PLAY_LOCALLY_RESPONSE", status: 400, msg: "You are already in another match.", target: ""});
 	}
 	else {
@@ -92,6 +92,7 @@ function playLocalGame(requestingUser, userManager) {
 
 function createTournamentRequest(requestingUser, userManager, userAlias) {
 
+	
 
 	if (requestingUser.getCurrentMatch() !== null) {
 
@@ -155,7 +156,7 @@ function handleUserCommands(user, userManager) {
 	    try {
 		    msg = JSON.parse(raw);
 	    } catch (err) {
-			//LOGGER(500, "server", "handleUserCommands", "invalid json");
+			LOGGER(500, "server", "handleUserCommands", "invalid json");
 		    return ;
 	    }
 		if (msg.type === "SEND_INVITE_REQUEST") {
@@ -195,7 +196,7 @@ function buildGameSocketHandler(userManager, fastify) {
 
     const token = req.query.token;
     if (!token || token === "null") {
-		//LOGGER(400, "server", "buildGameSocketHandler", "couldnt get token");
+		LOGGER(400, "server", "buildGameSocketHandler", "couldnt get token");
 		return conn.socket.close(1008);
 	}
 
@@ -203,13 +204,13 @@ function buildGameSocketHandler(userManager, fastify) {
     try {
 		payload = fastify.jwt.verify(token);
     } catch {
-		//LOGGER(400, "server", "buildGameSocketHandler", "jwt.verify failed");
+		LOGGER(400, "server", "buildGameSocketHandler", "jwt.verify failed");
 		return conn.socket.close(1008);
     }
 
     const user = userManager.getUserByID(payload.id);
     if (!user) {
-		//LOGGER(500, "server", "buildGameSocketHandler", "couldnt find user");
+		LOGGER(500, "server", "buildGameSocketHandler", "couldnt find user");
 		return conn.socket.close(1008);
 	}
 
