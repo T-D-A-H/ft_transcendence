@@ -70,15 +70,11 @@ export interface InitialVarsMessage {
     BallWH: [number, number];
 }
 
-export interface WinMessage {
-    type: "WIN";
+export interface NotificationMessage {
+    type: "NOTIFICATION";
     msg: string;
 }
 
-export interface DisconnectMsg {
-    type: "DISCONNECT";
-    msg: string;
-}
 
 
 export interface CreateTournamentRequest {
@@ -109,8 +105,8 @@ SendInviteResponse         | ReplyInviteResponse      |
 IncomingInviteRequest      | IncomingInviteResponse   |
 StartMatchResponse         | PlayLocallyResponse      | 
 ScoresMessage              | DrawMessage			  | 
-InitialVarsMessage         | WinMessage               | 
-DisconnectMsg              | CreateTournamentRequest  |
+InitialVarsMessage         |
+NotificationMessage        | CreateTournamentRequest  |
 SearchTournamentRequest    | JoinTournamentRequest;
 
 export let SCORES: number[] = [0, 0];

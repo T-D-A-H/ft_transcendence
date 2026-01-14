@@ -72,22 +72,15 @@ class UserManager {
 
             LOGGER(200, "UserManager", "logoutUser", user.getUsername());
             user.setConnected(false);
+            const match = user.getCurrentMatch();
+            if (match)
+                this.matchDisconnect(match);
+
             const tournament = user.getCurrentTournament();
-            const match = user.getCurrentMatch()
-
-
-            if (tournament !== null) {
+            if (tournament) {
+                this.tournamentDisconnect(tournament);
                 tournament.removeUserFromTournament(user);
-                user.unsetCurrentTournament();
             }
-
-            if (match !== null) {
-                LOGGER(200, "UserManager", "logoutUser", user.getUsername() + " got sent disconnect msg.");
-                match.broadcast({type: "DISCONNECT", msg: user.getUsername() + " disconnected."});
-                user.unsetMatch();
-                this.stopMatch(match);
-            }
-
             return true;
         }
         LOGGER(400, "UserManager", "logoutUser", userId + "already logged out.");
@@ -96,20 +89,84 @@ class UserManager {
 
     removeUser(userId) {
 
+        LOGGER(200, "UserManager", "removeUser", this.users.get(userId));
         const removed = this.users.delete(userId);
-        if (removed) {
-            LOGGER(200, "UserManager", "removeUser", this.users.get(userId));
-        }
         return (removed);
     }
 
+    getUserByID(userId) {
+        return this.users.get(userId);
+    }
+
+    getUserByUsername(username) {
+        for (const user of this.users.values()) {
+            if (user.display_name === username) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    getConnectedUsers() {
+        const connected = [];
+        for (const user of this.users.values()) {
+            if (user.isConnected) {
+                connected.push(user);
+            }
+        }
+        return connected;
+    }
+
+    getConnectedCount() {
+        return this.getConnectedUsers().length;
+    }
+
+    getAllUsers() {
+        return Array.from(this.users.values());
+    }
+
+    tournamentDisconnect(tournament) {
+
+        LOGGER(200, "UserManager", "tournamentDisconnect", "user disconnected from tournament");
+        const winners = tournament.getWinners();
+
+    	for (const user of winners.keys()) {
+
+    		if (user.isConnected === false) {
+
+                tournament.deleteWinner(user);
+
+            }
+    	}
+    }
+
+    matchDisconnect(match) {
+
+        
+        if (match.players[0].isConnected === false) {
+
+            LOGGER(400, "UserManager", "checkMatchDisconnect", "player disconnected");
+            match.setWINNER(1);
+            match.setLOSER(0);
+            match.sendDisconnect(match.players[1]);
+
+        }
+        else if (match.players[1].isConnected === false) {
+
+            match.setWINNER(0);
+            match.setLOSER(1);
+            match.sendDisconnect(match.players[0]);
+
+            LOGGER(400, "UserManager", "checkMatchDisconnect", "player disconnected");
+        }
+        this.stopMatch(match);
+    }
 //----------------------------------------------------------------------------------------USER
 //----------------------------------------------------------------------------------------MATCH
 
 
-	createMatch(user, locally, tournament) {
-        LOGGER(200, "UserManager", "createMatch", user.getUsername());
-
+	createMatch(user, locally, tournament) { LOGGER(200, "UserManager", "createMatch", user.getUsername());
+        
         const match_id = this.createId();
 		const match = new Match(user, match_id, locally, tournament);
 
@@ -126,22 +183,38 @@ class UserManager {
 
 	removeMatch(match) {
         LOGGER(200, "UserManager", "removeMatch", match.id);
+		this.matches.delete(match.id);
+	}
+
+    unsetMatches(match) {
+
+        if (!match) return;
         if (match.players[0] !== null)
             match.players[0].unsetMatch();
         if (match.players[1] !== null)
             match.players[1].unsetMatch();
-		this.matches.delete(match.id);
-	}
+    }
 
     stopMatch(match) {
-
+        LOGGER(200, "UserManager", "stopMatch", "called");
         const tournament = match.getTournament();
 
         if (tournament !== null) {
-            tournament.updateWinner(match, match.getWinner());
-            match.getLoser().unsetCurrentTournament();
+
+            LOGGER(200, "UserManager", "stopMatch", "Is part of tournament");
+            const winner = match.getWinner();
+            const loser = match.getLoser();
+            tournament.updateWinner(match, winner);
+            tournament.sendWin(winner, loser);
+
+            if (loser) {
+                tournament.sendLose(loser, winner)
+                loser.unsetTournament();
+            }
         }
-        match.sendWin(match.getWinner());
+        else
+            match.sendWin(match.getWinner());
+        this.unsetMatches(match);
         this.removeMatch(match);
     }
 
@@ -149,12 +222,17 @@ class UserManager {
 
         this.matches.forEach(match => {
 
-			if (match.someoneWon() === true) {
+
+            if (match.shouldContinuePlaying()) {
+
+				match.updateMatch();
+                // this.matchDisconnect(match);
+                
+            }
+            if (match.someoneWon() === true) {
+
                 this.stopMatch(match)
-				return ;
 		    }
-			if (match.shouldContinuePlaying())
-				match.updateMatch();		
         });
     }
 
@@ -163,19 +241,26 @@ class UserManager {
 //----------------------------------------------------------------------------------------TOURNAMENT  
 
 
+    createTournament(user, alias, size) { LOGGER(200, "UserManager", "createTournament", "Called by user alias: " + alias);
 
-    createTournament(user, alias) { LOGGER(200, "UserManager", "createTournament", "Called by user alias: " + alias);
-
-        
         const tournament_id = this.createId();
-		const tournament = new Tournament(tournament_id);
+		const tournament = new Tournament(tournament_id, size);
 
         tournament.addCreatorAlias(alias);
         tournament.addUserToTournament(user, alias);
         this.tournaments.set(tournament_id, tournament);
-		user.setCurrentTournament(tournament);
+		user.setTournament(tournament);
     }
 
+    addToTournament(user, tournament, alias = null) {
+
+        const user_alias = (alias === null) ? "Anonymous" : alias;
+        if (tournament.addUserToTournament(user, user_alias) === false) {
+            return (false);
+        }
+        user.setTournament(tournament);
+        return (true);
+    }
 
     removeTournament(tournament_id) { LOGGER(200, "UserManager", "removeTournament", "deleted tournament id: " + tournament_id);
 
@@ -184,18 +269,22 @@ class UserManager {
 
     stopTournament(tournament) {
 
-        const winner_user = tournament.getWinner();
-        const winner_alias = tournament.players.get(winner_user).alias;
-        LOGGER(200, "UserManager", "updateTournaments", "User: " + winner_alias + " won the game!");
-
-        winner_user.unsetCurrentTournament();
         this.removeTournament(tournament.getId());
+
+        const winner_user = tournament.getWinner();
+        if (winner_user === null) return;
+        tournament.sendFinalWin(winner_user);
+        LOGGER(200, "UserManager", "updateTournaments", "User: " + tournament.players.get(winner_user).alias + " won the game!");
+        winner_user.unsetTournament();
     }
 
     updateTournaments() {
 
     	this.tournaments.forEach(tournament => {
 
+            if (tournament.getCurrentSize() === 0) {
+                this.removeTournament(tournament.getId());
+            }
     		if (tournament.isWaitingAndFull()) {
 
                 tournament.setReady();
@@ -215,8 +304,6 @@ class UserManager {
     	});
     }
 
-
-
     createNewTournamentMatches(playerMap, tournament) {
 
         LOGGER(200, "UserManager", "createNewTournamentMatches", "Called");
@@ -232,6 +319,8 @@ class UserManager {
                 this.addToMatch(user2, match);
   
 	    	tournament.matches.set(match, {user1 , user2});
+            tournament.sendMatchStart(user1, user2);
+            tournament.sendMatchStart(user2, user1);
 
             if (!user2) {
                 this.stopMatch(match);
@@ -265,27 +354,6 @@ class UserManager {
     	return (tournaments);
     }
 
-
-//----------------------------------------------------------------------------------------TOURNAMENT 
-//----------------------------------------------------------------------------------------UTILS  
-
-    updateGames() {
-
-        if (this.matches.length !== 0) {
-
-    		this.updateMatches();
-        }
-        if (this.tournaments.length !== 0) {
-
-            this.updateTournaments();
-        }
-
-    }
-
-    getAllMatches() {
-        return (Array.from(this.matches.values()));
-    }
-
     getTournamentById(tournament_id) {
 
     	if (!this.tournaments.has(tournament_id))
@@ -294,42 +362,29 @@ class UserManager {
     	return (this.tournaments.get(tournament_id));
     }
 
+
+
+//----------------------------------------------------------------------------------------TOURNAMENT 
+//----------------------------------------------------------------------------------------UTILS  
+
+    updateGames() {
+
+        if (this.matches.length !== 0) {
+
+            this.updateMatches();
+        }
+        if (this.tournaments.length !== 0) {
+
+            this.updateTournaments();
+        }
+
+    }
+
     createId() {
 
     	const rand = Math.floor(Math.random() * 0xffff);
     	const time = Date.now();
     	return (((time << 16) | rand).toString());
-    }
-
-    getUserByID(userId) {
-        return this.users.get(userId);
-    }
-
-    getUserByUsername(username) {
-        for (const user of this.users.values()) {
-            if (user.display_name === username) {
-                return user;
-            }
-        }
-        return null;
-    }
-
-    getConnectedUsers() {
-        const connected = [];
-        for (const user of this.users.values()) {
-            if (user.isConnected) {
-                connected.push(user);
-            }
-        }
-        return connected;
-    }
-
-    getConnectedCount() {
-        return this.getConnectedUsers().length;
-    }
-
-    getAllUsers() {
-        return Array.from(this.users.values());
     }
 
 //----------------------------------------------------------------------------------------UTILS  

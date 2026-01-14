@@ -79,10 +79,14 @@ function playLocalGame(requestingUser, userManager) {
 		LOGGER(400, "server", "playLocalGame", "User is offline.")
 		requestingUser.send({type: "PLAY_LOCALLY_RESPONSE", status: 400, msg: "You need to log in to be able to play.", target: ""});
 	}
-	else if (requestingUser.getIsPlaying() === true) {
+	else if (requestingUser.getCurrentMatch() !== null) {
 
 		LOGGER(400, "server", "playLocalGame", "User already in a match.")
 		requestingUser.send({type: "PLAY_LOCALLY_RESPONSE", status: 400, msg: "You are already in another match.", target: ""});
+	}
+	else if (requestingUser.getCurrentTournament() !== null) {
+		LOGGER(400, "server", "playLocalGame", "User already in a tournament.")
+		requestingUser.send({type: "PLAY_LOCALLY_RESPONSE", status: 400, msg: "You are already in another tournament.", target: ""});
 	}
 	else {
 
@@ -91,21 +95,24 @@ function playLocalGame(requestingUser, userManager) {
 	}
 }
 
-function createTournamentRequest(requestingUser, userManager, userAlias) {
+function createTournamentRequest(requestingUser, userManager, userAlias, tournamentSize) {
 
-	
-
-	if (requestingUser.getCurrentMatch() !== null) {
-
-		requestingUser.send({type: "CREATE_TOURNAMENT_RESPONSE", status: 400, msg: "You are already in a match."});
-	}
-	else if (requestingUser.getCurrentTournament() !== null) {
+	LOGGER(200, "UserManager", "createTournamentRequest", tournamentSize);
+	const size = Number(tournamentSize);
+	if (requestingUser.getCurrentTournament() !== null) {
 
 		requestingUser.send({type: "CREATE_TOURNAMENT_RESPONSE", status: 400, msg: "You are already in a tournament."});
 	}
+	else if (requestingUser.getCurrentMatch() !== null) {
+
+		requestingUser.send({type: "CREATE_TOURNAMENT_RESPONSE", status: 400, msg: "You are already in a match."});
+	}
+	else if (size < 2 || size > 64 || size % 2 != 0) {
+		requestingUser.send({type: "CREATE_TOURNAMENT_RESPONSE", status: 400, msg: "Tournament sizes should be even numbers (2-64)"});
+	}
 	else {
 
-		userManager.createTournament(requestingUser, userAlias);
+		userManager.createTournament(requestingUser, userAlias, size);
 		requestingUser.send({type: "CREATE_TOURNAMENT_RESPONSE", status: 200, msg: "Tournament created!"});
 	}
 }
@@ -123,29 +130,44 @@ function searchTournamentRequest(requestingUser, userManager) {
 	}
 }
 
-function joinTournamentRequest(requestingUser, userManager, tournament_id, alias) {
+function joinTournamentRequest(requestingUser, userManager, tournament_id, alias = null) {LOGGER(200, "server", "joinTournamentRequest", "called");
 
-	LOGGER(200, "server", "joinTournamentRequest", "called");
-	const tournament = userManager.getTournamentById(tournament_id);
-	if (tournament !== null) {
-		LOGGER(200, "server", "joinTournamentRequest", "tournament found: ");
-		console.log("id: " + tournament.getTournamentId());
-		console.log("creator: " + tournament.getCreatorAlias());
-		console.log("current_size: " + tournament.getCurrentSize());
-		console.log("max_size: " + tournament.getTournamentSize());
+	if (requestingUser.getCurrentTournament() !== null) {
+
+		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 400, msg: "You are already in a tournament."});
+		return;
 	}
+	else if (requestingUser.getCurrentMatch() !== null) {
+
+		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 400, msg: "You are already in a match."});
+		return;
+	}
+
+	const tournament = userManager.getTournamentById(tournament_id);
+
 	if (tournament === null) {
 		LOGGER(400, "server", "joinTournamentRequest", "tournament NOT found");
 		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 400, msg: "Couldnt find tournament."});
+		return;
 	}
+
 	else if (tournament.getIfTournamentFull()) {
 
 		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 400, msg: "Tournament already full."});
 	}
 	else {
-		
-		tournament.addUserToTournament(requestingUser, "Anonymous");
-		requestingUser.setCurrentTournament(tournament);
+
+		LOGGER(200, "server", "joinTournamentRequest", "tournament found: " + 
+			"\nid: " + tournament.getTournamentId() + 
+			"\ncreator: " + tournament.getCreatorAlias() + 
+			"\ncurrent_size: " + tournament.getCurrentSize() + 
+			"\nmax_size: " + tournament.getTournamentSize()
+		);
+
+		if (userManager.addToTournament(requestingUser, tournament, alias) === false) {
+			requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 400, msg: "Couldnt find tournament."});
+			return ;
+		}
 		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 200, msg: "Joined " + tournament.getCreatorAlias() +  "'s tournament."});
 	}
 }
@@ -174,13 +196,13 @@ function handleUserCommands(user, userManager) {
 			playLocalGame(user, userManager);
 		}
 		else if (msg.type === "CREATE_TOURNAMENT_REQUEST") {
-			createTournamentRequest(user, userManager, msg.target);
+			createTournamentRequest(user, userManager, msg.target, msg.target2);
 		}
 		else if (msg.type === "SEARCH_TOURNAMENT_REQUEST") {
 			searchTournamentRequest(user, userManager);
 		}
 		else if (msg.type === "JOIN_TOURNAMENT_REQUEST") {
-			joinTournamentRequest(user, userManager, msg.target);
+			joinTournamentRequest(user, userManager, msg.target, msg.target2);
 		}
 		else if (msg.type === "MOVE2" && user.currentMatch) {
 			user.currentMatch.update2PlayerGame(msg.move);

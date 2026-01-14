@@ -278,6 +278,7 @@ playLocallyButton.onclick = () => {
 		// hide(createTournamentButton);
 		// hide(searchTournamentButton);
 		send2KeyPress();
+		
 	});
 };
  
@@ -297,9 +298,6 @@ incomingPlayRequestAcceptButton.onclick = () => {
 };
 
 
-
-
-
 export const openCreateTournamentButton = // Create a match button
 	document.getElementById("create_tournament") as HTMLButtonElement;
 
@@ -315,6 +313,9 @@ const createTournamentModal =
 const aliasTournamentInput = 
 	document.getElementById("tournament_alias") as HTMLInputElement;
 
+const tournamentSizeInput =
+	document.getElementById("tournament_size") as HTMLInputElement;
+
 
 openCreateTournamentButton.onclick = () => show(createTournamentModal);
 closeCreateTournamentButton.onclick = () => hide(createTournamentModal);
@@ -322,10 +323,16 @@ closeCreateTournamentButton.onclick = () => hide(createTournamentModal);
 submitTournamentCreationButton.onclick = () => {
 
 	const alias = aliasTournamentInput.value.trim();
-	if (alias.length === 0) {
+	const size = tournamentSizeInput.value;
+
+	if (alias.length === 0 || size.length === 0) {
 		return ;
 	}
-	oneTimeEvent("CREATE_TOURNAMENT_REQUEST", "CREATE_TOURNAMENT_RESPONSE", alias).then((result) => {
+
+
+
+
+	oneTimeEvent("CREATE_TOURNAMENT_REQUEST", "CREATE_TOURNAMENT_RESPONSE", alias, size).then((result) => {
 
 		if (!result) {
 			alert("No response from server");
@@ -422,9 +429,12 @@ openSearchTournamentButton.onclick = () => {
 		show(searchTournamentsModal);
 		for (const btn of joinButtons) {
 
-			const tournament_id = btn.dataset.id!;
+	
+			const id = btn.dataset.id!;
+			const alias = "lolxd";
+
 			btn.onclick = () => {
-				oneTimeEvent("JOIN_TOURNAMENT_REQUEST", "JOIN_TOURNAMENT_RESPONSE", tournament_id).then((result) => {
+				oneTimeEvent("JOIN_TOURNAMENT_REQUEST", "JOIN_TOURNAMENT_RESPONSE", id, alias).then((result) => {
 
 					if (!result) {
 						alert("No response from server");

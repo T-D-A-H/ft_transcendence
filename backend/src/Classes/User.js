@@ -43,8 +43,8 @@ class User {
         this.socket = socket;
     }
 
-    setConnected() {
-        this.isConnected = true;
+    setConnected(connected) {
+        this.isConnected = connected;
     }
     
     setMatch(match) {
@@ -90,11 +90,11 @@ class User {
 	}
 
 
-    setCurrentTournament(currentTournament) {
+    setTournament(currentTournament) {
         this.currentTournament = currentTournament;
     }
 
-    unsetCurrentTournament() {
+    unsetTournament() {
         this.currentTournament = null;
     }
 

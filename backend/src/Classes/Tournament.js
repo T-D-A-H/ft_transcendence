@@ -4,11 +4,11 @@ const Match = require("./Match.js");
 
 class Tournament {
 
-    constructor(tournament_id) { LOGGER(200, "Tournament", "Constructor", "Called");
+    constructor(tournament_id, size) { LOGGER(200, "Tournament", "Constructor", "Called");
 
 	
 		this.id = tournament_id;
-		this.maxPlayers = 2;
+		this.maxPlayers = size;
 		this.currentPlayerCount = 0;
 		this.matchDoneCount = 0;
 		this.creatorAlias = null;
@@ -22,36 +22,67 @@ class Tournament {
 
 	}
 
-	sendWin(match, user) {
-		match.broadcast({ type: "WIN", msg: this.getPlayerAlias(user) + " Won the tournament game." });
+	sendMsg(user, msg) {
+
+		
+		if (!user || user.isConnected === false || !user.socket) return ;
+		const data = JSON.stringify(msg);
+
+		user.socket.send(data);
 	}
+
+	sendWin(user, loserUser) {
+		const loser = this.getPlayerAlias(loserUser).alias;
+		LOGGER(200, "Tournament", "sendWin", "You Won the tournament game against " + loser + ".");
+		this.sendMsg(user, { type: "NOTIFICATION", msg: "You Won the tournament game against " + loser + "."});
+	}
+
+	sendLose(user, winnerUser) {
+		const winner = this.getPlayerAlias(winnerUser).alias;
+		LOGGER(200, "Tournament", "sendLose", winner + " Won the tournament game.");
+		this.sendMsg(user, { type: "NOTIFICATION", msg: winner + " Won the tournament game."});
+	}
+
+	sendFinalWin(user) {
+		LOGGER(200, "Tournament", "sendFinalWin", "You won the tournament!" );
+		this.sendMsg(user, { type: "NOTIFICATION", msg: "You won the tournament!" });
+	}
+
+	sendMatchStart(user, user2) {
+		LOGGER(200, "Tournament", "sendMatchStart", "Playing against " + this.getPlayerAlias(user2).alias + ".");
+		this.sendMsg(user, { type: "NOTIFICATION", msg: "Playing against " + this.getPlayerAlias(user2).alias + "."})
+	}
+
+
 
 	addCreatorAlias(alias = null) {
 		const creator_alias = (alias === null) ? "Anonymous" : alias;
 		this.creatorAlias = creator_alias;
 	}
 
-	addUserToTournament(requestingUser, alias = null) { LOGGER(200, "Tournament", "addUserToTournament", "Added user: " + alias);
+	addUserToTournament(requestingUser, user_alias) { LOGGER(200, "Tournament", "addUserToTournament", "Added user: " + user_alias);
 
 		
 		if (this.players.size >= this.maxPlayers) { LOGGER(400, "Tournament", "addUserToTournament", "Tournament already full.");
 			return (false);
 		}
-		const user_alias = (alias === null) ? "Anonymous" : alias;
 		this.players.set(requestingUser, {alias: user_alias});
 		this.currentPlayerCount++;
 		return (true);
 	}
 
 	removeUserFromTournament(requestingUser) { LOGGER(200, "Tournament", "removeUserFromTournament", "Removed user: " + this.players.values(requestingUser));
-		
+		this.currentPlayerCount--;
 		this.players.delete(requestingUser);
 	}
 
+	deleteWinner(user) {
+		if (!user) return ;
+		this.winners.delete(user);
+	}
 
 	updateWinner(requestedMatch, userWhoWon) { LOGGER(200, "Tournament", "updateWinner", "Called");
 
-		
 		const match = this.matches.get(requestedMatch);
 		if (!match)
 			return false;
@@ -77,8 +108,11 @@ class Tournament {
 
 	isRoundFinished() {
 
-		return  (this.matchDoneCount == this.matches.size && this.getIsReady() === true);
+		return  (this.matchDoneCount === this.matches.size && this.getIsReady() === true);
 	}
+
+
+
 
 
 	getWinner() {
@@ -144,7 +178,11 @@ class Tournament {
 	getPlayerAlias(user) {
 
 		return (this.players.get(user));
-	} 
+	}
+
+	getWinners() {
+		return (this.winners);
+	}
 
 }
 

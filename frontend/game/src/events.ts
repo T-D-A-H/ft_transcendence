@@ -48,18 +48,22 @@ export function receiveMessages(userSocket: WebSocket) {
 }
 
 
-function sendRequest(type: string, payload?: Record<string, any>) {
+function sendRequest(type: string, payload?: Record<string, any>, payload2?: Record<string, any>) {
 
 	if (!userSocket) {
 		alert("websocket not ready");
 		return ;
 	}
-	const msg = payload ? { type, ...payload } : { type };
+	const msg = {
+		type,
+		...(payload || {}),
+		...(payload2 || {})
+	};
 	userSocket.send(JSON.stringify(msg));
 }
 
 
-export function oneTimeEvent(request: string, response: ServerMessage["type"], target?: string): Promise<StatusMsgTarget | null> {
+export function oneTimeEvent(request: string, response: ServerMessage["type"], target?: string, target2?: string): Promise<StatusMsgTarget | null> {
 
 	return new Promise((resolve) => {
 
@@ -80,7 +84,7 @@ export function oneTimeEvent(request: string, response: ServerMessage["type"], t
 
 		}, false);
 
-		sendRequest(request, { target });
+		sendRequest(request, {target, target2});
 	});
 }
 
@@ -101,19 +105,13 @@ export function ConstantEvent(response: ServerMessage["type"]){
 			incomingPlayRequestText.textContent = data.msg;
 			show(incomingPlayRequestModal);
 		}
-		else if (data.type === "DISCONNECT") {
-
-			clearBackground();
-			showNotification(data.msg);
-		}
 		else if (data.type === "SCORES") {
 
 			SCORES[0] = data.scores[0];
         	SCORES[1] = data.scores[1];
 		}
-		else if (data.type === "WIN") {
+		else if (data.type === "NOTIFICATION") {
 
-			drawWin(data.msg);
 			showNotification(data.msg);
 			show(startMatchButton);
 		}

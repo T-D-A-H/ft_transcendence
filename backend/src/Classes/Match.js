@@ -22,8 +22,8 @@ class Match {
 		this.LOSER = null; // TESTING
 		if (locally === true) {
 			this.players[1] = user;
-			this.isWaiting = false;
-			this.isReady = [true, true];
+			// this.isWaiting = false;
+			// this.isReady = [true, true];
 		}
 	}
 
@@ -37,9 +37,12 @@ class Match {
 
 	setReady(user) {
 		LOGGER(200, "Match", "setReady", user.getUsername() + " is now ready to start match.");
-		const i = this.players.indexOf(user);
-		if (i !== -1)
-			this.isReady[i] = true;
+		let i = 0;
+		for (const player of this.players) {
+			if (player === user)
+				this.isReady[i] = true;
+			i++;
+		}
 	}
 
     broadcast(msg) {
@@ -69,11 +72,11 @@ class Match {
 	}
 
 	sendWin(user) {
-		this.broadcast({ type: "WIN", msg: user.getUsername() + " Won the game" });
+		this.broadcast({ type: "NOTIFICATION", msg: user.getUsername() + " Won the game" });
 	}
 
 	sendDisconnect(user) {
-		this.broadcast({type: "DISCONNECT", msg: user.getUsername() + " disconnected."});
+		this.broadcast({type: "NOTIFICATION", msg: user.getUsername() + " disconnected."});
 	}
 
 	updateMatch() {
@@ -92,10 +95,11 @@ class Match {
 		}
 		if (this.playerWonMatch() === true) {
 
+			LOGGER(200, "Match", "playerWonMatch", "called");
 			const winner_index = (this.SCORES[0] >= Match.ScoreMax) ? 0 : 1;
 			const loser_index = (this.SCORES[0] >= Match.ScoreMax) ? 1 : 0;
-			this.WINNER = this.players[winner_index];
-			this.LOSER = this.players[loser_index];
+			this.setWINNER(winner_index);
+			this.setLOSER(loser_index);
 		}
 	}
 
@@ -151,22 +155,20 @@ class Match {
 	}
 
 	shouldContinuePlaying() {
+
 		if (this.isWaiting)
 			return (false);
-	    if (!this.players[0] || !this.players[1])
+	    else if (!this.players[0] || !this.players[1])
 			return (false);
-		if (this.WINNER !== null)
+		else if (this.WINNER !== null)
 			return (false);
-		if (this.isReady[0] === true && this.isReady[1] === true)
+		else if (this.isReady[0] === true && this.isReady[1] === true)
 			return (true);
 		return (false);
 	}
 
 	someoneWon() {
-		if (this.WINNER === null) {
-			return (false);
-		}
-		return (true);
+		return (this.WINNER !== null)
 	}
 
 	getWinner() {
@@ -188,6 +190,19 @@ class Match {
 	getTournament() {
 		return (this.tournament);
 	}
+
+	setWINNER(winner_index) {
+		this.WINNER = this.players[winner_index];
+	}
+
+	setLOSER(loser_index) {
+		this.LOSER = this.players[loser_index];
+	}
+
+	getPlayers() {
+		return (this.players);
+	}
+
 
 }
 
