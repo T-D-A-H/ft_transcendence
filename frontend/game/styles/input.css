@@ -2,6 +2,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 @font-face {
 	font-family: "PressStart2P";
 	src: url("../assets/PressStart2P-Regular.ttf") format("truetype");
@@ -17,6 +18,40 @@
 	--pong-black: #5a5244;
 	--pong-white: #312521;
 	--pong-text-field: #9a8662;
+}
+@layer utilities {
+
+	#tournament_size::-webkit-inner-spin-button,
+	#tournament_size::-webkit-outer-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	#tournament_size[type="number"] {
+		-moz-appearance: textfield;
+	}
+	#tournament_list_ul {
+		scrollbar-width: auto;
+		scrollbar-color: var(--pong-black) var(--pong-white);
+		position: relative;
+		overflow-y: scroll;
+	}
+
+	#tournament_list_ul::-webkit-scrollbar {
+		width: 24px;
+		background: transparent;
+	}
+
+	#tournament_list_ul::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	#tournament_list_ul::-webkit-scrollbar-thumb {
+		background-color: var(--pong-black);
+		border-radius: 0;
+		min-height: 2px;
+		width: 32px;
+	}
 }
 @layer components {
 
@@ -56,12 +91,31 @@
 				bg-[color:var(--pong-white)] 
 				text-[10px] text-[color:var(--pong-black)] 
 				hover:text-[color:var(--pong-white)] hover:bg-[color:var(--pong-black)] 
-				border-4 border-[color:var(--pong-black)] rounded-none;
-		font-family: 'PressStart2P', monospace;
+				border-4 border-[color:var(--pong-black)] rounded-none font-['PressStart2P',monospace];;
 	}
 	.pong-bottom-buttons
 	{
 		@apply mt-auto flex flex-col gap-2;
+	}
+	.pong-cancel-button {
+		@apply w-5 h-5 flex justify-center items-center
+			text-[12px] text-[color:var(--pong-black)]
+			hover:text-[color:var(--pong-white)] hover:bg-[color:var(--pong-black)];
+		position: absolute;
+		top: 2px; /* distance from modal edge */
+		left: 2px;
+		cursor: pointer;
+	}
+
+	.pong-submit-button {
+
+		@apply  pong-button  text-[12px] px-3 py-1;
+	}
+	.pong-button-small {
+  		@apply  p-2 mb-2 h-[42px] px-0.5 py-0.5 bg-[color:var(--pong-black)] text-[14px] text-[color:var(--pong-white)]
+        	hover:text-[color:var(--pong-black)] hover:bg-[color:var(--pong-white)]
+        	border-2 border-[color:var(--pong-black)] rounded-none;
+		font-family: 'PressStart2P', monospace;
 	}
 	.pong-icon {
 		
@@ -80,14 +134,27 @@
 	}
 	.pong-modal-top-text {
 
-		@apply  mb-2 text-sm text-[color:var(--pong-black)];
+		@apply  mb-4 justify-center mt-4 text-base text-[color:var(--pong-black)];
 		font-family: 'PressStart2P', monospace;
 	}
 	.pong-modal {
 
 		@apply  absolute z-50 p-4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
 				bg-[color:var(--pong-white)] 
-				border-4 border-[color:var(--pong-black)] rounded-none;
+				border-4 border-[color:var(--pong-black)] rounded-none
+				text-[color:var(--pong-black)];
+		font-family: 'PressStart2P', monospace;
+		width: 400px;
+		max-width: 90vw;
+	}
+	
+	.pong-waiting {
+		@apply absolute z-50 px-6 py-4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+		       bg-[color:var(--pong-white)]
+		       border-4 border-[color:var(--pong-black)] rounded-none
+		    	text-[12px] text-[color:var(--pong-black)];
+		font-family: 'PressStart2P', monospace;
+		white-space: nowrap;
 	}
 	.pong-notification-bar {
 		@apply absolute z-50 top-0 left-0 right-0 bottom-2 
@@ -99,16 +166,18 @@
 		font-family: 'PressStart2P', monospace;
 		white-space: nowrap;
 	}
-	.pong-waiting {
-		@apply absolute z-50 px-6 py-4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-		       bg-[color:var(--pong-white)]
-		       border-4 border-[color:var(--pong-black)] rounded-none
-		    	text-[12px] text-[color:var(--pong-black)];
-		font-family: 'PressStart2P', monospace;
-		white-space: nowrap;
-	}
 	.pong-load-animation {
 
-		@apply flex flex-col items-center justify-center w-[600px] h-[400px] mt-6
+		@apply flex flex-col items-center justify-center w-[600px] h-[400px] mt-6;
+	}
+	.pong-tournament-list {
+
+		@apply flex flex-col gap-2 max-h-[270px] overflow-y-auto overflow-x-hidden pr-4;
+		width: 370px;
+		max-width: 90vw;
+	}
+	.pong-tournament-list-button {
+		
+		@apply w-full grid grid-cols-[1fr_64px_56px] items-center gap-2 border-2 border-[var(--pong-black)] px-3 py-1.5 text-[10px] text-left;
 	}
 }

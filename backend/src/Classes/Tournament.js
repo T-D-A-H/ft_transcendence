@@ -20,8 +20,14 @@ class Tournament {
 		this.matches = new Map();
 		this.winners = new Map();
 
+		this.TESTING = false;
+
 	}
 
+	setTESTING() {
+		this.TESTING = true;
+	}
+	
 	sendMsg(user, msg) {
 
 		if (!user || user.isConnected === false || !user.socket) return ;
@@ -125,6 +131,8 @@ class Tournament {
 
 	isWaitingAndFull() {
 
+		if (this.currentPlayerCount === this.maxPlayers && this.TESTING === true)
+			return (true);
 		if (this.isWaiting === true && this.getIfTournamentFull()) {
 			return (true);
 		}

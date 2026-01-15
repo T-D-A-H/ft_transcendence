@@ -153,6 +153,26 @@ export const aliasTournamentInput =
 export const tournamentSizeInput =
 	document.getElementById("tournament_size") as HTMLInputElement;
 
+const input = 
+	document.getElementById("tournament_size") as HTMLInputElement;
+
+const increment = 
+	document.getElementById("increment") as HTMLButtonElement;
+
+const decrement = 
+	document.getElementById("decrement") as HTMLButtonElement;
+
+increment.addEventListener("click", () => {
+	const step = Number(input.step) || 1;
+	const max = Number(input.max);
+	input.value = String(Math.min(Number(input.value) + step, max));
+});
+
+decrement.addEventListener("click", () => {
+	const step = Number(input.step) || 1;
+	const min = Number(input.min);
+	input.value = String(Math.max(Number(input.value) - step, min));
+});
 
 //------------------------------------------------------------------------CREATE TOURNAMENT
 //------------------------------------------------------------------------SEARCH TOURNAMENT
@@ -174,43 +194,50 @@ export function renderTournamentList(tournaments: TournamentInfo[]): HTMLButtonE
 {
 	tournamentsListUL.innerHTML = "";
 
-	const joinButtons: HTMLButtonElement[] = [];
+	const buttons: HTMLButtonElement[] = [];
 
 	for (const tournament of tournaments)
 	{
 		const li = document.createElement("li");
-		li.className = "flex justify-between items-center gap-4";
 
-		const infoDiv = document.createElement("div");
-		infoDiv.className = "flex flex-col text-sm";
+		const rowBtn = document.createElement("button");
+		rowBtn.className = "pong-button pong-tournament-list-button";
+
+		rowBtn.dataset.id = String(tournament.id);
+		rowBtn.dataset.creator = tournament.creator;
+
 
 		const nameSpan = document.createElement("span");
-		nameSpan.textContent = `Creator: ${tournament.creator}`;
+		nameSpan.className = "truncate";
+		nameSpan.textContent = tournament.creator;
+
 
 		const sizeSpan = document.createElement("span");
-		sizeSpan.textContent =
-			`Players: ${tournament.current_size}/${tournament.max_size}`;
+		sizeSpan.className = "text-right";
+		sizeSpan.textContent = `${tournament.current_size}/${tournament.max_size}`;
 
 
-		infoDiv.appendChild(nameSpan);
-		infoDiv.appendChild(sizeSpan);
+		const statusSpan = document.createElement("span");
+		statusSpan.className = "text-right";
 
-		const joinBtn = document.createElement("button");
-		joinBtn.textContent = "Join";
-		joinBtn.className =
-			"px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-xs";
+		statusSpan.textContent = "JOIN";
+		if (tournament.full === true)
+		{
+			statusSpan.textContent = "FULL";
+			rowBtn.disabled = true;
+			rowBtn.classList.add("cursor-not-allowed");
+		}
 
-		joinBtn.dataset.creator = tournament.creator;
-		joinBtn.dataset.id = String(tournament.id);
+		rowBtn.appendChild(nameSpan);
+		rowBtn.appendChild(sizeSpan);
+		rowBtn.appendChild(statusSpan);
 
-		li.appendChild(infoDiv);
-		li.appendChild(joinBtn);
-
+		li.appendChild(rowBtn);
 		tournamentsListUL.appendChild(li);
-		joinButtons.push(joinBtn);
+		buttons.push(rowBtn);
 	}
 
-	return (joinButtons);
+	return (buttons);
 }
 
 

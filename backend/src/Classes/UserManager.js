@@ -250,6 +250,7 @@ class UserManager {
         tournament.addUserToTournament(user, alias);
         this.tournaments.set(tournament_id, tournament);
 		user.setTournament(tournament);
+        return (tournament);
     }
 
     addToTournament(user, tournament, alias = null) {
@@ -282,15 +283,15 @@ class UserManager {
 
     	this.tournaments.forEach(tournament => {
 
-            if (tournament.getCurrentSize() === 0) {
+            if (tournament.getCurrentSize() === 0 && tournament.TESTING === false) {
                 this.removeTournament(tournament.getId());
             }
-    		if (tournament.isWaitingAndFull()) {
+    		if (tournament.isWaitingAndFull() && tournament.TESTING === false) {
 
                 tournament.setReady();
     			this.createNewTournamentMatches(tournament.getPlayers(), tournament);
     		}
-    		else if (tournament.isRoundFinished()) {
+    		else if (tournament.isRoundFinished() && tournament.TESTING === false) {
 
     			const winners = tournament.prepareNextRound();
 
@@ -335,22 +336,21 @@ class UserManager {
 
     	for (const tournament of this.tournaments.values()) {
 
-    		if (tournament.isWaitingAndFull() === false) {
 
-    			tournaments.push({
-    				id: tournament.getTournamentId(),
-    				creator: tournament.getCreatorAlias(),
-    				max_size: tournament.getTournamentSize(),
-    				current_size: tournament.getCurrentSize()
-    			});
-    		}
+    		tournaments.push({
+    			id: tournament.getTournamentId(),
+    			creator: tournament.getCreatorAlias(),
+    			max_size: tournament.getTournamentSize(),
+    			current_size: tournament.getCurrentSize(),
+                full: tournament.isWaitingAndFull()
+    		});
     	}
 
     	if (tournaments.length === 0) { LOGGER(501, "UserManager", "getAvailableTournaments", "Called with NO available tournaments");
             
     		return (null);
         }
-        LOGGER(200, "UserManager", "getAvailableTournaments", "Called with available tournaments: " + tournaments);
+        LOGGER(200, "UserManager", "getAvailableTournaments", "Called with available tournaments");
     	return (tournaments);
     }
 

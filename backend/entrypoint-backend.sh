@@ -9,4 +9,4 @@ while [ ! -f "$DB_FILE" ]; do
 done
 
 echo "Starting backend server..."
-exec node src/server.js
+exec node src/main.js

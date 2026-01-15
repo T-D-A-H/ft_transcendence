@@ -4,6 +4,7 @@ export interface TournamentInfo {
 	creator: string;
 	max_size: number;
 	current_size: number;
+    full: boolean;
 }
 
 export interface StatusMsgTarget {

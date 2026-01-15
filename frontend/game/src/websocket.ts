@@ -1,8 +1,8 @@
 
 import {openLoginButton, openRegisterButton, playAgainstUserButton,
-        logoutButton, show, hide, showLoader, hideLoader, startMatchButton, playLocallyButton} from "./ui.js"
+        logoutButton, show, hide, showLoader, hideLoader, startMatchButton, playLocallyButton, openCreateTournamentButton, openSearchTournamentButton} from "./ui.js"
 import {ConstantEvent, receiveMessages} from "./events.js";
-import {openCreateTournamentButton, openSearchTournamentButton} from "./main.js";
+
 function showButtons() {
     
     hideLoader();

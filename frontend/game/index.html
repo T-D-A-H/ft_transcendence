@@ -51,70 +51,90 @@
 
 					<!-- Login modal -->
     				<div id="login_modal" class="pong-modal hidden">
-    				  	<h2 class="pong-modal-top-text">SIGN IN</h2>
+						
+						<div class="flex items-center justify-center">
+							<button id="close_login" class="pong-cancel-button">X</button>
+							<h2 class="pong-modal-top-text">SIGN IN</h2>
+						</div>
 
     				  	<input id="user_input" type="text" class="pong-input-field" placeholder="Username" />
     				  	<input id="pass_input" type="password" class="pong-input-field" placeholder="Password" />
 
-    				  	<div class="flex justify-between">
-    				  	  <button id="close_login" class="pong-button text-[12px] px-3 py-1">X</button>
-    				  	  <button id="login_submit_button" class="pong-button text-[12px] px-3 py-1">LOG IN</button>
-    				  	</div>
+  
+						<div class="flex justify-center mt-4">
+							<button id="login_submit_button" class="pong-submit-button">SUBMIT</button>
+						</div>
     				</div>
 
 					<!-- Register modal -->
 					<div id="register_modal" class="pong-modal hidden">
 
-						<h2 class="pong-modal-top-text">REGISTER</h2>
+						<div class="flex items-center justify-center">
+							<button id="close_register" class="pong-cancel-button">X</button>
+							<h2 class="pong-modal-top-text">REGISTER</h2>
+						</div>
 
 						<input id="reg_username" type="text" class="pong-input-field" placeholder="Username" />
 						<input id="reg_displayname" type="text" class="pong-input-field" placeholder="Display Name" />
 						<input id="reg_email" type="email" class="pong-input-field" placeholder="Email" />
 						<input id="reg_password" type="password" class="pong-input-field" placeholder="Password" />
 
-						<div class="flex justify-between">
-							<button id="close_register" class="pong-button text-[12px] px-3 py-1">X</button>
-							<button id="register_submit_button" class="pong-button text-[12px] px-3 py-1">REGISTER</button>
+						<div class="flex justify-center mt-4">
+							<button id="register_submit_button" class="pong-submit-button">SUBMIT</button>
 						</div>
 					</div>
 
 
 					<!-- Create Tournament -->
 					<div id="create_tournament_modal" class="pong-modal hidden">
-						<h2 class="pong-modal-top-text">CREATE TOURNAMENT</h2>
-						
-						<input id="tournament_alias" type="text" class="pong-input-field" placeholder="Enter tournament alias" />
-						<input id="tournament_size" type="number" min="2" max="64" step="2" class="pong-input-field" placeholder="Number of players (2, 4, 8...)" />
 
-						<div class="flex justify-between">
-							<button id="tournament_create_cancel_button" class="pong-button text-[12px] px-3 py-1">X</button>
-							<button id="tournament_create_submit_button" class="pong-button text-[12px] px-3 py-1">SUBMIT</button>
+						<div class="flex items-center justify-center">
+							<button id="tournament_create_cancel_button" class="pong-cancel-button">X</button>
+							<h2 class="pong-modal-top-text">CREATE TOURNAMENT</h2>
+						</div>
+
+						<input id="tournament_alias" type="text" class="pong-input-field mt-2" placeholder="Enter Alias" />
+						<div class="flex items-center justify-center gap-2">
+							<button type="button" id="decrement" class="pong-button-small">-</button>
+							<input id="tournament_size" type="number" min="2" max="64" step="2" class="pong-input-field text-center" placeholder="SIZE" />
+							<button type="button" id="increment" class="pong-button-small">+</button>
+						</div>
+
+						<div class="flex justify-center mt-4">
+							<button id="tournament_create_submit_button" class="pong-submit-button">SUBMIT</button>
 						</div>
 					</div>
+
 
 					<!-- Active tournaments modal -->
 					<div id="search_tournaments_modal" class="pong-modal hidden">
-						<h2 class="pong-modal-top-text">AVAILABLE TOURNAMENTS</h2>
-						<ul id="tournament_list_ul" class="text-xs flex flex-col gap-2"></ul>
 
-						<div class="flex justify-between">
-							<button id="tournament_search_cancel_button" class="pong-button text-[12px] px-3 py-1">X</button>
+						<div class="flex items-center justify-center">
+							<button id="tournament_search_cancel_button" class="pong-cancel-button">X</button>
+							<h2 class="pong-modal-top-text">Available Tournaments</h2>
 						</div>
+
+						<ul id="tournament_list_ul" class="pong-tournament-list"></ul>
+
 					</div>
 
-					<!-- Play Request Modal -->
-					 <div class="bottom-buttons">
+					<!-- Play Request Modal--> 
 					<div id="play_request_modal" class="pong-modal hidden">
-						<h2 class="pong-modal-top-text">Send Match Request</h2>
-						<input id="play_request_username" type="text" class="pong-input-field" placeholder="Enter username" />
-						<div class="flex justify-between mt-2">
-							<button id="close_play_request" class="pong-button">X</button>
-							<button id="send_play_request" class="pong-button">SEND</button>
+
+						<div class="flex items-center justify-center">
+							<button id="close_play_request" class="pong-cancel-button">X</button>
+							<h2 class="pong-modal-top-text">Send Match Request</h2>
 						</div>
-					</div>
+
+						<input id="play_request_username" type="text" class="pong-input-field" placeholder="Enter username" />
+
+						<div class="flex justify-center mt-4">
+							<button id="send_play_request" class="pong-submit-button">SUBMIT</button>
+						</div>
+
 					</div>
 
-					<!-- Incoming Play Request Modal -->
+					<!-- Incoming Play Request Modal  CHANGE THIS TO A NOTIFICATION-->
 					<div id="incoming_play_request_modal" class="pong-modal hidden">
 						<h2 class="pong-modal-top-text">Match Request</h2>
 						<p id="incoming_play_request_text" class="mb-4 text-[8px] leading-4 text-[#1c1817] font-['PressStart2P']">
@@ -128,21 +148,31 @@
 
 					<!-- 2FA Option Modal -->
 					<div id="twofa_option_modal" class="pong-modal hidden">
-						<h2 class="text-sm mb-2 font-block text-[#1c1817]">Choose 2FA Method</h2>
-						<div class="flex flex-col gap-2">
-							<button id="twofa_email_button" class="pong-button text-[12px] px-3 py-1">2FA via Email</button>
-							<button id="twofa_auth_button" class="pong-button text-[12px] px-3 py-1">2FA via Authenticator</button>
-							<button id="twofa_sms_button" class="pong-button text-[12px] px-3 py-1">2FA via SMS</button>
-							<button id="twofa_skip_button" class="pong-button text-[12px] px-3 py-1">SKIP</button>
+
+						<div class="flex items-center justify-center">
+							<button id="twofa_skip_button" class="pong-cancel-button">X</button>
+							<h2 class="pong-modal-top-text">Choose 2FA Method</h2>
+						</div>
+
+						<div class="flex flex-col gap-2 mt-4">
+							<button id="twofa_email_button" class="pong-submit-button w-38">Email</button>
+							<button id="twofa_auth_button" class="pong-submit-button w-38">Authenticator</button>
+							<button id="twofa_skip_button" class="pong-submit-button w-38">Skip For Now</button>
 						</div>
 					</div>
 
 					<!-- 2FA Input Modal -->
 					<div id="twofa_modal" class="pong-modal hidden">
-						<h2 class="text-sm mb-2 font-block text-[#1c1817]">Two-Factor Authentication</h2>
+
+						<div class="flex items-center justify-center">
+							<button id="close_play_request" class="pong-cancel-button">X</button>
+							<h2 class="pong-modal-top-text">Two-Factor Authentication</h2>
+						</div>
+
 						<input id="twofa_input" type="text" class="pong-input-field" placeholder="Enter 2FA code" />
-						<div class="flex justify-end">
-							<button id="twofa_submit_button" class="pong-button text-[12px] px-3 py-1">VERIFY</button>
+
+						<div class="flex justify-center mt-4">
+							<button id="twofa_submit_button" class="pong-submit-button">SUBMIT</button>
 						</div>
 					</div>
 
