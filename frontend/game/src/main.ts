@@ -2,12 +2,12 @@ import {
 	loadAnimation, showLoader, hideLoader, 
 	loginModal, openLoginButton, closeLoginButton, logoutButton,usernameInput, passwordInput, submitLoginButton,
 	registerModal, openRegisterButton, closeRegisterButton, submitRegisterButton, regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput,
-	twoFAModal, twoFAOptionModal, twoFAEmailButton, twoFASubmitButton, twoFASkipButton, twoFAAuthButton, twoFAInput,
-	startMatchButton, waitingPlayers, playLocallyButton,
+	twoFAModal, twoFAOptionModal, twoFAEmailButton, twoFASubmitButton, twoFASkipButton, twoFAAuthButton, twoFAInput, twoFACancelButton,
+	startMatchButton, waitingPlayers, playLocallyButton, exitMatchButton,
 	playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton,
 	incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton,
 	openCreateTournamentButton, closeCreateTournamentButton, submitTournamentCreationButton, createTournamentModal, aliasTournamentInput, tournamentSizeInput,
-	openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, tournamentsListUL, renderTournamentList,
+	openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, renderTournamentList,
 	canvas, texture, show, hide, showNotification, resizeCrtCanvas, toggleNightMode, nightModeButton} from "./ui.js";
 
 import {getInviteFrom, TournamentInfo} from "./vars.js";
@@ -22,8 +22,8 @@ if (!loadAnimation || !showLoader || !hideLoader ||
 	!usernameInput || !passwordInput || !submitLoginButton ||
 	!registerModal || !openRegisterButton || !closeRegisterButton || !submitRegisterButton || !
 	!regUsernameInput || !regDisplaynameInput || !regEmailInput || !regPasswordInput ||
-	!twoFAModal || !twoFAOptionModal || !twoFAEmailButton || !twoFASubmitButton || !twoFASkipButton || !twoFAAuthButton || !twoFAInput ||
-	!startMatchButton || !waitingPlayers || !playLocallyButton ||
+	!twoFAModal || !twoFAOptionModal || !twoFAEmailButton || !twoFASubmitButton || !twoFASkipButton || !twoFAAuthButton || !twoFAInput || !twoFACancelButton ||
+	!startMatchButton || !waitingPlayers || !playLocallyButton || !exitMatchButton ||
 	!playRequestModal || !playAgainstUserButton || !playRequestUsernameInput || !playRequestCloseButton || !playRequestSendButton ||
 	!incomingPlayRequestModal || !incomingPlayRequestText || !incomingPlayRequestCloseButton || !incomingPlayRequestAcceptButton ||
 	// !createTournamentButton || !searchTournamentButton || !searchTournamentsModal || !tournamentsListUL || !renderTournamentList ||
@@ -141,13 +141,13 @@ submitLoginButton.onclick = async () => {
 			
 		} else { // Credenciales incorrectas
 			
-			alert(result.error || "Usuario o contraseña incorrectos");
+			showNotification("User/Password Incorrect");
 			hideLoader();
 		}
 
 		} catch (err) {
 			console.error(err);
-			alert("Error al iniciar sesión");
+			showNotification("Error trying to sign in");
 			hideLoader();
 		}
 };
@@ -179,8 +179,8 @@ submitRegisterButton.onclick = async () => {
 				show(registerModal);
 			}
 		};
+		const handleSkip2FA = async (): Promise<void> => {
 
-		twoFASkipButton.onclick = async () => {
 			const res = await fetch("/set-2fa", {
 				method: "POST",
 				headers: { 
@@ -199,10 +199,13 @@ submitRegisterButton.onclick = async () => {
 				hide(twoFAOptionModal);
 				show(registerModal);
 			}
-		};
+		}
+		twoFACancelButton.onclick = handleSkip2FA;
+		twoFASkipButton.onclick = handleSkip2FA;
 	}
 	else if (result.status === 1) {
-		alert("User with that username already exists");
+		showNotification("User with that username already exists");
+
 	}
 };
 
@@ -274,7 +277,30 @@ startMatchButton.onclick = () => {
 			return ;
 		}
 		hide(waitingPlayers);
+		show(exitMatchButton);
 		sendKeyPress();
+    });
+};
+
+exitMatchButton.onclick = () => {
+
+
+	hide(exitMatchButton);
+    oneTimeEvent("EXIT_MATCH_REQUEST", "EXIT_MATCH_RESPONSE").then((result) => {
+
+		if (!result) {
+			alert("No response from server");
+			return ;
+		}
+		showNotification(result.msg);
+		if (result.status !== 200) {
+			return ;
+		}
+		show(openCreateTournamentButton);
+		show(openSearchTournamentButton);
+		show(playAgainstUserButton);
+		show(playLocallyButton);
+		hide(startMatchButton);
     });
 };
 
@@ -295,6 +321,7 @@ playLocallyButton.onclick = () => {
 		hide(playAgainstUserButton);
 		hide(openCreateTournamentButton);
 		hide(openSearchTournamentButton);
+		show(startMatchButton);
 		send2KeyPress();
 		
 	});

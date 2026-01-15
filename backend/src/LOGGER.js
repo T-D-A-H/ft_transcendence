@@ -3,12 +3,13 @@ function LOGGER(code, firstMsg, secondMsg, ...restMsgs) {
 	let codeColor = "";
 
 	if (typeof code === "number") {
-		if (code >= 200 && code <= 299) codeColor = "\x1b[32;1m"; // bold green
-		else if (code >= 400 && code <= 499) codeColor = "\x1b[31;1m"; // bold red
-		else if (code >= 500 && code <= 599) codeColor = "\x1b[33;1m"; // bold yellow
+		if (code >= 200 && code <= 299) codeColor = "\x1b[32;1m";
+		else if (code >= 400 && code <= 499) codeColor = "\x1b[31;1m";
+		else if (code >= 500 && code <= 599) codeColor = "\x1b[33;1m";
 		else codeColor = "\x1b[37;1m";
-	} else {
-		// shift arguments when code is omitted
+	}
+	else {
+
 		restMsgs.unshift(secondMsg);
 		secondMsg = firstMsg;
 		firstMsg = code;
@@ -25,5 +26,7 @@ function LOGGER(code, firstMsg, secondMsg, ...restMsgs) {
 
 	console.log(codeText + firstText + secondText + messageText);
 }
+
+
 
 module.exports = LOGGER;

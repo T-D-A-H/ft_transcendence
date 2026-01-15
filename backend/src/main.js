@@ -21,82 +21,9 @@ const FRAMES = 1000/60;
 fastify.register(require('fastify-jwt'), {secret: process.env.JWT_SECRET});
 
 
-function randomName()
-{
-	const TEST_NAMES = [
-	"AliceXZY",
-	"Robertzo420",
-	"Carlosss",
-	"DianaM",
-	"Evangelinga",
-	"Frankomanca",
-	"Gracio",
-	"HeidiClum",
-	"MrYakul",
-	"olibearzz",
-	"jaimesan",
-	"fdurban",
-	"mgrillo",
-	"irlozano",
-	"ctommasi",
-	"valhallao",
-	"helvetteo",
-	];
-	const idx = Math.floor(Math.random() * TEST_NAMES.length);
-	return (TEST_NAMES[idx]);
-}
 
-function createTestUsers(count)
-{
-	let size = 2;
-	const TEST_NAMES = [
-	"AGuyOnTheCouch",
-	"Robertzo420",
-	"WiFightClub",
-	"DonutDestroyer",
-	"MyBadBro",
-	"ObiWanCannoli",
-	"LordOfTheFlies",
-	"AverageLavigne",
-	"MrYakul",
-	"olibearzz",
-	"jaimesan",
-	"fdurban",
-	"mgrillo",
-	"irlozano",
-	"ctommasi",
-	"valhallao",
-	"YeetTheRich",
-	"PanicAtTheMenu",
-	"OprahWindfury",
-	"CTRLAltDefeat",
-	"Fedora_The_Explorer",
-	"CheesyToe"
-	];
-	for (let i = 0; i < count; i++)
-	{
-		const user_id = userManager.createId();
-		const name = TEST_NAMES[i % TEST_NAMES.length];
-
-		const user_name = name;
-		const display_name = name;
-		const user_socket = null; 
-
-		const user = userManager.createUser(user_id, user_name, display_name, user_socket);
-
-		userManager.addUser(user);
-		userManager.loginUser(user_id);
-
-		const tournament = userManager.createTournament(user, display_name, size);
-		if (size % 3 === 0) {
-			tournament.setTESTING();
-			tournament.currentPlayerCount = size;
-			tournament.setReady();
-		}
-		size += 2;
-	}
-}
-createTestUsers(24);
+const {createTestUsers} = require("./TESTING.js");
+createTestUsers(userManager, 24);
 
 
 async function startServer() {

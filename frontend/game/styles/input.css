@@ -17,7 +17,7 @@
 :root.pong-night-mode {
 	--pong-black: #5a5244;
 	--pong-white: #312521;
-	--pong-text-field: #9a8662;
+	--pong-text-field: #4d4537;
 }
 @layer utilities {
 
@@ -93,8 +93,7 @@
 				hover:text-[color:var(--pong-white)] hover:bg-[color:var(--pong-black)] 
 				border-4 border-[color:var(--pong-black)] rounded-none font-['PressStart2P',monospace];;
 	}
-	.pong-bottom-buttons
-	{
+	.pong-bottom-buttons {
 		@apply mt-auto flex flex-col gap-2;
 	}
 	.pong-cancel-button {
@@ -106,7 +105,6 @@
 		left: 2px;
 		cursor: pointer;
 	}
-
 	.pong-submit-button {
 
 		@apply  pong-button  text-[12px] px-3 py-1;
@@ -140,11 +138,12 @@
 	.pong-modal {
 
 		@apply  absolute z-50 p-4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-				bg-[color:var(--pong-white)] 
+				bg-[color:var(--pong-white)]
+				text-[color:var(--pong-black)]
 				border-4 border-[color:var(--pong-black)] rounded-none
-				text-[color:var(--pong-black)];
+				flex flex-col items-center justify-center;
 		font-family: 'PressStart2P', monospace;
-		width: 400px;
+			width: 400px;
 		max-width: 90vw;
 	}
 	
@@ -168,7 +167,7 @@
 	}
 	.pong-load-animation {
 
-		@apply flex flex-col items-center justify-center w-[600px] h-[400px] mt-6;
+		@apply flex flex-col items-center justify-center w-[608px] h-[408px];
 	}
 	.pong-tournament-list {
 
@@ -177,7 +176,7 @@
 		max-width: 90vw;
 	}
 	.pong-tournament-list-button {
-		
+
 		@apply w-full grid grid-cols-[1fr_64px_56px] items-center gap-2 border-2 border-[var(--pong-black)] px-3 py-1.5 text-[10px] text-left;
 	}
 }

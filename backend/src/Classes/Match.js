@@ -22,7 +22,7 @@ class Match {
 		this.LOSER = null; // TESTING
 		if (locally === true) {
 			this.players[1] = user;
-			// this.isWaiting = false;
+			this.isWaiting = false;
 			// this.isReady = [true, true];
 		}
 	}
@@ -59,6 +59,7 @@ class Match {
 
 
 	sendDraw() {
+
 		this.broadcast({ 
 			type: "DRAW", 
 			LeftXY: this.game.getLeftPlayerXY(),
@@ -72,6 +73,7 @@ class Match {
 	}
 
 	sendWin(user) {
+
 		this.broadcast({ type: "WIN", msg: user.getUsername() + " Won the game" });
 	}
 

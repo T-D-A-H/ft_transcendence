@@ -30,6 +30,7 @@ export function initializeWebSocket(token: string) {
             receiveMessages(ws);
             ConstantEvent("INCOMING_INVITE_RESPONSE");
             ConstantEvent("INCOMING_INVITE_REQUEST");
+            ConstantEvent("WIN");
             ConstantEvent("NOTIFICATION");
             ConstantEvent("SCORES");
             ConstantEvent("DRAW");

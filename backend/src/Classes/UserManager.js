@@ -159,7 +159,7 @@ class UserManager {
 
             LOGGER(400, "UserManager", "checkMatchDisconnect", "player disconnected");
         }
-        this.stopMatch(match);
+
     }
 //----------------------------------------------------------------------------------------USER
 //----------------------------------------------------------------------------------------MATCH
@@ -223,16 +223,16 @@ class UserManager {
         this.matches.forEach(match => {
 
 
+            if (match.someoneWon() === true) {
+
+                this.stopMatch(match)
+            }
             if (match.shouldContinuePlaying()) {
 
 				match.updateMatch();
                 // this.matchDisconnect(match);
                 
             }
-            if (match.someoneWon() === true) {
-
-                this.stopMatch(match)
-		    }
         });
     }
 
@@ -283,25 +283,28 @@ class UserManager {
 
     	this.tournaments.forEach(tournament => {
 
-            if (tournament.getCurrentSize() === 0 && tournament.TESTING === false) {
-                this.removeTournament(tournament.getId());
+            if (tournament.TESTING !== true) {
+
+                if (tournament.getCurrentSize() === 0 && tournament.TESTING === false) {
+                    this.removeTournament(tournament.getId());
+                }
+    		    if (tournament.isWaitingAndFull() && tournament.TESTING === false) {
+
+                    tournament.setReady();
+    		    	this.createNewTournamentMatches(tournament.getPlayers(), tournament);
+    		    }
+    		    else if (tournament.isRoundFinished() && tournament.TESTING === false) {
+
+    		    	const winners = tournament.prepareNextRound();
+
+    		    	if (winners.size > 1) {
+    		    		this.createNewTournamentMatches(winners, tournament);
+                    }
+                    else {
+                        this.stopTournament(tournament);
+                    }
+    		    }
             }
-    		if (tournament.isWaitingAndFull() && tournament.TESTING === false) {
-
-                tournament.setReady();
-    			this.createNewTournamentMatches(tournament.getPlayers(), tournament);
-    		}
-    		else if (tournament.isRoundFinished() && tournament.TESTING === false) {
-
-    			const winners = tournament.prepareNextRound();
-
-    			if (winners.size > 1) {
-    				this.createNewTournamentMatches(winners, tournament);
-                }
-                else {
-                    this.stopTournament(tournament);
-                }
-    		}
     	});
     }
 

@@ -41,6 +41,13 @@ export interface StartMatchResponse {
     target: string;
 }
 
+export interface ExitMatchResponse {
+    type: "EXIT_MATCH_RESPONSE";
+    status: number;
+    msg: string;
+    target: string;
+}
+
 export interface IncomingInviteRequest {
     type: "INCOMING_INVITE_REQUEST";
     msg: string;
@@ -113,7 +120,8 @@ StartMatchResponse         | PlayLocallyResponse      |
 ScoresMessage              | DrawMessage			  | 
 InitialVarsMessage         | WinMessage               |
 NotificationMessage        | CreateTournamentRequest  |
-SearchTournamentRequest    | JoinTournamentRequest;
+SearchTournamentRequest    | JoinTournamentRequest    |
+ExitMatchResponse;
 
 export let SCORES: number[] = [0, 0];
 

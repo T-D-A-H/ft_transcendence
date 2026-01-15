@@ -80,6 +80,9 @@ export const twoFAInput = // 2FA Email input
 export const twoFASubmitButton = // 2FA Submit Button
 	document.getElementById("twofa_submit_button") as HTMLButtonElement;
 
+export const twoFACancelButton = // 2FA Skip Button
+	document.getElementById("twofa_cancel_button") as HTMLButtonElement;
+
 export const twoFASkipButton = // 2FA Skip Button
 	document.getElementById("twofa_skip_button") as HTMLButtonElement;
 
@@ -92,6 +95,9 @@ export const twoFAAuthButton =  // 2FA via AUTH Button
 
 export const startMatchButton = // Start match button element
 	document.getElementById("start_match") as HTMLButtonElement;
+
+export const exitMatchButton = // EXIT match button element
+	document.getElementById("exit_match") as HTMLButtonElement;
 
 export const waitingPlayers = // Waiting for players element
 	document.getElementById("waiting_players") as HTMLButtonElement;

@@ -27,6 +27,7 @@
 					<button id="play_locally" class="pong-button hidden">PLAY LOCALLY</button>
 					<button id="search_tournament" class="pong-button hidden">SEARCH TOURNAMENT</button>
 					<button id="start_match" class="pong-button hidden">START MATCH</button>
+					<button id="exit_match" class="pong-button hidden">EXIT MATCH</button>
 					<div class="pong-bottom-buttons">
 						<button id="night_mode" class="pong-button"><span class="pong-icon">&#9680;</span></button>
 						<button id="logout_button" class="pong-button hidden">LOG OUT</button>
@@ -96,7 +97,7 @@
 						<input id="tournament_alias" type="text" class="pong-input-field mt-2" placeholder="Enter Alias" />
 						<div class="flex items-center justify-center gap-2">
 							<button type="button" id="decrement" class="pong-button-small">-</button>
-							<input id="tournament_size" type="number" min="2" max="64" step="2" class="pong-input-field text-center" placeholder="SIZE" />
+							<input id="tournament_size" type="number" min="2" max="64" step="2" class="pong-input-field text-center" placeholder="4" />
 							<button type="button" id="increment" class="pong-button-small">+</button>
 						</div>
 
@@ -150,7 +151,7 @@
 					<div id="twofa_option_modal" class="pong-modal hidden">
 
 						<div class="flex items-center justify-center">
-							<button id="twofa_skip_button" class="pong-cancel-button">X</button>
+							<button id="twofa_cancel_button" class="pong-cancel-button">X</button>
 							<h2 class="pong-modal-top-text">Choose 2FA Method</h2>
 						</div>
 

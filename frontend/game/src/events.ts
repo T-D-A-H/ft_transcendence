@@ -1,4 +1,4 @@
-import {showNotification, show, startMatchButton, incomingPlayRequestText, incomingPlayRequestModal, playAgainstUserButton, playLocallyButton} from "./ui.js"
+import {showNotification, show, startMatchButton, incomingPlayRequestText, incomingPlayRequestModal, playAgainstUserButton, playLocallyButton, openCreateTournamentButton, openSearchTournamentButton} from "./ui.js"
 import {setInviteFrom,  SCORES} from "./vars.js"
 import type {ServerMessage, StatusMsgTarget} from "./vars.js"
 import {drawGame, clearBackground, drawFrame} from "./draw.js"
@@ -72,6 +72,7 @@ export function oneTimeEvent(request: string, response: ServerMessage["type"], t
 			if (data.type === "SEND_INVITE_RESPONSE"       || 
 				data.type === "REPLY_INVITE_RESPONSE"      || 
 				data.type === "START_MATCH_RESPONSE"       || 
+				data.type === "EXIT_MATCH_RESPONSE"        ||
 				data.type === "PLAY_LOCALLY_RESPONSE"      ||
 				data.type === "CREATE_TOURNAMENT_RESPONSE" ||
 				data.type === "SEARCH_TOURNAMENT_RESPONSE" ||
@@ -116,10 +117,13 @@ export function ConstantEvent(response: ServerMessage["type"]){
 			SCORES[1] = 0;
 			clearBackground();
 			showNotification(data.msg);
+
 			show(playAgainstUserButton);
 			show(playLocallyButton);
+			show(openCreateTournamentButton);
+			show(openSearchTournamentButton);
 			drawGame();
-			drawFrame();
+
 		}
 		else if (data.type === "NOTIFICATION") {
 
@@ -127,7 +131,7 @@ export function ConstantEvent(response: ServerMessage["type"]){
 			show(startMatchButton);
 		}
 		else if (data.type === "DRAW") {
-
+	
 			drawGame(data.LeftXY[0], data.LeftXY[1], data.RightXY[0], data.RightXY[1], data.BallXY[0], data.BallXY[1]);
 		}
 	}, true);

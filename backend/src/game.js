@@ -8,7 +8,7 @@ function sendInviteRequest(requestingUser, userManager, username_to_send) {
 	const user_to_send = userManager.getUserByUsername(username_to_send);
 	if (user_to_send === null) {
 		LOGGER(400, "server", "sendInviteRequest", username_to_send + " doesnt exist.");
-		requestingUser.send({type: "SEND_INVITE_RESPONSE", status: 400, msg: username_to_send + " doesnt exist.", target: username_to_send});
+		requestingUser.send({type: "SEND_INVITE_RESPONSE", status: 400, msg: username_to_send + " is either not online or doesnt exist.", target: username_to_send});
 	}
 	else if (user_to_send.getIsConnected() === false) {
 		LOGGER(400, "server", "sendInviteRequest", username_to_send + " is not online.");
@@ -171,6 +171,28 @@ function joinTournamentRequest(requestingUser, userManager, tournament_id, alias
 		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 200, msg: "Joined " + tournament.getCreatorAlias() +  "'s tournament."});
 	}
 }
+function exitMatchRequest(requestingUser, userManager) {
+
+	const match = requestingUser.getCurrentMatch();
+	const tournament = requestingUser.getCurrentTournament();
+
+	if (match === null && tournament === null) {
+		requestingUser.send({type: "EXIT_MATCH_RESPONSE", status: 400, msg: "You are not in a match.", target: requestingUser.getUsername()});
+		return;
+	}
+	const other_user = (requestingUser === match.players[0]) ? 1 : 0;
+
+	match.setWINNER(other_user);
+    match.setLOSER(1 - other_user);
+    match.sendDisconnect(match.players[other_user]);
+
+    if (tournament) {
+        userManager.tournamentDisconnect(tournament);
+        tournament.removeUserFromTournament(requestingUser);
+    }
+	requestingUser.send({type: "EXIT_MATCH_RESPONSE", status: 200, msg: "Succesfully exited match.", target: requestingUser.getUsername()});
+}
+
 
 function handleUserCommands(user, userManager) {
 
@@ -192,6 +214,9 @@ function handleUserCommands(user, userManager) {
 		else if (msg.type === "START_MATCH_REQUEST") {
 			startMatchRequest(user);
 		}
+		else if (msg.type === "EXIT_MATCH_REQUEST") {
+			exitMatchRequest(user);
+		}
 		else if (msg.type === "PLAY_LOCALLY_REQUEST") {
 			playLocalGame(user, userManager);
 		}
@@ -205,6 +230,7 @@ function handleUserCommands(user, userManager) {
 			joinTournamentRequest(user, userManager, msg.target, msg.target2);
 		}
 		else if (msg.type === "MOVE2" && user.currentMatch) {
+
 			user.currentMatch.update2PlayerGame(msg.move);
 		}
 		else if (msg.type === "MOVE" && user.currentMatch) {
