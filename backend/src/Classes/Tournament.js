@@ -24,7 +24,6 @@ class Tournament {
 
 	sendMsg(user, msg) {
 
-		
 		if (!user || user.isConnected === false || !user.socket) return ;
 		const data = JSON.stringify(msg);
 
@@ -40,12 +39,12 @@ class Tournament {
 	sendLose(user, winnerUser) {
 		const winner = this.getPlayerAlias(winnerUser).alias;
 		LOGGER(200, "Tournament", "sendLose", winner + " Won the tournament game.");
-		this.sendMsg(user, { type: "NOTIFICATION", msg: winner + " Won the tournament game."});
+		this.sendMsg(user, { type: "WIN", msg: winner + " Won the tournament game."});
 	}
 
 	sendFinalWin(user) {
 		LOGGER(200, "Tournament", "sendFinalWin", "You won the tournament!" );
-		this.sendMsg(user, { type: "NOTIFICATION", msg: "You won the tournament!" });
+		this.sendMsg(user, { type: "WIN", msg: "You won the tournament!" });
 	}
 
 	sendMatchStart(user, user2) {

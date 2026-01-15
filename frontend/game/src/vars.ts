@@ -70,6 +70,11 @@ export interface InitialVarsMessage {
     BallWH: [number, number];
 }
 
+export interface WinMessage {
+    type: "WIN"; 
+    msg: string;
+}
+
 export interface NotificationMessage {
     type: "NOTIFICATION";
     msg: string;
@@ -105,7 +110,7 @@ SendInviteResponse         | ReplyInviteResponse      |
 IncomingInviteRequest      | IncomingInviteResponse   |
 StartMatchResponse         | PlayLocallyResponse      | 
 ScoresMessage              | DrawMessage			  | 
-InitialVarsMessage         |
+InitialVarsMessage         | WinMessage               |
 NotificationMessage        | CreateTournamentRequest  |
 SearchTournamentRequest    | JoinTournamentRequest;
 

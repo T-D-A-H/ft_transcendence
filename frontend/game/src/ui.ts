@@ -1,16 +1,8 @@
 
+import {TournamentInfo} from "./vars.js";
 
 
-export const loadAnimation = // Initial loader Modal
-	document.getElementById("load_animation_modal") as HTMLDivElement;
-
-export function showLoader() { // show Loading animation
-	show(loadAnimation);
-}
-
-export function hideLoader() { // hide Loading animation
-	hide(loadAnimation);
-}
+//------------------------------------------------------------------------LOGIN
 
 
 export const loginModal = // Login Box element
@@ -32,11 +24,16 @@ export const submitLoginButton = // Submit info in login box
 	document.getElementById("login_submit_button") as HTMLButtonElement;
 
 
+//------------------------------------------------------------------------LOGIN
+//------------------------------------------------------------------------LOGOUT
 
 
 export const logoutButton = // Logout Button
 	document.getElementById("logout_button") as HTMLButtonElement;
 
+
+//------------------------------------------------------------------------LOGOUT
+//------------------------------------------------------------------------REGISTER
 
 
 export const registerModal = // Register Box element
@@ -64,6 +61,8 @@ export const submitRegisterButton = // Submit info in register box
 	document.getElementById("register_submit_button") as HTMLButtonElement;
 
 
+//------------------------------------------------------------------------REGISTER
+//------------------------------------------------------------------------2FA
 
 
 export const twoFAModal = // 2FA Optional Modal
@@ -88,7 +87,8 @@ export const twoFAAuthButton =  // 2FA via AUTH Button
 	document.getElementById("twofa_auth_button") as HTMLButtonElement;
 
 
-
+//------------------------------------------------------------------------2FA
+//------------------------------------------------------------------------PLAY AGAINST USER
 
 export const startMatchButton = // Start match button element
 	document.getElementById("start_match") as HTMLButtonElement;
@@ -96,11 +96,8 @@ export const startMatchButton = // Start match button element
 export const waitingPlayers = // Waiting for players element
 	document.getElementById("waiting_players") as HTMLButtonElement;
 
-
-
 export const playLocallyButton =
 	document.getElementById("play_locally") as HTMLButtonElement;
-
 
 export const playAgainstUserButton =
 	document.getElementById("play_against_user") as HTMLButtonElement;
@@ -117,7 +114,8 @@ export const playRequestCloseButton =
 export const playRequestSendButton =
 	document.getElementById("send_play_request") as HTMLButtonElement;
 
-	
+//------------------------------------------------------------------------PLAY AGAINST USER
+//------------------------------------------------------------------------INCOMING PLAY REQUEST
 
 
 export const incomingPlayRequestModal =
@@ -133,8 +131,91 @@ export const incomingPlayRequestAcceptButton =
 	document.getElementById("incoming_play_request_accept") as HTMLButtonElement;
 
 
+//------------------------------------------------------------------------INCOMING PLAY REQUEST
+//------------------------------------------------------------------------CREATE TOURNAMENT
 
 
+export const openCreateTournamentButton = // Create a match button
+	document.getElementById("create_tournament") as HTMLButtonElement;
+
+export const closeCreateTournamentButton =
+	document.getElementById("tournament_create_cancel_button") as HTMLButtonElement;
+
+export const submitTournamentCreationButton = // Submit Tournament creation button
+		document.getElementById("tournament_create_submit_button") as HTMLButtonElement;
+	
+export const createTournamentModal =
+	document.getElementById("create_tournament_modal") as HTMLDivElement;
+
+export const aliasTournamentInput = 
+	document.getElementById("tournament_alias") as HTMLInputElement;
+
+export const tournamentSizeInput =
+	document.getElementById("tournament_size") as HTMLInputElement;
+
+
+//------------------------------------------------------------------------CREATE TOURNAMENT
+//------------------------------------------------------------------------SEARCH TOURNAMENT
+
+
+export const openSearchTournamentButton = // Search for matches button
+	document.getElementById("search_tournament") as HTMLButtonElement;
+
+export const closeSearchTournamentButton =
+	document.getElementById("tournament_search_cancel_button") as HTMLButtonElement;
+
+export const searchTournamentsModal = // Container showing waiting players
+	document.getElementById("search_tournaments_modal") as HTMLDivElement;
+
+export const tournamentsListUL = // UL element where usernames will be inserted
+	document.getElementById("tournament_list_ul") as HTMLUListElement;
+
+export function renderTournamentList(tournaments: TournamentInfo[]): HTMLButtonElement[]
+{
+	tournamentsListUL.innerHTML = "";
+
+	const joinButtons: HTMLButtonElement[] = [];
+
+	for (const tournament of tournaments)
+	{
+		const li = document.createElement("li");
+		li.className = "flex justify-between items-center gap-4";
+
+		const infoDiv = document.createElement("div");
+		infoDiv.className = "flex flex-col text-sm";
+
+		const nameSpan = document.createElement("span");
+		nameSpan.textContent = `Creator: ${tournament.creator}`;
+
+		const sizeSpan = document.createElement("span");
+		sizeSpan.textContent =
+			`Players: ${tournament.current_size}/${tournament.max_size}`;
+
+
+		infoDiv.appendChild(nameSpan);
+		infoDiv.appendChild(sizeSpan);
+
+		const joinBtn = document.createElement("button");
+		joinBtn.textContent = "Join";
+		joinBtn.className =
+			"px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-xs";
+
+		joinBtn.dataset.creator = tournament.creator;
+		joinBtn.dataset.id = String(tournament.id);
+
+		li.appendChild(infoDiv);
+		li.appendChild(joinBtn);
+
+		tournamentsListUL.appendChild(li);
+		joinButtons.push(joinBtn);
+	}
+
+	return (joinButtons);
+}
+
+
+//------------------------------------------------------------------------SEARCH TOURNAMENT
+//------------------------------------------------------------------------CANVAS
 
 
 export const canvas = // Canvas where game is drawn
@@ -144,14 +225,14 @@ export const texture = // Texture to paint
 	canvas.getContext("2d") as CanvasRenderingContext2D;
 
 
-export function show(elem: HTMLElement): void { // show HTML element
-	elem.classList.remove("hidden"); 
-}
+//------------------------------------------------------------------------CANVAS
+//------------------------------------------------------------------------FONT-COLOURS
 
-export function hide(elem: HTMLElement): void { // hide HTML
-	elem.classList.add("hidden"); 
-}
 
+export let whitish: string = "#5a5244";
+export let blackish: string = "#312521";
+export const redish: string = "#3d0027";
+export const greenish: string = "#003527";
 
 export const pongFont = new Promise<void>((resolve) => { // BLOCK FONT
 
@@ -163,12 +244,16 @@ export const pongFont = new Promise<void>((resolve) => { // BLOCK FONT
     });
 });
 
+
+//------------------------------------------------------------------------FONT-COLOURS
+//------------------------------------------------------------------------NOTIFICATIONS
+
+
 export const notificationBox = 
 	document.getElementById("notify-box") as HTMLDivElement;
 
 export const notificationBoxText = 
 	document.getElementById("notify-text") as HTMLDivElement;
-
 
 export function showNotification(text: string)
 {
@@ -189,3 +274,97 @@ export function showNotification(text: string)
 		setTimeout(() => {hide(notificationBox)}, 200);
 	}, 2500);
 }
+
+//------------------------------------------------------------------------NOTIFICATIONS
+//------------------------------------------------------------------------CRT EFFECT CANVAS
+
+
+export const crtCanvas = // CRT EFFECT
+	document.getElementById("crt_overlay") as HTMLCanvasElement;
+
+export const crtCtx = // CRT CTX
+	crtCanvas.getContext("2d")!;
+
+export function resizeCrtCanvas(): void
+{
+	const dpr = window.devicePixelRatio || 1;
+
+	crtCanvas.width = window.innerWidth * dpr;
+	crtCanvas.height = window.innerHeight * dpr;
+
+	crtCanvas.style.width = window.innerWidth + "px";
+	crtCanvas.style.height = window.innerHeight + "px";
+
+	crtCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+export function drawCrtOverlay(): void {
+
+	const w = crtCanvas.width;
+	const h = crtCanvas.height;
+
+	crtCtx.clearRect(0, 0, w, h);
+	crtCtx.save();
+
+	crtCtx.globalAlpha = 0.3;
+
+	const lineHeight = 2;
+	for (let y = 0; y < h; y += lineHeight) {
+	    crtCtx.fillStyle = (y / lineHeight) % 2 === 0 ? greenish : redish;
+	    crtCtx.fillRect(0, y, w, lineHeight);
+	}
+
+	crtCtx.restore();
+}
+
+
+//------------------------------------------------------------------------CRT EFFECT CANVAS
+//------------------------------------------------------------------------NIGHT MODE
+
+
+export const nightModeButton = // Search for matches button
+	document.getElementById("night_mode") as HTMLButtonElement;
+
+export let nightMode = false;
+
+export function toggleNightMode(): void
+{
+	nightMode = !nightMode;
+	document.documentElement.classList.toggle("pong-night-mode", nightMode);
+
+	if (nightMode) {
+		whitish = "#312521";
+		blackish = "#5a5244";
+	} else {
+		whitish = "#5a5244";
+		blackish = "#312521";
+	}
+}
+
+
+//------------------------------------------------------------------------NIGHT MODE
+//------------------------------------------------------------------------UTILS
+
+
+export const loadAnimation = // Initial loader Modal
+	document.getElementById("load_animation_modal") as HTMLDivElement;
+
+export function show(elem: HTMLElement): void { // show HTML element
+	elem.classList.remove("hidden"); 
+}
+
+export function hide(elem: HTMLElement): void { // hide HTML
+	elem.classList.add("hidden"); 
+}
+
+
+export function showLoader() { // show Loading animation
+	show(loadAnimation);
+}
+
+export function hideLoader() { // hide Loading animation
+	hide(loadAnimation);
+}
+
+
+//------------------------------------------------------------------------UTILS

@@ -1,3 +1,114 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@font-face {
+	font-family: "PressStart2P";
+	src: url("../assets/PressStart2P-Regular.ttf") format("truetype");
+	font-weight: normal;
+	font-style: normal;
+}
+:root {
+	--pong-black: #312521;
+	--pong-white: #5a5244;
+	--pong-text-field: #9a8662;
+}
+:root.pong-night-mode {
+	--pong-black: #5a5244;
+	--pong-white: #312521;
+	--pong-text-field: #9a8662;
+}
+@layer components {
+
+	.pong-background {
+
+		@apply bg-[var(--pong-white)] h-screen;
+	}
+	.pong-root {
+
+		@apply flex justify-center items-center w-screen h-screen;
+	}
+	.pong-panel {
+
+		@apply grid grid-cols-[650px_200px] grid-rows-[80px_450px] gap-0 bg-[var(--pong-white)];
+	}
+	.pong-top-left {
+
+		@apply col-start-1 row-start-1 relative;
+	}
+	.pong-bottom-left {
+
+		@apply col-start-1 row-start-2 relative
+	       flex justify-center items-center
+	       border-4 border-[var(--pong-black)]
+	       rounded-lg overflow-hidden;
+	}
+	.pong-game-screen {
+
+		@apply bg-[var(--pong-white)] border-4 border-[var(--pong-black)] relative z-10;
+	}
+	.pong-bottom-right {
+		@apply col-start-2 row-start-2 flex flex-col gap-2 pl-6;
+	}
+	.pong-button {
+
+		@apply  px-2.5 py-1 
+				bg-[color:var(--pong-white)] 
+				text-[10px] text-[color:var(--pong-black)] 
+				hover:text-[color:var(--pong-white)] hover:bg-[color:var(--pong-black)] 
+				border-4 border-[color:var(--pong-black)] rounded-none;
+		font-family: 'PressStart2P', monospace;
+	}
+	.pong-bottom-buttons
+	{
+		@apply mt-auto flex flex-col gap-2;
+	}
+	.pong-icon {
+		
+		@apply inline-block scale-[2] origin-center leading-none align-middle relative -top-[5px];
+		
+	}
+	.pong-input-field {
+
+		@apply  w-full p-2 mb-2 
+				bg-[color:var(--pong-white)] 
+				border-2 border-[color:var(--pong-black)] rounded-none 
+				text-[color:var(--pong-black)] 
+				placeholder:text-[12px];
+		@apply placeholder-[var(--pong-text-field)];
+		font-family: 'PressStart2P', monospace;
+	}
+	.pong-modal-top-text {
+
+		@apply  mb-2 text-sm text-[color:var(--pong-black)];
+		font-family: 'PressStart2P', monospace;
+	}
+	.pong-modal {
+
+		@apply  absolute z-50 p-4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+				bg-[color:var(--pong-white)] 
+				border-4 border-[color:var(--pong-black)] rounded-none;
+	}
+	.pong-notification-bar {
+		@apply absolute z-50 top-0 left-0 right-0 bottom-2 
+			   flex items-center justify-center
+		       bg-[color:var(--pong-white)]
+		       border-4 border-[color:var(--pong-black)] rounded-md
+		       text-[10px] text-[color:var(--pong-black)] 
+		       opacity-0 pointer-events-none transition-opacity;
+		font-family: 'PressStart2P', monospace;
+		white-space: nowrap;
+	}
+	.pong-waiting {
+		@apply absolute z-50 px-6 py-4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+		       bg-[color:var(--pong-white)]
+		       border-4 border-[color:var(--pong-black)] rounded-none
+		    	text-[12px] text-[color:var(--pong-black)];
+		font-family: 'PressStart2P', monospace;
+		white-space: nowrap;
+	}
+	.pong-load-animation {
+
+		@apply flex flex-col items-center justify-center w-[600px] h-[400px] mt-6
+	}
+}

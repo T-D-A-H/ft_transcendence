@@ -72,7 +72,7 @@ class Match {
 	}
 
 	sendWin(user) {
-		this.broadcast({ type: "NOTIFICATION", msg: user.getUsername() + " Won the game" });
+		this.broadcast({ type: "WIN", msg: user.getUsername() + " Won the game" });
 	}
 
 	sendDisconnect(user) {

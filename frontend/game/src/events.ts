@@ -1,7 +1,7 @@
-import {showNotification, show, startMatchButton, incomingPlayRequestText, incomingPlayRequestModal} from "./ui.js"
+import {showNotification, show, startMatchButton, incomingPlayRequestText, incomingPlayRequestModal, playAgainstUserButton, playLocallyButton} from "./ui.js"
 import {setInviteFrom,  SCORES} from "./vars.js"
 import type {ServerMessage, StatusMsgTarget} from "./vars.js"
-import {drawWin, drawGame, clearBackground} from "./draw.js"
+import {drawGame, clearBackground, drawFrame} from "./draw.js"
 import { userSocket } from "./main.js"
 
 
@@ -109,6 +109,17 @@ export function ConstantEvent(response: ServerMessage["type"]){
 
 			SCORES[0] = data.scores[0];
         	SCORES[1] = data.scores[1];
+		}
+		else if (data.type === "WIN") {
+
+			SCORES[0] = 0;
+			SCORES[1] = 0;
+			clearBackground();
+			showNotification(data.msg);
+			show(playAgainstUserButton);
+			show(playLocallyButton);
+			drawGame();
+			drawFrame();
 		}
 		else if (data.type === "NOTIFICATION") {
 

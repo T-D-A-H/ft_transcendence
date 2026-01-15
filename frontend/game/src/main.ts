@@ -1,18 +1,20 @@
 import { 
 	loadAnimation, showLoader, hideLoader, 
-	loginModal, openLoginButton, closeLoginButton, logoutButton,
-	usernameInput, passwordInput, submitLoginButton,
-	registerModal, openRegisterButton, closeRegisterButton, submitRegisterButton, 
-	regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput,
+	loginModal, openLoginButton, closeLoginButton, logoutButton,usernameInput, passwordInput, submitLoginButton,
+	registerModal, openRegisterButton, closeRegisterButton, submitRegisterButton, regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput,
 	twoFAModal, twoFAOptionModal, twoFAEmailButton, twoFASubmitButton, twoFASkipButton, twoFAAuthButton, twoFAInput,
 	startMatchButton, waitingPlayers, playLocallyButton,
 	playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton,
 	incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton,
-	canvas, texture, show, hide, showNotification} from "./ui.js";
+	openCreateTournamentButton, closeCreateTournamentButton, submitTournamentCreationButton, createTournamentModal, aliasTournamentInput, tournamentSizeInput,
+	openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, tournamentsListUL, renderTournamentList,
+	canvas, texture, show, hide, showNotification, resizeCrtCanvas, toggleNightMode, nightModeButton} from "./ui.js";
+
 import {getInviteFrom, TournamentInfo} from "./vars.js";
 import { registerUser,  loginUser } from "./login-register.js"
 import { initializeWebSocket } from "./websocket.js";
 import { oneTimeEvent, sendKeyPress, send2KeyPress } from "./events.js";
+import { drawGame, drawFrame,  } from "./draw.js";
 
 
 if (!loadAnimation || !showLoader || !hideLoader ||
@@ -29,6 +31,14 @@ if (!loadAnimation || !showLoader || !hideLoader ||
 		console.error("One or more UI elements are missing");
 }
 
+resizeCrtCanvas();
+drawGame();
+
+window.addEventListener("resize", () => {
+	resizeCrtCanvas();
+});
+
+window.requestAnimationFrame(drawFrame);
 
 let tempToken2FA: string | null | undefined = null;
 export let userSocket: WebSocket | null = null;
@@ -40,6 +50,13 @@ closeRegisterButton.onclick = () => hide(registerModal);
 playAgainstUserButton.onclick = () => show(playRequestModal);
 incomingPlayRequestCloseButton.onclick = () => hide(incomingPlayRequestModal);
 playRequestCloseButton.onclick = () => hide(playRequestModal);
+openCreateTournamentButton.onclick = () => show(createTournamentModal);
+closeCreateTournamentButton.onclick = () => hide(createTournamentModal);
+closeSearchTournamentButton.onclick = () => hide(searchTournamentsModal);
+nightModeButton.onclick = () => {
+	toggleNightMode();
+	drawGame();
+};
 
 showLoader();
 
@@ -140,6 +157,7 @@ submitRegisterButton.onclick = async () => {
 	const result = await registerUser(regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput);
 
 	if (result.status === 0 && result.userId && result.setupToken) {
+		hide(registerModal);
 		show(twoFAOptionModal);
 
 		twoFAEmailButton.onclick = async () => {
@@ -154,14 +172,12 @@ submitRegisterButton.onclick = async () => {
 			const data = await res.json();
 			if (data.status === "ok") {
 				hide(twoFAOptionModal);
-				hide(registerModal);
 				show(loginModal);
 			} else {
 				alert(data.error || "Error al configurar 2FA");
+				hide(twoFAOptionModal);
+				show(registerModal);
 			}
-			hide(twoFAOptionModal);
-			hide(registerModal);
-			show(loginModal);
 		};
 
 		twoFASkipButton.onclick = async () => {
@@ -177,10 +193,11 @@ submitRegisterButton.onclick = async () => {
 			const data = await res.json();
 			if (data.status === "ok") {
 				hide(twoFAOptionModal);
-				hide(registerModal);
 				show(loginModal);
 			} else {
 				alert(data.error || "Error al configurar 2FA");
+				hide(twoFAOptionModal);
+				show(registerModal);
 			}
 		};
 	}
@@ -208,10 +225,11 @@ logoutButton.onclick = async () => {
 		hide(startMatchButton);
 		hide(playAgainstUserButton);
 		hide(playLocallyButton);
-		// hide(createTournamentButton);
-		// hide(searchTournamentButton);
+		hide(openCreateTournamentButton);
+		hide(openSearchTournamentButton);
 		show(openLoginButton);
 		show(openRegisterButton);
+		drawGame();
 	}
 };
 
@@ -275,8 +293,8 @@ playLocallyButton.onclick = () => {
 		}
 		hide(playLocallyButton);
 		hide(playAgainstUserButton);
-		// hide(createTournamentButton);
-		// hide(searchTournamentButton);
+		hide(openCreateTournamentButton);
+		hide(openSearchTournamentButton);
 		send2KeyPress();
 		
 	});
@@ -298,28 +316,6 @@ incomingPlayRequestAcceptButton.onclick = () => {
 };
 
 
-export const openCreateTournamentButton = // Create a match button
-	document.getElementById("create_tournament") as HTMLButtonElement;
-
-const closeCreateTournamentButton =
-	document.getElementById("tournament_create_cancel_button") as HTMLButtonElement;
-
-const submitTournamentCreationButton = // Submit Tournament creation button
-		document.getElementById("tournament_create_submit_button") as HTMLButtonElement;
-	
-const createTournamentModal =
-	document.getElementById("create_tournament_modal") as HTMLDivElement;
-
-const aliasTournamentInput = 
-	document.getElementById("tournament_alias") as HTMLInputElement;
-
-const tournamentSizeInput =
-	document.getElementById("tournament_size") as HTMLInputElement;
-
-
-openCreateTournamentButton.onclick = () => show(createTournamentModal);
-closeCreateTournamentButton.onclick = () => hide(createTournamentModal);
-
 submitTournamentCreationButton.onclick = () => {
 
 	const alias = aliasTournamentInput.value.trim();
@@ -328,9 +324,6 @@ submitTournamentCreationButton.onclick = () => {
 	if (alias.length === 0 || size.length === 0) {
 		return ;
 	}
-
-
-
 
 	oneTimeEvent("CREATE_TOURNAMENT_REQUEST", "CREATE_TOURNAMENT_RESPONSE", alias, size).then((result) => {
 
@@ -351,66 +344,6 @@ submitTournamentCreationButton.onclick = () => {
 
 };
 
-
-
-
-export const openSearchTournamentButton = // Search for matches button
-	document.getElementById("search_tournament") as HTMLButtonElement;
-
-const closeSearchTournamentButton =
-	document.getElementById("tournament_search_cancel_button") as HTMLButtonElement;
-
-const searchTournamentsModal = // Container showing waiting players
-	document.getElementById("search_tournaments_modal") as HTMLDivElement;
-
-const tournamentsListUL = // UL element where usernames will be inserted
-	document.getElementById("tournament_list_ul") as HTMLUListElement;
-
-
-function renderTournamentList(tournaments: TournamentInfo[]): HTMLButtonElement[]
-{
-	tournamentsListUL.innerHTML = "";
-
-	const joinButtons: HTMLButtonElement[] = [];
-
-	for (const tournament of tournaments)
-	{
-		const li = document.createElement("li");
-		li.className = "flex justify-between items-center gap-4";
-
-		const infoDiv = document.createElement("div");
-		infoDiv.className = "flex flex-col text-sm";
-
-		const nameSpan = document.createElement("span");
-		nameSpan.textContent = `Creator: ${tournament.creator}`;
-
-		const sizeSpan = document.createElement("span");
-		sizeSpan.textContent =
-			`Players: ${tournament.current_size}/${tournament.max_size}`;
-
-
-		infoDiv.appendChild(nameSpan);
-		infoDiv.appendChild(sizeSpan);
-
-		const joinBtn = document.createElement("button");
-		joinBtn.textContent = "Join";
-		joinBtn.className =
-			"px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-xs";
-
-		joinBtn.dataset.creator = tournament.creator;
-		joinBtn.dataset.id = String(tournament.id);
-
-		li.appendChild(infoDiv);
-		li.appendChild(joinBtn);
-
-		tournamentsListUL.appendChild(li);
-		joinButtons.push(joinBtn);
-	}
-
-	return (joinButtons);
-}
-
-closeSearchTournamentButton.onclick = () => hide(searchTournamentsModal);
 
 openSearchTournamentButton.onclick = () => {
 
