@@ -10,80 +10,17 @@
 		<div class="pong-root">
 			<div class="pong-panel">
 			
-				<!-- TOP bar: BUTTON STACK -->
-				<div class="pong-top-bar">
-
-
-					<!-- Right: Opponent -->
-					<div class="pong-top-bar-profiles items-start">
-						<button id="opponent_profile_button" class="pong-top-bar-names">Helvetteo</button>
-						<div class="avatar-placeholder">&#9863;</div>
-					</div>
-
-					<!-- Center: notifications -->
-					<div class="pong-top-bar-notification">
-						<span id="notify-text">Waiting for players...</span>
-					</div>
-
-					<!-- Right: Profile -->
-					<div class="pong-top-bar-profiles items-end">
-						<button id="menu_button" class="pong-top-bar-names">Valhallao</button>
-						<div class="avatar-placeholder">&#9865;</div>
-					</div>
-
-				</div>
-
-				<div class="pong-bottom-bar">
-
-					<!-- <canvas id="game_screen" width="600" height="400" class="pong-game-screen"></canvas> -->
-
-					<div id="menu_modal" class="pong-menu-modal">
-					
-						<!-- Header -->
-						<div class="pong-profile-header">
-
-							<div class="pong-menu-displayname" id="profile_displayname">Valerie Hallgone</div>
-							
-							<div class="pong-menu-username" id="profile_username" >@valhallao</div>
-
-
-						</div>
-					
-						<!-- Actions -->
-						<div class="pong-menu-buttons">
-							<button class="pong-button" data-target="settings_list"><span class="pong-icon">&#9881;</span></button>
-							<button class="pong-button" data-target="stats_list">STATS</button>
-							<button class="pong-button" data-target="friends_list">FRIENDS</button>
-							<button class="pong-button" data-target="play_list">PLAY</button>
-						</div>
-					
-						<div id="settings_list" class="pong-list pong-scrollbar hidden">
-							<button id="night_mode" class="pong-button active-border full-width"><span class="pong-icon">&#9680;</span></button>
-							<button id="logout_button" class="pong-button active-border full-width">LOG OUT</button>
-						</div>
-
-						<div id="stats_list" class="pong-list pong-scrollbar hidden"></div>
-						<div id="friends_list" class="pong-list pong-scrollbar hidden"></div>
-						
-
-						<div id="play_list" class="pong-list pong-scrollbar hidden">
-							<button class="pong-button active-border full-width">PLAY ONLINE</button>
-							<button class="pong-button active-border full-width">CREATE TOURNAMENT</button>
-							<button class="pong-button active-border full-width">PLAY LOCALLY</button>
-							<button class="pong-button active-border full-width">SEARCH TOURNAMENT</button>
-							<button class="pong-button active-border full-width">Sjjjjjj</button>
-							<button class="pong-button active-border full-width">SEg542gg54</button>
-							<button class="pong-button active-border full-width">fdggwrre</button>
-							<button class="pong-button active-border full-width">ggggg</button>
-							<button class="pong-button active-border full-width">345345345</button>
-							<button class="pong-button active-border full-width">245gg2g</button>
-						</div>
-
-
+				<!-- TOP LEFT: BUTTON STACK -->
+				<div class="pong-top-left relative">
+					<div id="notify-box" class="pong-notification-bar">
+						<span id="notify-text"></span>
 					</div>
 				</div>
+
+			
 				<!-- BOTTOM RIGHT: BUTTON STACK -->
-					<!-- <button id="open_login" class="pong-button hidden">LOG IN</button>
+				<div class="pong-bottom-right">
+					<button id="open_login" class="pong-button hidden">LOG IN</button>
 					<button id="open_register" class="pong-button hidden">REGISTER</button>
 					<button id="play_against_user" class="pong-button hidden">PLAY ONLINE</button>
 					<button id="create_tournament" class="pong-button hidden">CREATE TOURNAMENT</button>
@@ -94,21 +31,24 @@
 					<div class="pong-bottom-buttons">
 						<button id="night_mode" class="pong-button"><span class="pong-icon">&#9680;</span></button>
 						<button id="logout_button" class="pong-button hidden">LOG OUT</button>
-					</div> -->
+					</div>
+				</div>
 
 
+				<!-- BOTTOM LEFT: GAME CANVAS -->
+				<div class="pong-bottom-left">
 					
-					
+					<canvas id="game_screen" width="600" height="400" class="pong-game-screen"></canvas>
 				
 					<div id="waiting_players" class="pong-waiting hidden">
 						WAITING FOR PLAYER...
 					</div>
 
 					<!-- Spinner -->
-					<!-- <div id="load_animation_modal" class="pong-modal pong-load-animation">
+					<div id="load_animation_modal" class="pong-modal pong-load-animation">
 						<div class="h-12 w-12 mb-4 border-4 border-[#1c1817] animate-spin"></div>
 						<div class="text-[#1c1817] text-sm font-['PressStart2P']">Loading...</div>
-					</div> -->
+					</div>
 
 					<!-- Login modal -->
     				<div id="login_modal" class="pong-modal hidden">
@@ -237,9 +177,10 @@
 						</div>
 					</div>
 
+				</div>
 
 				<!-- CRT EFFECT CANVAS -->
-				<!-- <canvas id="crt_overlay" class="fixed inset-0 pointer-events-none z-50"></canvas> -->
+				<canvas id="crt_overlay" class="fixed inset-0 pointer-events-none z-50"></canvas>
 			</div>
 		</div>
 

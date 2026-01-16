@@ -21,23 +21,36 @@
 }
 @layer utilities {
 
-	.pong-scrollbar {
+	#tournament_size::-webkit-inner-spin-button,
+	#tournament_size::-webkit-outer-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	#tournament_size[type="number"] {
+		-moz-appearance: textfield;
+	}
+	#tournament_list_ul {
 		scrollbar-width: auto;
-		scrollbar-color: var(--pong-black) transparent;
+		scrollbar-color: var(--pong-black) var(--pong-white);
+		position: relative;
+		overflow-y: scroll;
 	}
 
-	.pong-scrollbar::-webkit-scrollbar {
-		width: 16px;
-	}
-
-	.pong-scrollbar::-webkit-scrollbar-track {
+	#tournament_list_ul::-webkit-scrollbar {
+		width: 24px;
 		background: transparent;
 	}
 
-	.pong-scrollbar::-webkit-scrollbar-thumb {
+	#tournament_list_ul::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	#tournament_list_ul::-webkit-scrollbar-thumb {
 		background-color: var(--pong-black);
 		border-radius: 0;
-		min-height: 8px;
+		min-height: 2px;
+		width: 32px;
 	}
 }
 @layer components {
@@ -50,110 +63,45 @@
 
 		@apply flex justify-center items-center w-screen h-screen;
 	}
-	.pong-font {
-
-		@apply text-[10px] text-[color:var(--pong-black)] font-['PressStart2P',monospace];
-	}
-	.pong-font-hover {
-		@apply  hover:text-[color:var(--pong-white)] hover:bg-[color:var(--pong-black)];
-	}
-	.pong-icon {
-		
-		@apply inline-block scale-[3] origin-center leading-none align-middle relative -top-[6px];
-		
-	}
 	.pong-panel {
-		@apply	grid
-				grid-cols-1
-				grid-rows-[auto_400px_25px]
-				py-1
-				w-[650px]
+
+		@apply grid grid-cols-[650px_200px] grid-rows-[80px_450px] gap-0 bg-[var(--pong-white)];
+	}
+	.pong-top-left {
+
+		@apply col-start-1 row-start-1 relative;
+	}
+	.pong-bottom-left {
+
+		@apply	col-start-1 row-start-2 relative
+				flex justify-center items-center
 				border-4 border-[var(--pong-black)]
-				rounded-lg
-				overflow-hidden
-				bg-[var(--pong-white)];
-	}
-	.pong-top-bar {
-
-		@apply	row-start-1 flex justify-between items-center relative
-				px-4 pb-3 pt-1 h-auto;
-
-	}
-	.pong-top-bar-profiles {
-
-		@apply flex flex-col gap-1;
-	}
-	.pong-top-bar-names {
-
-		@apply pong-font hidden;
-	}
-	.avatar-placeholder {
-		
-		@apply	flex justify-center items-center
-				w-[5.5rem] h-10
-				text-[30px] text-[color:var(--pong-black)]
-				border-4 rounded-sm border-[var(--pong-black)]
-				pong-font-hover;
-	}
-	.pong-top-bar-notification {
-		
-		@apply	flex justify-center items-center
-				pong-font
-				max-h-32 max-w-[26.5rem] overflow-y-auto p-2
-				opacity-100 pointer-events-auto transition-opacity
-				pong-scrollbar
-				whitespace-pre-wrap break-words;
-	}
-	.pong-bottom-bar {
-		@apply	row-start-2 relative
-				flex justify-center items-center;
+				rounded-lg overflow-hidden;
 	}
 	.pong-game-screen {
 
-		@apply	bg-[var(--pong-white)]
-				border-4 border-[var(--pong-black)] rounded-none;
-	}
-	.pong-menu-modal {
-		@apply absolute flex flex-col z-20
-				w-[600px] h-[400px]
-				bg-[var(--pong-white)]
-				border-4 border-[var(--pong-black)];
-	}
-	.pong-profile-header {
+		@apply	relative z-10
+				bg-[var(--pong-white)] border-4 border-[var(--pong-black)];
 
-		@apply flex flex-col items-center gap-1 py-3 mt-9;
 	}
-	.pong-menu-displayname {
+	.pong-bottom-right {
 
-		@apply pong-font text-[24px] text-center;
-	}
-	.pong-menu-username {
-		@apply pong-font opacity-70 text-center;
-	}
-	.pong-menu-buttons {
-		@apply flex justify-center gap-3 pt-6;
+		@apply col-start-2 row-start-2 flex flex-col gap-2 pl-6;
+
 	}
 	.pong-button {
 
 		@apply  px-2.5 py-1 
 				bg-[color:var(--pong-white)] 
-				pong-font text-[8px]
-				pong-font-hover;
+				text-[10px] text-[color:var(--pong-black)] font-['PressStart2P',monospace]
+				hover:text-[color:var(--pong-white)] hover:bg-[color:var(--pong-black)] 
+				border-4 border-[color:var(--pong-black)] rounded-none;
 	}
-	.active-border {
-		@apply border-[3px] border-[color:var(--pong-black)] rounded-none;
-	}
+	.pong-bottom-buttons {
 
-	.pong-list {
-		@apply flex flex-col items-center mt-2.5 overflow-y-auto;
-		max-height: 300px; /* scroll if too many buttons */
-		width: 100%;
-	}
+		@apply mt-auto flex flex-col gap-2;
 
-	.pong-button.full-width {
-		@apply w-[50%] my-1 text-center;
 	}
-
 	.pong-cancel-button {
 
 		@apply	w-5 h-5 flex justify-center items-center absolute top-[2px] left-[2px]
@@ -174,7 +122,11 @@
 				hover:text-[color:var(--pong-black)]
 				text-[14px] text-[color:var(--pong-white)] font-['PressStart2P',monospace];
 	}
-
+	.pong-icon {
+		
+		@apply inline-block scale-[2] origin-center leading-none align-middle relative -top-[5px];
+		
+	}
 	.pong-input-field {
 
 		@apply  w-full p-2 mb-2 
@@ -208,7 +160,16 @@
 		    	text-[12px] text-[color:var(--pong-black)] font-['PressStart2P',monospace];
 
 	}
+	.pong-notification-bar {
 
+		@apply absolute z-50 top-0 left-0 right-0 bottom-2 
+			   flex items-center justify-center whitespace-nowrap 
+		       bg-[color:var(--pong-white)]
+		       border-4 border-[color:var(--pong-black)] rounded-md
+		       text-[10px] text-[color:var(--pong-black)] font-['PressStart2P',monospace]
+		       opacity-0 pointer-events-none transition-opacity;
+
+	}
 	.pong-load-animation {
 
 		@apply flex flex-col items-center justify-center w-[608px] h-[408px];
