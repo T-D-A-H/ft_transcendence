@@ -15,27 +15,9 @@ export const menuDisplayName =
 export const menuUsername = 
 	document.getElementById("profile_username") as HTMLDivElement;
 
-const menuButtons = document.querySelectorAll<HTMLButtonElement>('.pong-menu-buttons .pong-button');
+export const menuButtons = 
+	document.querySelectorAll<HTMLButtonElement>('.pong-menu-buttons .pong-button');
 
-menuButtons.forEach(button => {
-
-	button.addEventListener('click', () => {
-
-		const targetId = button.dataset.target;
-		if (!targetId)
-			return;
-		menuButtons.forEach(btn => btn.classList.remove('active-border'));
-		button.classList.add('active-border');
-		const allLists = document.querySelectorAll<HTMLElement>('.pong-list');
-		allLists.forEach(list => {
-
-			if (list.id === targetId)
-				show(list);
-			else
-				hide(list);
-		});
-	});
-});
 
 export const menuPlayButton = 
 	document.getElementById("menu_play_button") as HTMLButtonElement;
@@ -49,6 +31,22 @@ export const menuStatsButton =
 export const menuSettingsButton = 
 	document.getElementById("menu_settings_button") as HTMLButtonElement;
 
+
+export 	function showCanvas() {
+
+	hide(menuModal);
+	show(canvas);
+}
+
+export 	function showMenu() {
+
+	hide(canvas);
+	show(menuModal);
+}
+
+export function showLoginRegister(): void {
+
+}
 //------------------------------------------------------------------------LOGIN
 
 

@@ -131,7 +131,7 @@
 		@apply pong-font opacity-70 text-center;
 	}
 	.pong-menu-buttons {
-		@apply flex justify-center gap-3 pt-6;
+		@apply flex justify-center gap-3 pt-6 z-20;
 	}
 	.pong-button {
 
@@ -143,16 +143,19 @@
 	.active-border {
 		@apply border-[3px] border-[color:var(--pong-black)] rounded-none;
 	}
-
+	.pong-menu-list-container {
+		@apply flex flex-col w-1/2 max-h-[217px] overflow-y-auto pong-scrollbar relative z-10;
+	}
 	.pong-list {
-		@apply flex flex-col items-center mt-2.5 overflow-y-auto;
-		max-height: 300px; /* scroll if too many buttons */
-		width: 100%;
+		@apply flex flex-col items-center w-full;
+	}
+	
+	.pong-button.full-width {
+		@apply w-[253px] my-1 text-center;
 	}
 
-	.pong-button.full-width {
-		@apply w-[50%] my-1 text-center;
-	}
+
+
 
 	.pong-cancel-button {
 
@@ -164,7 +167,7 @@
 	}
 	.pong-submit-button {
 
-		@apply  pong-button text-[12px] px-3 py-1;
+		@apply  pong-button active-border text-[12px] px-3 py-1;
 	}
 	.pong-button-small {
 

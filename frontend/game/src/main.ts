@@ -1,15 +1,14 @@
-import { 
-	loadAnimation, showLoader, hideLoader, 
-	loginModal, openLoginButton, closeLoginButton, logoutButton,usernameInput, passwordInput, submitLoginButton,
-	registerModal, openRegisterButton, closeRegisterButton, submitRegisterButton, regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput,
-	twoFAModal, twoFAOptionModal, twoFAEmailButton, twoFASubmitButton, twoFASkipButton, twoFAAuthButton, twoFAInput, twoFACancelButton,
-	startMatchButton, waitingPlayers, playLocallyButton, exitMatchButton,
-	playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton,
-	incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton,
-	openCreateTournamentButton, closeCreateTournamentButton, submitTournamentCreationButton, createTournamentModal, aliasTournamentInput, tournamentSizeInput,
-	openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, renderTournamentList,
-	canvas, texture, show, hide, showNotification, resizeCrtCanvas, toggleNightMode, nightModeButton} from "./ui.js";
-
+import { loadAnimation, showLoader, hideLoader} from "./ui.js";
+import { loginModal, openLoginButton, closeLoginButton, logoutButton,usernameInput, passwordInput, submitLoginButton} from "./ui.js";
+import { registerModal, openRegisterButton, closeRegisterButton, submitRegisterButton, regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput} from "./ui.js";
+import { twoFAModal, twoFAOptionModal, twoFAEmailButton, twoFASubmitButton, twoFASkipButton, twoFAAuthButton, twoFAInput, twoFACancelButton} from "./ui.js";
+import { startMatchButton, waitingPlayers, playLocallyButton, exitMatchButton} from "./ui.js";
+import { playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton} from "./ui.js";
+import { incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton} from "./ui.js";
+import { openCreateTournamentButton, closeCreateTournamentButton, submitTournamentCreationButton, createTournamentModal, aliasTournamentInput, tournamentSizeInput} from "./ui.js";
+import { openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, renderTournamentList} from "./ui.js";
+import { canvas, texture, show, hide, showMenu, showCanvas, showNotification, toggleNightMode, nightModeButton} from "./ui.js";
+import {openMenuButton, menuModal, menuDisplayName, menuUsername, menuButtons} from "./ui.js";
 import {getInviteFrom, TournamentInfo} from "./vars.js";
 import { registerUser,  loginUser } from "./login-register.js"
 import { initializeWebSocket } from "./websocket.js";
@@ -17,48 +16,37 @@ import { oneTimeEvent, sendKeyPress, send2KeyPress } from "./events.js";
 import { drawGame, drawFrame,  } from "./draw.js";
 
 
-if (!loadAnimation || !showLoader || !hideLoader ||
-	!loginModal || !openLoginButton || !closeLoginButton || !logoutButton ||
-	!usernameInput || !passwordInput || !submitLoginButton ||
-	!registerModal || !openRegisterButton || !closeRegisterButton || !submitRegisterButton || !
-	!regUsernameInput || !regDisplaynameInput || !regEmailInput || !regPasswordInput ||
-	!twoFAModal || !twoFAOptionModal || !twoFAEmailButton || !twoFASubmitButton || !twoFASkipButton || !twoFAAuthButton || !twoFAInput || !twoFACancelButton ||
-	!startMatchButton || !waitingPlayers || !playLocallyButton || !exitMatchButton ||
-	!playRequestModal || !playAgainstUserButton || !playRequestUsernameInput || !playRequestCloseButton || !playRequestSendButton ||
-	!incomingPlayRequestModal || !incomingPlayRequestText || !incomingPlayRequestCloseButton || !incomingPlayRequestAcceptButton ||
-	// !createTournamentButton || !searchTournamentButton || !searchTournamentsModal || !tournamentsListUL || !renderTournamentList ||
-	!canvas || !texture || !show || !hide || !showNotification) {
-		console.error("One or more UI elements are missing");
-}
-
-resizeCrtCanvas();
-drawGame();
-
-window.addEventListener("resize", () => {
-	resizeCrtCanvas();
-});
-
-window.requestAnimationFrame(drawFrame);
-
 let tempToken2FA: string | null | undefined = null;
 export let userSocket: WebSocket | null = null;
 
-openLoginButton.onclick = () => show(loginModal);
-closeLoginButton.onclick = () => hide(loginModal);
-openRegisterButton.onclick = () => show(registerModal);
-closeRegisterButton.onclick = () => hide(registerModal);
-playAgainstUserButton.onclick = () => show(playRequestModal);
-incomingPlayRequestCloseButton.onclick = () => hide(incomingPlayRequestModal);
-playRequestCloseButton.onclick = () => hide(playRequestModal);
-openCreateTournamentButton.onclick = () => show(createTournamentModal);
-closeCreateTournamentButton.onclick = () => hide(createTournamentModal);
-closeSearchTournamentButton.onclick = () => hide(searchTournamentsModal);
+
+window.requestAnimationFrame(drawFrame);
+
+menuButtons.forEach(button => {
+
+	button.addEventListener('click', () => {
+
+		const targetId = button.dataset.target;
+		if (!targetId)
+			return;
+		menuButtons.forEach(btn => btn.classList.remove('active-border'));
+		button.classList.add('active-border');
+		const allLists = document.querySelectorAll<HTMLElement>('.pong-list');
+		allLists.forEach(list => {
+
+			if (list.id === targetId)
+				show(list);
+			else
+				hide(list);
+		});
+	});
+});
+
 nightModeButton.onclick = () => {
 	toggleNightMode();
 	drawGame();
 };
 
-showLoader();
 
 // Verificar si hay token al cargar la página
 const token = localStorage.getItem("token");
@@ -73,6 +61,8 @@ else {
 	}).catch(() => alert("Error connecting to server"));
 }
 
+
+openLoginButton.onclick = () => show(loginModal);
 
 submitLoginButton.onclick = async () => {
 
@@ -152,6 +142,10 @@ submitLoginButton.onclick = async () => {
 		}
 };
 
+closeLoginButton.onclick = () => hide(loginModal);
+
+openRegisterButton.onclick = () => show(registerModal);
+
 submitRegisterButton.onclick = async () => {
 
 	const result = await registerUser(regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput);
@@ -209,6 +203,8 @@ submitRegisterButton.onclick = async () => {
 	}
 };
 
+closeRegisterButton.onclick = () => hide(registerModal);
+
 logoutButton.onclick = async () => {
 	if (userSocket) {
 		userSocket.close();
@@ -224,14 +220,7 @@ logoutButton.onclick = async () => {
 	const data = await res.json();
 	if (data.status === "ok") {
 		localStorage.removeItem("token");
-		hide(logoutButton);
-		hide(startMatchButton);
-		hide(playAgainstUserButton);
-		hide(playLocallyButton);
-		hide(openCreateTournamentButton);
-		hide(openSearchTournamentButton);
-		show(openLoginButton);
-		show(openRegisterButton);
+		showRegisterMenu();
 		drawGame();
 	}
 };
@@ -260,6 +249,12 @@ playRequestSendButton.onclick = () => {
 		hide(playRequestModal);
 	});
 };
+
+playAgainstUserButton.onclick = () => show(playRequestModal);
+
+incomingPlayRequestCloseButton.onclick = () => hide(incomingPlayRequestModal);
+
+playRequestCloseButton.onclick = () => hide(playRequestModal);
 
 startMatchButton.onclick = () => {
 
@@ -296,11 +291,7 @@ exitMatchButton.onclick = () => {
 		if (result.status !== 200) {
 			return ;
 		}
-		show(openCreateTournamentButton);
-		show(openSearchTournamentButton);
-		show(playAgainstUserButton);
-		show(playLocallyButton);
-		hide(startMatchButton);
+		showMenu();
     });
 };
 
@@ -317,11 +308,7 @@ playLocallyButton.onclick = () => {
 		if (result.status !== 200) {
 			return;
 		}
-		hide(playLocallyButton);
-		hide(playAgainstUserButton);
-		hide(openCreateTournamentButton);
-		hide(openSearchTournamentButton);
-		show(startMatchButton);
+		showCanvas();
 		send2KeyPress();
 		
 	});
@@ -342,6 +329,7 @@ incomingPlayRequestAcceptButton.onclick = () => {
 	hide(incomingPlayRequestModal);
 };
 
+openCreateTournamentButton.onclick = () => show(createTournamentModal);
 
 submitTournamentCreationButton.onclick = () => {
 
@@ -370,6 +358,8 @@ submitTournamentCreationButton.onclick = () => {
 	});
 
 };
+
+closeCreateTournamentButton.onclick = () => hide(createTournamentModal);
 
 
 openSearchTournamentButton.onclick = () => {
@@ -414,3 +404,4 @@ openSearchTournamentButton.onclick = () => {
 	
 };
 
+closeSearchTournamentButton.onclick = () => hide(searchTournamentsModal);
