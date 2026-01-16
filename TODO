@@ -1,12 +1,6 @@
 TODO
 
-- check that match and tournament are properly removed when:
-  user wins match
-  user wins tournament match
-  user loses tournament match
-  user disconnects
-  user logs out
-
-- send proper tournament messages declaring who won
-
-- fix frontend style and cleanup logic
+- CHECK THAT AFTER PLAYING LOCALLY THE GAME IS REMOVED FROM THE USER
+- CHECK EXIT BUTTON SHOULD APPEAR ONLY IF IN GAME
+- CHANGE EFFECT CRT
+- ADD ARCADE FRAME

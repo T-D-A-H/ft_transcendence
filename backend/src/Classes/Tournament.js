@@ -116,10 +116,6 @@ class Tournament {
 		return  (this.matchDoneCount === this.matches.size && this.getIsReady() === true);
 	}
 
-
-
-
-
 	getWinner() {
 		
 	    return (this.WINNER);
