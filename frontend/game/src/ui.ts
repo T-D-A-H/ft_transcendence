@@ -1,10 +1,30 @@
 
+import { drawGame } from "./draw.js";
 import {TournamentInfo} from "./vars.js";
 
+//------------------------------------------------------------------------OPPONENT
+
+export const topBarOpponentButton = 
+	document.getElementById("opponent_profile_button") as HTMLDivElement;
+
+export const topBarOpponentPicture = 
+	document.getElementById("opponent_profile_image") as HTMLDivElement;
+
+export const topBarOpponentDisplayName = 
+	document.getElementById("opponent_displayname") as HTMLSpanElement;
+	
+//------------------------------------------------------------------------OPPONENT
+//------------------------------------------------------------------------MENU
 
 
 export const openMenuButton = 
 	document.getElementById("menu_button") as HTMLButtonElement;
+
+export const topBarProfilePicture =
+	document.getElementById("self_profile_image") as HTMLDivElement;
+
+export const topBarDisplayName = 
+	document.getElementById("self_displayname") as HTMLSpanElement;
 
 export const menuModal =
 	document.getElementById("menu_modal") as HTMLDivElement;
@@ -17,7 +37,6 @@ export const menuUsername =
 
 export const menuButtons = 
 	document.querySelectorAll<HTMLButtonElement>('.pong-menu-buttons .pong-button');
-
 
 export const menuPlayButton = 
 	document.getElementById("menu_play_button") as HTMLButtonElement;
@@ -32,29 +51,17 @@ export const menuSettingsButton =
 	document.getElementById("menu_settings_button") as HTMLButtonElement;
 
 
-export 	function showCanvas() {
-
-	hide(menuModal);
-	show(canvas);
-}
-
-export 	function showMenu() {
-
-	hide(canvas);
-	show(menuModal);
-}
-
-export function showLoginRegister(): void {
-
-}
+//------------------------------------------------------------------------MANU
 //------------------------------------------------------------------------LOGIN
 
 
 export const loginModal = // Login Box element
 	document.getElementById("login_modal") as HTMLDivElement;
 
-export const openLoginButton = // Display login box element
-	document.getElementById("open_login") as HTMLButtonElement;
+
+export const dontHaveAnAccountButton = // Submit info in register box
+	document.getElementById("donthaveanaccount_button") as HTMLButtonElement;
+
 
 export const closeLoginButton = // Close login box element
 	document.getElementById("close_login") as HTMLButtonElement;
@@ -84,8 +91,6 @@ export const logoutButton = // Logout Button
 export const registerModal = // Register Box element
 	document.getElementById("register_modal") as HTMLDivElement;
 
-export const openRegisterButton = // Display register box element
-	document.getElementById("open_register") as HTMLButtonElement;
 
 export const closeRegisterButton = // Close register box element
 	document.getElementById("close_register") as HTMLButtonElement;
@@ -105,6 +110,9 @@ export const regPasswordInput = // Password in register box
 export const submitRegisterButton = // Submit info in register box
 	document.getElementById("register_submit_button") as HTMLButtonElement;
 
+
+export const alreadyHaveAnAccountButton = // Submit info in register box
+	document.getElementById("alreadyhaveanaccount_button") as HTMLButtonElement;
 
 //------------------------------------------------------------------------REGISTER
 //------------------------------------------------------------------------2FA
@@ -143,9 +151,6 @@ export const startMatchButton = // Start match button element
 
 export const exitMatchButton = // EXIT match button element
 	document.getElementById("exit_match") as HTMLButtonElement;
-
-export const waitingPlayers = // Waiting for players element
-	document.getElementById("waiting_players") as HTMLButtonElement;
 
 export const playLocallyButton =
 	document.getElementById("play_locally") as HTMLButtonElement;
@@ -235,7 +240,7 @@ export const openSearchTournamentButton = // Search for matches button
 export const closeSearchTournamentButton =
 	document.getElementById("tournament_search_cancel_button") as HTMLButtonElement;
 
-export const searchTournamentsModal = // Container showing waiting players
+export const searchTournamentsModal = // Container showing waiting tournaments
 	document.getElementById("search_tournaments_modal") as HTMLDivElement;
 
 export const tournamentsListUL = // UL element where usernames will be inserted
@@ -397,30 +402,6 @@ export function drawCrtOverlay(): void {
 
 
 //------------------------------------------------------------------------CRT EFFECT CANVAS
-//------------------------------------------------------------------------NIGHT MODE
-
-
-export const nightModeButton = // Search for matches button
-	document.getElementById("night_mode") as HTMLButtonElement;
-
-export let nightMode = false;
-
-export function toggleNightMode(): void
-{
-	nightMode = !nightMode;
-	document.documentElement.classList.toggle("pong-night-mode", nightMode);
-
-	if (nightMode) {
-		whitish = "#312521";
-		blackish = "#5a5244";
-	} else {
-		whitish = "#5a5244";
-		blackish = "#312521";
-	}
-}
-
-
-//------------------------------------------------------------------------NIGHT MODE
 //------------------------------------------------------------------------UTILS
 
 
@@ -444,5 +425,70 @@ export function hideLoader() { // hide Loading animation
 	hide(loadAnimation);
 }
 
+
+export 	function showCanvas() {
+
+	hide(menuModal);
+	show(canvas);
+	drawGame();
+
+	show(topBarOpponentDisplayName);
+	show(topBarOpponentPicture);
+
+	show(topBarDisplayName);
+	show(startMatchButton);
+
+	show(exitMatchButton);
+
+}
+
+export 	function showMenu() {
+	
+	hide(canvas);
+	show(menuModal);
+
+	hide(topBarDisplayName);
+	hide(topBarOpponentPicture);
+	hide(topBarOpponentDisplayName);
+	hide(startMatchButton);
+	hide(exitMatchButton);
+}
+
+
+export const nightModeButton = // Search for matches button
+	document.getElementById("night_mode") as HTMLButtonElement;
+
+export let nightMode = false;
+
+export function toggleNightMode(): void
+{
+	nightMode = !nightMode;
+	document.documentElement.classList.toggle("pong-night-mode", nightMode);
+
+	if (nightMode) {
+		whitish = "#312521";
+		blackish = "#5a5244";
+	} else {
+		whitish = "#5a5244";
+		blackish = "#312521";
+	}
+}
+
+let menu_open: boolean = false;
+
+export function toggleMenu(): void
+{
+	if (menu_open) {
+		hide(menuModal);
+		drawGame();
+		show(canvas);
+	}
+	else {
+		hide(canvas);
+		show(menuModal);
+	}
+
+	menu_open = !menu_open;
+}
 
 //------------------------------------------------------------------------UTILS

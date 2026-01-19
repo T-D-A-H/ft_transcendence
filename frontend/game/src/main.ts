@@ -1,26 +1,115 @@
-import { loadAnimation, showLoader, hideLoader} from "./ui.js";
-import { loginModal, openLoginButton, closeLoginButton, logoutButton,usernameInput, passwordInput, submitLoginButton} from "./ui.js";
-import { registerModal, openRegisterButton, closeRegisterButton, submitRegisterButton, regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput} from "./ui.js";
+import {loadAnimation, showLoader, hideLoader} from "./ui.js";
+import { loginModal, closeLoginButton, logoutButton,usernameInput, passwordInput, submitLoginButton, dontHaveAnAccountButton} from "./ui.js";
+import { registerModal, closeRegisterButton, submitRegisterButton, regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput, alreadyHaveAnAccountButton} from "./ui.js";
 import { twoFAModal, twoFAOptionModal, twoFAEmailButton, twoFASubmitButton, twoFASkipButton, twoFAAuthButton, twoFAInput, twoFACancelButton} from "./ui.js";
-import { startMatchButton, waitingPlayers, playLocallyButton, exitMatchButton} from "./ui.js";
+import { startMatchButton, playLocallyButton, exitMatchButton} from "./ui.js";
 import { playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton} from "./ui.js";
 import { incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton} from "./ui.js";
 import { openCreateTournamentButton, closeCreateTournamentButton, submitTournamentCreationButton, createTournamentModal, aliasTournamentInput, tournamentSizeInput} from "./ui.js";
 import { openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, renderTournamentList} from "./ui.js";
-import { canvas, texture, show, hide, showMenu, showCanvas, showNotification, toggleNightMode, nightModeButton} from "./ui.js";
-import {openMenuButton, menuModal, menuDisplayName, menuUsername, menuButtons} from "./ui.js";
+import { show, hide, showMenu, showCanvas, showNotification, toggleNightMode, nightModeButton} from "./ui.js";
+import { topBarOpponentButton, topBarOpponentPicture, topBarOpponentDisplayName} from "./ui.js";
+import { openMenuButton, topBarProfilePicture, topBarDisplayName, menuModal, menuDisplayName, menuUsername, menuButtons, toggleMenu} from "./ui.js";
+
 import {getInviteFrom, TournamentInfo} from "./vars.js";
-import { registerUser,  loginUser } from "./login-register.js"
-import { initializeWebSocket } from "./websocket.js";
+
+import {registerUser, loginUser, logoutUser, configure2FA, verify2FA} from "./auth.js";
+
+import { connectWithToken, userSocket } from "./websocket.js";
+
 import { oneTimeEvent, sendKeyPress, send2KeyPress } from "./events.js";
-import { drawGame, drawFrame,  } from "./draw.js";
+
+import { drawGame, drawFrame } from "./draw.js";
+
 
 
 let tempToken2FA: string | null | undefined = null;
-export let userSocket: WebSocket | null = null;
+
+const token = localStorage.getItem("token");
+
+
+if (token) {
+	connectWithToken(token).catch(() => alert("Error connecting to server"));
+}
+
 
 
 window.requestAnimationFrame(drawFrame);
+
+openMenuButton.onclick = toggleMenu;
+
+alreadyHaveAnAccountButton.onclick = () => {
+	hide(registerModal);
+	show(loginModal);
+	showNotification("You must sign in in order to continue!!!");
+};
+
+submitRegisterButton.onclick = async () => {
+
+	const result = await registerUser(regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput);
+
+	if (result.status === 0 && result.setupToken) {
+		hide(registerModal);
+		show(twoFAOptionModal);
+		twoFAEmailButton.onclick = () => {
+
+			configure2FA(result.setupToken!, "2FAmail", twoFAOptionModal, loginModal, registerModal);
+
+		}
+		twoFASkipButton.onclick = twoFACancelButton.onclick = () => {
+
+			configure2FA(result.setupToken!, "skip", twoFAOptionModal, loginModal, registerModal);
+		};
+	} else {
+		showNotification("User with that username already exists");
+	}
+};
+
+closeRegisterButton.onclick = () => hide(registerModal);
+
+// openLoginButton.onclick = () => show(loginModal);
+
+dontHaveAnAccountButton.onclick = () => {
+	hide(loginModal);
+	show(registerModal);
+}
+
+submitLoginButton.onclick = async () => {
+
+
+	const result = await loginUser(usernameInput, passwordInput);
+
+	if (result.status === 0) {
+		hide(loginModal);
+		hide(twoFAModal);
+		show(logoutButton);
+	}
+	else if (result.status === "requires_2fa" && result.method === "email") {
+
+		show(twoFAModal);
+		tempToken2FA = result.tempToken;
+
+		twoFASubmitButton.onclick = async () => {
+
+			const code = twoFAInput.value.trim();
+			if (!code) return alert("Ingresa el código 2FA");
+
+			const success = await verify2FA(tempToken2FA!, code, twoFAModal, loginModal);
+			if (success)
+				tempToken2FA = null;
+			twoFAInput.value = "";
+			show(logoutButton);
+		};
+	}
+	else {
+		showNotification(result.error || "User/Password Incorrect");
+	}
+};
+
+closeLoginButton.onclick = () => hide(loginModal);
+
+logoutButton.onclick = () => logoutUser(logoutButton);
+
 
 menuButtons.forEach(button => {
 
@@ -45,184 +134,6 @@ menuButtons.forEach(button => {
 nightModeButton.onclick = () => {
 	toggleNightMode();
 	drawGame();
-};
-
-
-// Verificar si hay token al cargar la página
-const token = localStorage.getItem("token");
-if (!token || token === "null") {
-	show(openLoginButton);
-	show(openRegisterButton);
-	setTimeout(hideLoader, 300);
-}
-else {
-	initializeWebSocket(token).then((ws) => {
-		userSocket = ws;
-	}).catch(() => alert("Error connecting to server"));
-}
-
-
-openLoginButton.onclick = () => show(loginModal);
-
-submitLoginButton.onclick = async () => {
-
-	showLoader();
-	try {
-		
-		const result = await loginUser(usernameInput, passwordInput); // 1. PRIMERO: Intentar login (backend valida usuario + contraseña)
-
-		if (result.status === "requires_2fa" && result.method === "email") { // 2. El backend decide si necesita 2FA DESPUÉS de validar credenciales
-			
-			hideLoader();// Usuario válido y necesita 2FA
-			show(twoFAModal);
-			tempToken2FA = result.tempToken; // Token temporal del backend
-			twoFASubmitButton.onclick = async () => { // Configurar el botón de verificación 2FA
-				const code = twoFAInput.value.trim();
-				if (!code) {
-					alert("Ingresa el código 2FA");
-					return;
-				}
-				showLoader();
-				try {
-
-					const res = await fetch("/verify-2fa-mail", {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ tempToken: tempToken2FA, code 
-						})
-					});
-					
-					const verifyResult = await res.json();
-
-					if (verifyResult.status === "ok" && verifyResult.token) { // Login completo
-						
-						localStorage.setItem("token", verifyResult.token);
-						hide(twoFAModal);
-						hide(loginModal);
-						initializeWebSocket(verifyResult.token).then((ws) => {
-							userSocket = ws;
-						}).catch(() => alert("Error connecting to server"));
-						tempToken2FA = null;
-						twoFAInput.value = "";
-					} else {
-
-						alert(verifyResult.error || "Código 2FA incorrecto");
-						hideLoader();
-					}
-				} catch (err) {
-
-					console.error(err);
-					alert("Error al verificar 2FA");
-					hideLoader();
-				}
-			};
-			
-		} else if (result.status === 0 && result.token) { // Login exitoso sin 2FA
-			
-			localStorage.setItem("token", result.token);
-			hide(twoFAModal);
-			hide(loginModal);
-			initializeWebSocket(result.token).then((ws) => {
-				userSocket = ws;
-    			hideLoader();
-
-			}).catch(() => alert("Error connecting to server"));
-			
-			
-		} else { // Credenciales incorrectas
-			
-			showNotification("User/Password Incorrect");
-			hideLoader();
-		}
-
-		} catch (err) {
-			console.error(err);
-			showNotification("Error trying to sign in");
-			hideLoader();
-		}
-};
-
-closeLoginButton.onclick = () => hide(loginModal);
-
-openRegisterButton.onclick = () => show(registerModal);
-
-submitRegisterButton.onclick = async () => {
-
-	const result = await registerUser(regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput);
-
-	if (result.status === 0 && result.userId && result.setupToken) {
-		hide(registerModal);
-		show(twoFAOptionModal);
-
-		twoFAEmailButton.onclick = async () => {
-			const res = await fetch("/set-2fa", {
-				method: "POST",
-				headers: { 
-					"Content-Type": "application/json",
-					"Authorization": `Bearer ${result.setupToken}`
-				},
-				body: JSON.stringify({ method: "2FAmail" })
-			});
-			const data = await res.json();
-			if (data.status === "ok") {
-				hide(twoFAOptionModal);
-				show(loginModal);
-			} else {
-				alert(data.error || "Error al configurar 2FA");
-				hide(twoFAOptionModal);
-				show(registerModal);
-			}
-		};
-		const handleSkip2FA = async (): Promise<void> => {
-
-			const res = await fetch("/set-2fa", {
-				method: "POST",
-				headers: { 
-					"Content-Type": "application/json",
-					"Authorization": `Bearer ${result.setupToken}`
-				},
-				body: JSON.stringify({ method: "skip" })
-			});
-
-			const data = await res.json();
-			if (data.status === "ok") {
-				hide(twoFAOptionModal);
-				show(loginModal);
-			} else {
-				alert(data.error || "Error al configurar 2FA");
-				hide(twoFAOptionModal);
-				show(registerModal);
-			}
-		}
-		twoFACancelButton.onclick = handleSkip2FA;
-		twoFASkipButton.onclick = handleSkip2FA;
-	}
-	else if (result.status === 1) {
-		showNotification("User with that username already exists");
-
-	}
-};
-
-closeRegisterButton.onclick = () => hide(registerModal);
-
-logoutButton.onclick = async () => {
-	if (userSocket) {
-		userSocket.close();
-		userSocket = null;
-	}
-	let token = localStorage.getItem("token");
-	const res = await fetch("/logout", {
-		method: "POST",
-		headers: { "Content-Type": "application/json",},
-		body: JSON.stringify({ token })
-	});
-
-	const data = await res.json();
-	if (data.status === "ok") {
-		localStorage.removeItem("token");
-		showRegisterMenu();
-		drawGame();
-	}
 };
 
 playRequestSendButton.onclick = () => {
@@ -250,7 +161,14 @@ playRequestSendButton.onclick = () => {
 	});
 };
 
-playAgainstUserButton.onclick = () => show(playRequestModal);
+playAgainstUserButton.onclick = () => {
+	if (!userSocket) {
+		show(loginModal);
+		showNotification("You must sign in in order to continue!!!");
+		return ;
+	}
+	show(playRequestModal)
+};
 
 incomingPlayRequestCloseButton.onclick = () => hide(incomingPlayRequestModal);
 
@@ -260,7 +178,9 @@ startMatchButton.onclick = () => {
 
 
 	hide(startMatchButton);
-	show(waitingPlayers);
+	show(openMenuButton);
+	show(topBarDisplayName);
+	showNotification("Waiting for player...");
     oneTimeEvent("START_MATCH_REQUEST", "START_MATCH_RESPONSE").then((result) => {
 
 		if (!result) {
@@ -271,7 +191,7 @@ startMatchButton.onclick = () => {
 		if (result.status !== 200) {
 			return ;
 		}
-		hide(waitingPlayers);
+		showNotification("Waiting for player...");
 		show(exitMatchButton);
 		sendKeyPress();
     });
@@ -297,7 +217,11 @@ exitMatchButton.onclick = () => {
 
 playLocallyButton.onclick = () => {
 
-
+	if (!userSocket) {
+		show(loginModal);
+		showNotification("You must sign in in order to continue!!!");
+		return ;
+	}
 	oneTimeEvent("PLAY_LOCALLY_REQUEST", "PLAY_LOCALLY_RESPONSE").then((result) => {
 
 		if (!result) {
@@ -323,13 +247,21 @@ incomingPlayRequestAcceptButton.onclick = () => {
 			return ;
 		}
 		showNotification(result.msg);
-		if (result.status === 200)
-			show(startMatchButton);
+		if (result.status === 200) {
+			showCanvas();
+		}
 	});
 	hide(incomingPlayRequestModal);
 };
 
-openCreateTournamentButton.onclick = () => show(createTournamentModal);
+openCreateTournamentButton.onclick = () => {
+	if (!userSocket) {
+		show(loginModal);
+		showNotification("You must sign in in order to continue!!!");
+		return ;
+	}
+	show(createTournamentModal);
+};
 
 submitTournamentCreationButton.onclick = () => {
 
@@ -354,7 +286,7 @@ submitTournamentCreationButton.onclick = () => {
 		}
 		showNotification(result.msg);
 		hide(createTournamentModal);
-		show(startMatchButton);
+
 	});
 
 };
@@ -364,7 +296,11 @@ closeCreateTournamentButton.onclick = () => hide(createTournamentModal);
 
 openSearchTournamentButton.onclick = () => {
 
-
+	if (!userSocket) {
+		show(loginModal);
+		showNotification("You must sign in in order to continue!!!");
+		return ;
+	}
 	oneTimeEvent("SEARCH_TOURNAMENT_REQUEST", "SEARCH_TOURNAMENT_RESPONSE").then((result) => {
 		if (!result) {
 			alert("No response from server");
@@ -396,7 +332,7 @@ openSearchTournamentButton.onclick = () => {
 						return ;
 					}
 					hide(searchTournamentsModal);
-					show(startMatchButton);
+					showCanvas();
 				});	
 			};
 		}

@@ -1,8 +1,8 @@
-import {showNotification, show, startMatchButton, incomingPlayRequestText, incomingPlayRequestModal, playAgainstUserButton, playLocallyButton, openCreateTournamentButton, openSearchTournamentButton} from "./ui.js"
+import {showNotification, show, startMatchButton, showMenu, incomingPlayRequestText, incomingPlayRequestModal, playAgainstUserButton, playLocallyButton, openCreateTournamentButton, openSearchTournamentButton} from "./ui.js"
 import {setInviteFrom,  SCORES} from "./vars.js"
 import type {ServerMessage, StatusMsgTarget} from "./vars.js"
 import {drawGame, clearBackground, drawFrame} from "./draw.js"
-import { userSocket } from "./main.js"
+import { userSocket } from "./websocket.js"
 
 
 const handlers: Record<string, ((data: ServerMessage) => void)[]> = {};
@@ -98,7 +98,6 @@ export function ConstantEvent(response: ServerMessage["type"]){
 		if (data.type === "INCOMING_INVITE_RESPONSE") {
 
 			showNotification(data.msg);
-    		show(startMatchButton);
 		}
 		else if (data.type === "INCOMING_INVITE_REQUEST") {
 
@@ -118,11 +117,8 @@ export function ConstantEvent(response: ServerMessage["type"]){
 			clearBackground();
 			showNotification(data.msg);
 
-			show(playAgainstUserButton);
-			show(playLocallyButton);
-			show(openCreateTournamentButton);
-			show(openSearchTournamentButton);
-			drawGame();
+			
+			showMenu();
 
 		}
 		else if (data.type === "NOTIFICATION") {
