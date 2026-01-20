@@ -62,12 +62,19 @@ class Match {
 
 	sendDraw() {
 
-		this.broadcast({ 
+		this.players[0].socket.send(JSON.stringify({ 
 			type: "DRAW", 
 			LeftXY: this.game.getLeftPlayerXY(),
 			RightXY: this.game.getRightPlayerXY(),
 			BallXY: this.game.getBallXY()
-		});
+		}));
+
+		this.players[1].socket.send(JSON.stringify({ 
+			type: "DRAW", 
+			LeftXY: this.game.getLeftPlayerXY(),
+			RightXY: this.game.getRightPlayerXY(),
+			BallXY: this.game.getBallXY()
+		}));
 	}
 
 	sendScores() {

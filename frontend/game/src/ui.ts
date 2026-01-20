@@ -418,7 +418,7 @@ export function showNotification(text: string, state?: boolean)
 	notificationBoxText.textContent = text;
 
 	let time = 2500;
-	if (state === true) {
+	if (state && state === true) {
 		show(notificationAcceptButton);
 		time = 5000;
 	}
@@ -433,9 +433,7 @@ export function showNotification(text: string, state?: boolean)
 
 		setTimeout(() => {
 			hide(notificationBox);
-			if (state === true) {
-				hide(notificationAcceptButton);
-			}
+			hide(notificationAcceptButton);
 		}, 200);
 	}, time);
 }

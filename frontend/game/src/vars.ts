@@ -126,16 +126,12 @@ export interface JoinTournamentRequest {
     target?: null;
 }
 
-
 export interface PendingRequest {
     type: "GET_PENDING_RESPONSE";
     status: number;
     msg: string;
     target: ProfileInfo[] | null;
 }
-
-
-
 
 export type ServerMessage = 
 SendInviteResponse         | ReplyInviteResponse      |
@@ -147,5 +143,3 @@ NotificationMessage        | CreateTournamentRequest  |
 SearchTournamentRequest    | JoinTournamentRequest    |
 ExitMatchResponse          | InfoResponse             |
 PendingRequest;
-
-

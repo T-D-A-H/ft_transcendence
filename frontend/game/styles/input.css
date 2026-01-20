@@ -21,7 +21,6 @@
 }
 @layer utilities {
 
-
 	input[type="number"] {
 		-moz-appearance: textfield;
 	}
@@ -175,7 +174,6 @@
 				cursor-pointer
 				text-[12px] text-[color:var(--pong-black)]
 				hover:text-[color:var(--pong-white)] hover:bg-[color:var(--pong-black)];
-
 	}
 	.pong-submit-button {
 
@@ -222,7 +220,6 @@
 		    	text-[12px] text-[color:var(--pong-black)] font-['PressStart2P',monospace];
 
 	}
-
 	.pong-load-animation {
 
 		@apply flex flex-col items-center justify-center w-[608px] h-[408px];
@@ -241,7 +238,6 @@
 	.profilepic-grid {
 		@apply grid grid-cols-4 gap-3 place-items-center;
 	}
-
 	.profilepic-item {
 		@apply avatar-placeholder cursor-pointer select-none
 			   pong-font-hover;
@@ -259,6 +255,4 @@
 	.pong-list-box-reply {
 		@apply pong-button text-[8px] px-2.5 py-1
 	}
-
-
 }

@@ -4,7 +4,7 @@ import { registerModal, closeRegisterButton, submitRegisterButton, regUsernameIn
 import { twoFAModal, twoFAOptionModal, twoFAEmailButton, twoFASubmitButton, twoFASkipButton, twoFAAuthButton, twoFAInput, twoFACancelButton} from "./ui.js";
 import { startMatchButton, playLocallyButton, exitMatchButton} from "./ui.js";
 import { playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton} from "./ui.js";
-import { menuButtons, incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton, getInviteFrom } from "./ui.js";
+import { menuButtons, getInviteFrom } from "./ui.js";
 import { openCreateTournamentButton, closeCreateTournamentButton, submitTournamentCreationButton, createTournamentModal, aliasTournamentInput, tournamentSizeInput} from "./ui.js";
 import { openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, renderTournamentList} from "./ui.js";
 import { show, hide, showMenu, showCanvas, showNotification, renderPendingRequests } from "./ui.js";
@@ -12,9 +12,9 @@ import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisibl
 
 import { drawFrame } from "./draw.js";
 
-import {ProfileInfo, TournamentInfo} from "./vars.js";
+import { ProfileInfo, TournamentInfo } from "./vars.js";
 
-import {registerUser, loginUser, logoutUser, configure2FA, verify2FA} from "./auth.js";
+import { registerUser, loginUser, logoutUser, configure2FA, verify2FA } from "./auth.js";
 
 import { userSocket, restoreSession } from "./websocket.js";
 
@@ -48,8 +48,6 @@ menuButtons.forEach(button => {
 			}
 	});
 });
-
-
 
 
 alreadyHaveAnAccountButton.onclick = () => {

@@ -40,7 +40,6 @@ class Game {
         X1: (Game.Screen.WIDTH - 10)
     };
 
-
     constructor() {
 
         LOGGER(200, "Game", "Constructor", "called.");
