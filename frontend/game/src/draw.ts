@@ -1,5 +1,4 @@
-import {texture, canvas, pongFont, whitish, blackish, drawCrtOverlay} from "./ui.js";
-import { SCORES } from "./vars.js";
+import {texture, canvas, pongFont, whitish, blackish, drawCrtOverlay, getSCORES } from "./ui.js";
 
 
 
@@ -52,7 +51,7 @@ export function drawGame(leftX: number = 10, leftY: number = 170, rightX: number
 
 	drawDottedLine();
 
-	drawScores(SCORES);
+	drawScores(getSCORES());
 }
 
 

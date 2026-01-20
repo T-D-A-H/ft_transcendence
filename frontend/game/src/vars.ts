@@ -7,10 +7,18 @@ export interface TournamentInfo {
     full: boolean;
 }
 
+export interface ProfileInfo {
+    id: string;
+	display_name: string;
+    username: string;
+}
+
+
+
 export interface StatusMsgTarget {
     status: number; 
     msg: string; 
-    target?: string | TournamentInfo[] | null;
+    target?: string | ProfileInfo[] | ProfileInfo | TournamentInfo[] | null;
 }
 
 export interface SendInviteResponse {
@@ -48,6 +56,13 @@ export interface ExitMatchResponse {
     target: string;
 }
 
+export interface InfoResponse {
+    type: "INFO_RESPONSE";
+    status: number;
+    msg: string;
+    target: ProfileInfo;
+}
+
 export interface IncomingInviteRequest {
     type: "INCOMING_INVITE_REQUEST";
     msg: string;
@@ -56,6 +71,7 @@ export interface IncomingInviteRequest {
 
 export interface IncomingInviteResponse {
     type: "INCOMING_INVITE_RESPONSE";
+    status: number;
     msg: string;
     target: string;
 }
@@ -89,7 +105,6 @@ export interface NotificationMessage {
 }
 
 
-
 export interface CreateTournamentRequest {
     type: "CREATE_TOURNAMENT_RESPONSE";
     status: number;
@@ -112,6 +127,15 @@ export interface JoinTournamentRequest {
 }
 
 
+export interface PendingRequest {
+    type: "GET_PENDING_RESPONSE";
+    status: number;
+    msg: string;
+    target: ProfileInfo[] | null;
+}
+
+
+
 
 export type ServerMessage = 
 SendInviteResponse         | ReplyInviteResponse      |
@@ -121,16 +145,7 @@ ScoresMessage              | DrawMessage			  |
 InitialVarsMessage         | WinMessage               |
 NotificationMessage        | CreateTournamentRequest  |
 SearchTournamentRequest    | JoinTournamentRequest    |
-ExitMatchResponse;
+ExitMatchResponse          | InfoResponse             |
+PendingRequest;
 
-export let SCORES: number[] = [0, 0];
 
-export let INVITE_FROM: string;
-
-export function setInviteFrom(target: string) {
-	INVITE_FROM = target;
-}
-
-export function getInviteFrom(): string {
-	return (INVITE_FROM);
-}

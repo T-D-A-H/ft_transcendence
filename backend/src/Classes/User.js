@@ -66,28 +66,45 @@ class User {
 
 
 
-	addPendingRequest(target_user) {
-		if (!this.pendingMatchRequests.has(target_user.username)) {
-			this.pendingMatchRequests.set(target_user.username, target_user);
+	addPendingRequest(target_user, target_username) {
+		if (!this.pendingMatchRequests.has(target_username)) {
+			this.pendingMatchRequests.set(target_username, target_user);
 		}
 	}
 
 
-	removePendingRequest(target_user) {
-		const key = target_user.username;
-		this.pendingMatchRequests.delete(key);
+	removePendingRequest(target_username) {
+		this.pendingMatchRequests.delete(target_username);
 	}
 
 
-	hasPendingRequest(target_user) {
-		const key = target_user.username;
-		return this.pendingMatchRequests.has(key);
+	hasPendingRequest(target_username) {
+		return this.pendingMatchRequests.has(target_username);
 	}
 
 	
-	listPendingRequests() {
-		return Array.from(this.pendingMatchRequests.values());
-	}
+    listPendingRequests() {
+    
+    	const requestslist = [];
+    
+    	const values = Array.from(this.pendingMatchRequests.values());
+    
+    	for (let i = values.length - 1; i >= 0; --i) {
+        
+    		const user = values[i];
+        
+    		requestslist.push({
+    			id: user.getId(),
+    			display_name: user.getDisplayName(),
+    			username: user.getUsername()
+    		});
+    	}
+    
+    	if (requestslist.length === 0) {
+    		return (null);
+    	}
+    	return (requestslist);
+    }
 
 
     setTournament(currentTournament) {

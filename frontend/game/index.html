@@ -15,17 +15,21 @@
 
 
 					<!-- Right: Opponent -->
-					<div id="opponent_profile_button" class="pong-top-bar-profiles items-start">
+					<div id="opponent_profile_button" class="pong-top-bar-profiles items-start invisible-slot">
 						<div>
-							<span id="opponent_displayname" class="pong-top-bar-names hidden">Helvetteo</span>
-							<div id="opponent_profile_image" class="avatar-placeholder hidden">&#9863;</div>
+							<span id="opponent_displayname" class="pong-top-bar-names hidden">@player_2</span>
+							<div id="opponent_profile_image" class="avatar-placeholder">&#9863;</div>
 						</div>
 					</div>
 
 					<!-- Center: notifications -->
 					<div class="pong-top-bar-notification hidden opacity-0 pointer-events-none" id="notify-box">
-						<span id="notify-text"></span>
+						<div id="notify-content" class="flex items-center gap-3">
+							<span id="notify-text"></span>
+							<button id="notify-accept" class="pong-button active-border hidden">ACCEPT</button>
+						</div>
 					</div>
+
 
 					<!-- Right: Profile -->
 					<button id="menu_button" class="pong-top-bar-profiles items-end">
@@ -57,8 +61,8 @@
 						<!-- Actions -->
 						<div class="pong-menu-buttons">
 							<button class="pong-button" data-target="settings_list"><span class="pong-icon">&#9881;</span></button>
-							<button class="pong-button" data-target="stats_list">Stats</button>
-							<button class="pong-button" data-target="friends_list">Friends</button>
+							<button class="pong-button" data-target="request_list">Requests</button>
+							<button class="pong-button" data-target="stats_list">Friends</button>
 							<button class="pong-button active-border" data-target="play_list">Play</button>
 						</div>
 					
@@ -68,7 +72,7 @@
 						
 							<div class="pong-menu-list-container">
 
-								<div id="settings_list" class="pong-list hidden">
+								<div id="settings_list" class="pong-list  w-full hidden">
 									<button id="night_mode" class="pong-button active-border full-width flex justify-between items-center">
 										<span>NIGHT/DAY MODE</span><span class="pong-icon">&#9680;</span>
 									</button>
@@ -90,21 +94,22 @@
 									</button>
 								</div>
 
+								<!-- requests -->
+								<div id="request_list" class="pong-list  w-[320px] hidden">
+									<ul id="request_list_ul" class="pong-friends-list"></ul>
+								</div>
+								
 								<!-- stats -->
-								<div id="stats_list" class="pong-list hidden">
+								<div id="stats_list" class="pong-list w-[320px]">
 								</div>
-							
-								<!-- friends -->
-								<div id="friends_list" class="pong-list hidden">
-								</div>
-							
+
 								<!-- play -->
-								<div id="play_list" class="pong-list">
+								<div id="play_list" class="pong-list  w-full">
 									<button id="play_locally" class="pong-button active-border full-width">PLAY LOCALLY</button>
+									<button id="play_locally" class="pong-button active-border full-width">PLAY AGAINST BOT</button>
 									<button id="play_against_user" class="pong-button active-border full-width">PLAY ONLINE</button>
 									<button id="create_tournament" class="pong-button active-border full-width">CREATE TOURNAMENT</button>
 									<button id="search_tournament" class="pong-button active-border full-width">FIND TOURNAMENT</button>
-
 								</div>
 
 
@@ -115,143 +120,130 @@
 					</div>
 				</div>
 
-					<!-- Spinner -->
-					<div id="load_animation_modal" class="pong-modal pong-load-animation hidden">
-						<div class="h-12 w-12 mb-4 border-4 border-[#1c1817] animate-spin"></div>
-						<div class="text-[#1c1817] text-sm font-['PressStart2P']">Loading...</div>
+				<!-- Change profile picture modal -->
+				<div id="profilepic_modal" class="pong-modal hidden">
+				
+					<div class="flex items-center justify-center w-full mb-4">
+						<button id="profilepic_cancel_button" class="pong-cancel-button">X</button>
+						<h2 class="pong-modal-top-text">Select Avatar</h2>
+					</div>
+				
+					<div id="profilepic_grid" class="profilepic-grid"></div>
+				
+				</div>
+				
+				<!-- Spinner -->
+				<div id="load_animation_modal" class="pong-modal pong-load-animation hidden">
+					<div class="h-12 w-12 mb-4 border-4 border-[#1c1817] animate-spin"></div>
+					<div class="text-[#1c1817] text-sm font-['PressStart2P']">Loading...</div>
+				</div>
+
+				<!-- Login modal -->
+    			<div id="login_modal" class="pong-modal hidden">
+					
+					<div class="flex items-center justify-center">
+						<button id="close_login" class="pong-cancel-button">X</button>
+						<h2 class="pong-modal-top-text">LOG IN</h2>
 					</div>
 
-					<!-- Login modal -->
-    				<div id="login_modal" class="pong-modal hidden">
-						
-						<div class="flex items-center justify-center">
-							<button id="close_login" class="pong-cancel-button">X</button>
-							<h2 class="pong-modal-top-text">LOG IN</h2>
-						</div>
-	
-
-    				  	<input id="user_input" type="text" class="pong-input-field" placeholder="Username" />
-    				  	<input id="pass_input" type="password" class="pong-input-field" placeholder="Password" />
-
-						<button id="donthaveanaccount_button" class="pong-button text-[8px]">Dont have an account?</button>
-						<div class="flex justify-center mt-4">
-							<button id="login_submit_button" class="pong-submit-button ">SUBMIT</button>
-						</div>
-    				</div>
-
-
-
-					<!-- Register modal -->
-					<div id="register_modal" class="pong-modal hidden">
-
-						<div class="flex items-center justify-center">
-							<button id="close_register" class="pong-cancel-button">X</button>
-							<h2 class="pong-modal-top-text">REGISTER</h2>
-						</div>
-
-						<input id="reg_username" type="text" class="pong-input-field" placeholder="Username" />
-						<input id="reg_displayname" type="text" class="pong-input-field" placeholder="Display Name" />
-						<input id="reg_email" type="email" class="pong-input-field" placeholder="Email" />
-						<input id="reg_password" type="password" class="pong-input-field" placeholder="Password" />
-
-						<button id="alreadyhaveanaccount_button" class="pong-button text-[8px]">Already have an account?</button>
-						<div class="flex justify-center mt-4">
-							<button id="register_submit_button" class="pong-submit-button">SUBMIT</button>
-						</div>
+    			  	<input id="user_input" type="text" class="pong-input-field" placeholder="Username" />
+    			  	<input id="pass_input" type="password" class="pong-input-field" placeholder="Password" />
+					<button id="donthaveanaccount_button" class="pong-button text-[8px]">Dont have an account?</button>
+					<div class="flex justify-center mt-4">
+						<button id="login_submit_button" class="pong-submit-button ">SUBMIT</button>
 					</div>
+    			</div>
 
-
-					<!-- Create Tournament -->
-					<div id="create_tournament_modal" class="pong-modal hidden">
-
-						<div class="flex items-center justify-center">
-							<button id="tournament_create_cancel_button" class="pong-cancel-button">X</button>
-							<h2 class="pong-modal-top-text">CREATE TOURNAMENT</h2>
-						</div>
-
-						<input id="tournament_alias" type="text" class="pong-input-field mt-2" placeholder="Enter Alias" />
-						<div class="flex items-center justify-center gap-2">
-							<button type="button" id="decrement" class="pong-button-small">-</button>
-							<input id="tournament_size" type="number" min="2" max="64" step="2" class="pong-input-field text-center" placeholder="4" />
-							<button type="button" id="increment" class="pong-button-small">+</button>
-						</div>
-
-						<div class="flex justify-center mt-4">
-							<button id="tournament_create_submit_button" class="pong-submit-button">SUBMIT</button>
-						</div>
+				<!-- Register modal -->
+				<div id="register_modal" class="pong-modal hidden">
+					<div class="flex items-center justify-center">
+						<button id="close_register" class="pong-cancel-button">X</button>
+						<h2 class="pong-modal-top-text">REGISTER</h2>
 					</div>
-
-
-					<!-- Active tournaments modal -->
-					<div id="search_tournaments_modal" class="pong-modal hidden">
-
-						<div class="flex items-center justify-center">
-							<button id="tournament_search_cancel_button" class="pong-cancel-button">X</button>
-							<h2 class="pong-modal-top-text">Available Tournaments</h2>
-						</div>
-
-						<ul id="tournament_list_ul" class="pong-tournament-list"></ul>
-
+					<input id="reg_username" type="text" class="pong-input-field" placeholder="Username" />
+					<input id="reg_displayname" type="text" class="pong-input-field" placeholder="Display Name" />
+					<input id="reg_email" type="email" class="pong-input-field" placeholder="Email" />
+					<input id="reg_password" type="password" class="pong-input-field" placeholder="Password" />
+					<button id="alreadyhaveanaccount_button" class="pong-button text-[8px]">Already have an account?</button>
+					<div class="flex justify-center mt-4">
+						<button id="register_submit_button" class="pong-submit-button">SUBMIT</button>
 					</div>
+				</div>
 
-					<!-- Play Request Modal--> 
-					<div id="play_request_modal" class="pong-modal hidden">
-
-						<div class="flex items-center justify-center">
-							<button id="close_play_request" class="pong-cancel-button">X</button>
-							<h2 class="pong-modal-top-text">Send Match Request</h2>
-						</div>
-
-						<input id="play_request_username" type="text" class="pong-input-field" placeholder="Enter username" />
-
-						<div class="flex justify-center mt-4">
-							<button id="send_play_request" class="pong-submit-button">SUBMIT</button>
-						</div>
-
+				<!-- Create Tournament -->
+				<div id="create_tournament_modal" class="pong-modal hidden">
+					<div class="flex items-center justify-center">
+						<button id="tournament_create_cancel_button" class="pong-cancel-button">X</button>
+						<h2 class="pong-modal-top-text">CREATE TOURNAMENT</h2>
 					</div>
-
-					<!-- Incoming Play Request Modal  CHANGE THIS TO A NOTIFICATION-->
-					<div id="incoming_play_request_modal" class="pong-modal hidden">
-						<h2 class="pong-modal-top-text">Match Request</h2>
-						<p id="incoming_play_request_text" class="mb-4 text-[8px] leading-4 text-[#1c1817] font-['PressStart2P']">
-							Player wants to play against you.
-						</p>
-						<div class="flex justify-between">
-							<button id="incoming_play_request_close" class="pong-button text-[12px] px-3 py-1">X</button>
-							<button id="incoming_play_request_accept" class="pong-button text-[12px] px-3 py-1">ACCEPT</button>
-						</div>
+					<input id="tournament_alias" type="text" class="pong-input-field mt-2" placeholder="Enter Alias" />
+					<div class="flex items-center justify-center gap-2">
+						<button type="button" id="decrement" class="pong-button-small">-</button>
+						<input id="tournament_size" type="number" min="2" max="64" step="2" class="pong-input-field text-center" placeholder="4" />
+						<button type="button" id="increment" class="pong-button-small">+</button>
 					</div>
-
-					<!-- 2FA Option Modal -->
-					<div id="twofa_option_modal" class="pong-modal hidden">
-
-						<div class="flex items-center justify-center">
-							<button id="twofa_cancel_button" class="pong-cancel-button">X</button>
-							<h2 class="pong-modal-top-text">Choose 2FA Method</h2>
-						</div>
-
-						<div class="flex flex-col gap-2 mt-4">
-							<button id="twofa_email_button" class="pong-submit-button w-38">Email</button>
-							<button id="twofa_auth_button" class="pong-submit-button w-38">Authenticator</button>
-							<button id="twofa_skip_button" class="pong-submit-button w-38">Skip For Now</button>
-						</div>
+					<div class="flex justify-center mt-4">
+						<button id="tournament_create_submit_button" class="pong-submit-button">SUBMIT</button>
 					</div>
+				</div>
 
-					<!-- 2FA Input Modal -->
-					<div id="twofa_modal" class="pong-modal hidden">
-
-						<div class="flex items-center justify-center">
-							<button id="close_play_request" class="pong-cancel-button">X</button>
-							<h2 class="pong-modal-top-text">Two-Factor Authentication</h2>
-						</div>
-
-						<input id="twofa_input" type="text" class="pong-input-field" placeholder="Enter 2FA code" />
-
-						<div class="flex justify-center mt-4">
-							<button id="twofa_submit_button" class="pong-submit-button">SUBMIT</button>
-						</div>
+				<!-- Active tournaments modal -->
+				<div id="search_tournaments_modal" class="pong-modal hidden">
+					<div class="flex items-center justify-center">
+						<button id="tournament_search_cancel_button" class="pong-cancel-button">X</button>
+						<h2 class="pong-modal-top-text">Available Tournaments</h2>
 					</div>
+					<ul id="tournament_list_ul" class="pong-tournament-list"></ul>
+				</div>
 
+				<!-- Play Request Modal--> 
+				<div id="play_request_modal" class="pong-modal hidden">
+					<div class="flex items-center justify-center">
+						<button id="close_play_request" class="pong-cancel-button">X</button>
+						<h2 class="pong-modal-top-text">Send Match Request</h2>
+					</div>
+					<input id="play_request_username" type="text" class="pong-input-field" placeholder="Enter username" />
+					<div class="flex justify-center mt-4">
+						<button id="send_play_request" class="pong-submit-button">SUBMIT</button>
+					</div>
+				</div>
+
+				<!-- Incoming Play Request Modal  CHANGE THIS TO A NOTIFICATION-->
+				<div id="incoming_play_request_modal" class="pong-modal hidden">
+					<h2 class="pong-modal-top-text">Match Request</h2>
+					<p id="incoming_play_request_text" class="mb-4 text-[8px] leading-4 text-[#1c1817] font-['PressStart2P']">
+						Player wants to play against you.
+					</p>
+					<div class="flex justify-between">
+						<button id="incoming_play_request_close" class="pong-button text-[12px] px-3 py-1">X</button>
+						<button id="incoming_play_request_accept" class="pong-button text-[12px] px-3 py-1">ACCEPT</button>
+					</div>
+				</div>
+
+				<!-- 2FA Option Modal -->
+				<div id="twofa_option_modal" class="pong-modal hidden">
+					<div class="flex items-center justify-center">
+						<button id="twofa_cancel_button" class="pong-cancel-button">X</button>
+						<h2 class="pong-modal-top-text">Choose 2FA Method</h2>
+					</div>
+					<div class="flex flex-col gap-2 mt-4">
+						<button id="twofa_email_button" class="pong-submit-button w-38">Email</button>
+						<button id="twofa_auth_button" class="pong-submit-button w-38">Authenticator</button>
+						<button id="twofa_skip_button" class="pong-submit-button w-38">Skip For Now</button>
+					</div>
+				</div>
+
+				<!-- 2FA Input Modal -->
+				<div id="twofa_modal" class="pong-modal hidden">
+					<div class="flex items-center justify-center">
+						<button id="close_play_request" class="pong-cancel-button">X</button>
+						<h2 class="pong-modal-top-text">Two-Factor Authentication</h2>
+					</div>
+					<input id="twofa_input" type="text" class="pong-input-field" placeholder="Enter 2FA code" />
+					<div class="flex justify-center mt-4">
+						<button id="twofa_submit_button" class="pong-submit-button">SUBMIT</button>
+					</div>
+				</div>
 
 				<!-- CRT EFFECT CANVAS -->
 				<canvas id="crt_overlay" class="fixed inset-0 pointer-events-none z-50"></canvas>

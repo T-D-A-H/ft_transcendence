@@ -1,4 +1,4 @@
-import { show, hide } from "./ui.js";
+import { show, hide, updateProfileUI} from "./ui.js";
 import { connectWithToken, nullWebsocket} from "./websocket.js";
 
 export async function registerUser(usernameInput: HTMLInputElement, displaynameInput: HTMLInputElement, emailInput: HTMLInputElement, passwordInput: HTMLInputElement): 
@@ -42,7 +42,7 @@ export async function loginUser(usernameInput: HTMLInputElement, passwordInput: 
 Promise<{ status: number | string; token?: string; tempToken?: string; method?: string; error?: string; }> {
 
 	const body = {
-		display_name: usernameInput.value,
+		username: usernameInput.value,
 		password: passwordInput.value
 	};
 
@@ -98,14 +98,13 @@ export async function logoutUser(logoutButton: HTMLButtonElement) {
 	if (data.status === "ok") {
 		hide(logoutButton);
 		localStorage.removeItem("token");
+		updateProfileUI("PONG", "ft_transcendence.pong.com");
 		nullWebsocket();
 
 	}
 }
 
-export async function configure2FA(setupToken: string, method: "2FAmail" | "skip", twoFAOptionModal: HTMLElement, 
-	loginModal: HTMLElement, 
-	registerModal: HTMLElement) {
+export async function configure2FA(setupToken: string, method: "2FAmail" | "skip", twoFAOptionModal: HTMLElement, loginModal: HTMLElement, registerModal: HTMLElement) {
 
 	const res = await fetch("/set-2fa", {
 		method: "POST",

@@ -6,9 +6,9 @@ const LOGGER 	 = require("../LOGGER.js");
 function buildLoginHandler(db, bcrypt, userManager, fastify) {
 
 	return async function handleLogin(req, reply) {
-	const { display_name, password } = req.body || {};
+	const { username, password } = req.body || {};
 
-	if (!display_name || !password) {
+	if (!username || !password) {
 		LOGGER(400, "server", "handleLogin", "Missing fields");
 		return reply.code(400).send({ error: "Missing fields" });
 	}
@@ -18,7 +18,7 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 		const user = await new Promise((resolve, reject) => {
 			db.get(
 				"SELECT id, username, display_name, email, password, twofa FROM users WHERE display_name = ?",
-				[display_name],
+				[username],
 				(err, row) => err ? reject(err) : resolve(row)
 			);
 		});

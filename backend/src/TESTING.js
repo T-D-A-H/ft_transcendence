@@ -25,6 +25,7 @@ function createTestUsers(userManager, count)
 	"Fedora_The_Explorer",
 	"CheesyToe"
 	];
+	let users = [];
 	for (let i = 0; i < count; i++)
 	{
 		const user_id = userManager.createId();
@@ -38,15 +39,17 @@ function createTestUsers(userManager, count)
 
 		userManager.addUser(user);
 		userManager.loginUser(user_id);
-
-		const tournament = userManager.createTournament(user, display_name, size);
+		users.push(user);
+		
 		if (size % 3 === 0) {
+			const tournament = userManager.createTournament(user, display_name, size);
 			tournament.setTESTING();
 			tournament.currentPlayerCount = size;
 			tournament.setReady();
 		}
 		size += 2;
 	}
+	return users;
 }
 
 module.exports = {createTestUsers};

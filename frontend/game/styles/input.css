@@ -21,6 +21,16 @@
 }
 @layer utilities {
 
+
+	input[type="number"] {
+		-moz-appearance: textfield;
+	}
+
+	input[type="number"]::-webkit-inner-spin-button,
+	input[type="number"]::-webkit-outer-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
 	.pong-scrollbar {
 		scrollbar-width: auto;
 		scrollbar-color: var(--pong-black) transparent;
@@ -57,6 +67,12 @@
 	.pong-font-hover {
 		@apply  hover:text-[color:var(--pong-white)] hover:bg-[color:var(--pong-black)];
 	}
+	.invisible-slot {
+		@apply invisible opacity-0 pointer-events-none;
+	}
+	.visible-slot {
+		@apply visible opacity-100 pointer-events-auto;
+	}
 	.pong-icon {
 		
 		@apply inline-block scale-[3] origin-center leading-none align-middle relative -top-[6px];
@@ -72,6 +88,7 @@
 				rounded-lg
 				overflow-hidden
 				bg-[var(--pong-white)];
+				
 	}
 	.pong-top-bar {
 
@@ -88,12 +105,12 @@
 		@apply pong-font;
 	}
 	.avatar-placeholder {
-		
-		@apply	flex justify-center items-center
+		@apply	flex items-center justify-center
 				w-[5.5rem] h-10
-				text-[30px] text-[color:var(--pong-black)]
 				border-4 rounded-sm border-[var(--pong-black)]
+				text-[30px] text-[color:var(--pong-black)]
 				pong-font-hover;
+
 	}
 	.pong-top-bar-notification {
 		
@@ -144,12 +161,11 @@
 		@apply border-[3px] border-[color:var(--pong-black)] rounded-none;
 	}
 	.pong-menu-list-container {
-		@apply flex flex-col w-1/2 max-h-[217px] overflow-y-auto pong-scrollbar relative z-10;
+		@apply flex flex-col w-[400] max-h-[217px] overflow-y-auto pong-scrollbar relative z-10;
 	}
 	.pong-list {
-		@apply flex flex-col items-center w-full;
+		@apply flex flex-col items-center;
 	}
-	
 	.pong-button.full-width {
 		@apply w-[253px] my-1 text-center;
 	}
@@ -222,4 +238,27 @@
 				border-2 border-[var(--pong-black)] px-3 py-1.5
 				text-[10px] text-left;
 	}
+	.profilepic-grid {
+		@apply grid grid-cols-4 gap-3 place-items-center;
+	}
+
+	.profilepic-item {
+		@apply avatar-placeholder cursor-pointer select-none
+			   pong-font-hover;
+			   align-items: end;
+	}
+	.pong-box {
+		@apply flex items-center justify-between active-border mb-1 w-[300px] max-w-[90vw] px-2 py-1;
+	}
+	.pong-list-box-name-msg {
+		@apply flex flex-col flex-1 mr-2 overflow-hidden pong-font text-[8px] truncate;
+	}
+	.pong-list-box-button {
+		@apply flex gap-1 shrink-0;
+	}
+	.pong-list-box-reply {
+		@apply pong-button text-[8px] px-2.5 py-1
+	}
+
+
 }

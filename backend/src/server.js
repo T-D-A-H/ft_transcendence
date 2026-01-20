@@ -22,10 +22,6 @@ fastify.register(require('fastify-jwt'), {secret: process.env.JWT_SECRET});
 
 
 
-const {createTestUsers} = require("./TESTING.js");
-createTestUsers(userManager, 24);
-
-
 async function startServer() {
 	
 	await fastify.register(websocket);

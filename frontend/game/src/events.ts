@@ -1,7 +1,6 @@
-import {showNotification, show, startMatchButton, showMenu, incomingPlayRequestText, incomingPlayRequestModal, playAgainstUserButton, playLocallyButton, openCreateTournamentButton, openSearchTournamentButton} from "./ui.js"
-import {setInviteFrom,  SCORES} from "./vars.js"
+import {showNotification, show, startMatchButton, showMenu, incomingPlayRequestText, incomingPlayRequestModal, setInviteFrom, setSCORES, showCanvas} from "./ui.js"
 import type {ServerMessage, StatusMsgTarget} from "./vars.js"
-import {drawGame, clearBackground, drawFrame} from "./draw.js"
+import {drawGame, clearBackground} from "./draw.js"
 import { userSocket } from "./websocket.js"
 
 
@@ -76,12 +75,13 @@ export function oneTimeEvent(request: string, response: ServerMessage["type"], t
 				data.type === "PLAY_LOCALLY_RESPONSE"      ||
 				data.type === "CREATE_TOURNAMENT_RESPONSE" ||
 				data.type === "SEARCH_TOURNAMENT_RESPONSE" ||
-				data.type === "JOIN_TOURNAMENT_RESPONSE") {
+				data.type === "JOIN_TOURNAMENT_RESPONSE"   ||
+				data.type === "INFO_RESPONSE"			   ||
+				data.type === "GET_PENDING_RESPONSE") {
 
 				resolve({status: data.status, msg: data.msg, target: data.target});
+				return ;
 			}
-			
-			resolve(null);
 
 		}, false);
 
@@ -98,26 +98,24 @@ export function ConstantEvent(response: ServerMessage["type"]){
 		if (data.type === "INCOMING_INVITE_RESPONSE") {
 
 			showNotification(data.msg);
+			if (data.status === 200)
+				showCanvas();
+
 		}
 		else if (data.type === "INCOMING_INVITE_REQUEST") {
 
 			setInviteFrom(data.target.trim());
-			incomingPlayRequestText.textContent = data.msg;
-			show(incomingPlayRequestModal);
+			showNotification(data.msg, true);
 		}
 		else if (data.type === "SCORES") {
 
-			SCORES[0] = data.scores[0];
-        	SCORES[1] = data.scores[1];
+			setSCORES(data.scores[0], data.scores[1]);
 		}
 		else if (data.type === "WIN") {
 
-			SCORES[0] = 0;
-			SCORES[1] = 0;
+			setSCORES(0, 0);
 			clearBackground();
 			showNotification(data.msg);
-
-			
 			showMenu();
 
 		}
@@ -175,6 +173,8 @@ export function send2KeyPress(): void {
 			sendRequest("MOVE2", { move: "STOP2" });
 	});
 }
+
+
 
 
 

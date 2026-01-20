@@ -100,7 +100,7 @@ class UserManager {
 
     getUserByUsername(username) {
         for (const user of this.users.values()) {
-            if (user.display_name === username) {
+            if (user.username === username) {
                 return user;
             }
         }
@@ -148,14 +148,14 @@ class UserManager {
             LOGGER(400, "UserManager", "checkMatchDisconnect", "player disconnected");
             match.setWINNER(1);
             match.setLOSER(0);
-            match.sendDisconnect(match.players[1]);
+            match.setDisconnect();
 
         }
         else if (match.players[1].isConnected === false) {
 
             match.setWINNER(0);
             match.setLOSER(1);
-            match.sendDisconnect(match.players[0]);
+            match.setDisconnect();
 
             LOGGER(400, "UserManager", "checkMatchDisconnect", "player disconnected");
         }
@@ -177,6 +177,8 @@ class UserManager {
 
     addToMatch(requestingUser, match) {
 
+        match.getPlayers()[0].setIsPlaying();
+        requestingUser.setIsPlaying();
         match.addUserToMatch(requestingUser);
         requestingUser.setMatch(match);
     }
@@ -189,10 +191,16 @@ class UserManager {
     unsetMatches(match) {
 
         if (!match) return;
-        if (match.players[0] !== null)
+        if (match.players[0] !== null) {
+
             match.players[0].unsetMatch();
-        if (match.players[1] !== null)
+            match.players[0].unsetIsPlaying();
+        }
+        if (match.players[1] !== null) {
+
             match.players[1].unsetMatch();
+            match.players[1].unsetIsPlaying();
+        }
     }
 
     stopMatch(match) {

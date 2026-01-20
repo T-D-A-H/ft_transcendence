@@ -1,6 +1,7 @@
 
 import { drawGame } from "./draw.js";
-import {TournamentInfo} from "./vars.js";
+import {TournamentInfo, ProfileInfo} from "./vars.js";
+
 
 //------------------------------------------------------------------------OPPONENT
 
@@ -38,18 +39,60 @@ export const menuUsername =
 export const menuButtons = 
 	document.querySelectorAll<HTMLButtonElement>('.pong-menu-buttons .pong-button');
 
-export const menuPlayButton = 
-	document.getElementById("menu_play_button") as HTMLButtonElement;
+export 	function showCanvas() {
 
-export const menuFriendsButton = 
-	document.getElementById("menu_friends_button") as HTMLButtonElement;
+	hide(menuModal);
+	show(canvas);
+	drawGame();
+	show(topBarOpponentDisplayName);
+	makeVisible(topBarOpponentButton);
+	show(topBarDisplayName);
+	show(startMatchButton);
+	show(exitMatchButton);
 
-export const menuStatsButton = 
-	document.getElementById("menu_stats_button") as HTMLButtonElement;
+}
 
-export const menuSettingsButton = 
-	document.getElementById("menu_settings_button") as HTMLButtonElement;
+export 	function showMenu() {
+	
+	hide(canvas);
+	show(menuModal);
+	hide(topBarDisplayName);
+	makeInvisible(topBarOpponentButton);
+	hide(topBarOpponentDisplayName);
+	hide(startMatchButton);
+	hide(exitMatchButton);
+}
 
+let menu_open: boolean = false;
+
+export function toggleMenu(): void
+{
+	if (menu_open) {
+		hide(menuModal);
+		drawGame();
+		show(canvas);
+	}
+	else {
+		hide(canvas);
+		show(menuModal);
+	}
+	menu_open = !menu_open;
+}
+
+openMenuButton.onclick = toggleMenu;
+
+export function updateProfileUI(displayName: string, username: string): void
+{
+	if (topBarDisplayName) {
+		topBarDisplayName.textContent = "@" + username;
+	}
+
+	if (menuDisplayName)
+		menuDisplayName.textContent = displayName;
+
+	if (menuUsername)
+		menuUsername.textContent = "@" + username;
+}
 
 //------------------------------------------------------------------------MANU
 //------------------------------------------------------------------------LOGIN
@@ -57,11 +100,6 @@ export const menuSettingsButton =
 
 export const loginModal = // Login Box element
 	document.getElementById("login_modal") as HTMLDivElement;
-
-
-export const dontHaveAnAccountButton = // Submit info in register box
-	document.getElementById("donthaveanaccount_button") as HTMLButtonElement;
-
 
 export const closeLoginButton = // Close login box element
 	document.getElementById("close_login") as HTMLButtonElement;
@@ -72,19 +110,15 @@ export const usernameInput = // Username entered in login box
 export const passwordInput = // Password entered in login box
 	document.getElementById("pass_input") as HTMLInputElement;
 
+export const dontHaveAnAccountButton = // Submit info in register box
+	document.getElementById("donthaveanaccount_button") as HTMLButtonElement;
+
 export const submitLoginButton = // Submit info in login box
 	document.getElementById("login_submit_button") as HTMLButtonElement;
 
 
 //------------------------------------------------------------------------LOGIN
-//------------------------------------------------------------------------LOGOUT
 
-
-export const logoutButton = // Logout Button
-	document.getElementById("logout_button") as HTMLButtonElement;
-
-
-//------------------------------------------------------------------------LOGOUT
 //------------------------------------------------------------------------REGISTER
 
 
@@ -186,6 +220,60 @@ export const incomingPlayRequestCloseButton =
 export const incomingPlayRequestAcceptButton =
 	document.getElementById("incoming_play_request_accept") as HTMLButtonElement;
 
+export const requestListUL = // UL element where usernames will be inserted
+	document.getElementById("request_list_ul") as HTMLUListElement;
+
+
+export function renderPendingRequests(requests: ProfileInfo[]): HTMLButtonElement[] {
+
+	requestListUL.innerHTML = "";
+
+	const buttons: HTMLButtonElement[] = [];
+
+	for (const profile of requests) {
+
+		const li = document.createElement("li");
+		li.className = "pong-box";
+
+
+		const nameMsg = document.createElement("div");
+		nameMsg.className = "pong-list-box-name-msg";
+
+		const nameSpan = document.createElement("span");
+		nameSpan.textContent = `@${profile.username}`;
+
+		const msgSpan = document.createElement("span");
+		msgSpan.textContent = "Match request";
+
+		nameMsg.appendChild(nameSpan);
+		nameMsg.appendChild(msgSpan);
+
+		const btnWrap = document.createElement("div");
+		btnWrap.className = "pong-list-box-button";
+
+		const declineBtn = document.createElement("button");
+		declineBtn.className = "pong-list-box-reply";
+		declineBtn.textContent = "X";
+		declineBtn.dataset.username = profile.username;
+
+		const acceptBtn = document.createElement("button");
+		acceptBtn.className = "pong-list-box-reply active-border";
+		acceptBtn.textContent = "ACCEPT";
+		acceptBtn.dataset.username = profile.username;
+
+		btnWrap.appendChild(declineBtn);
+		btnWrap.appendChild(acceptBtn);
+
+		li.appendChild(nameMsg);
+		li.appendChild(btnWrap);
+		requestListUL.appendChild(li);
+
+		buttons.push(acceptBtn);
+		buttons.push(declineBtn);
+	}
+
+	return (buttons);
+}
 
 //------------------------------------------------------------------------INCOMING PLAY REQUEST
 //------------------------------------------------------------------------CREATE TOURNAMENT
@@ -245,6 +333,7 @@ export const searchTournamentsModal = // Container showing waiting tournaments
 
 export const tournamentsListUL = // UL element where usernames will be inserted
 	document.getElementById("tournament_list_ul") as HTMLUListElement;
+
 
 export function renderTournamentList(tournaments: TournamentInfo[]): HTMLButtonElement[]
 {
@@ -309,26 +398,6 @@ export const texture = // Texture to paint
 
 
 //------------------------------------------------------------------------CANVAS
-//------------------------------------------------------------------------FONT-COLOURS
-
-
-export let whitish: string = "#5a5244";
-export let blackish: string = "#312521";
-export const redish: string = "#3d0027";
-export const greenish: string = "#003527";
-
-export const pongFont = new Promise<void>((resolve) => { // BLOCK FONT
-
-    const Font = new FontFace("BlockFont", "url(game/assets/block_merged.ttf)");
-    Font.load().then((loadedFont) => {
-        document.fonts.add(loadedFont);
-        console.log("BlockFont loaded");
-        resolve();
-    });
-});
-
-
-//------------------------------------------------------------------------FONT-COLOURS
 //------------------------------------------------------------------------NOTIFICATIONS
 
 
@@ -338,13 +407,21 @@ export const notificationBox =
 export const notificationBoxText = 
 	document.getElementById("notify-text") as HTMLDivElement;
 
-export function showNotification(text: string)
+export const notificationAcceptButton = 
+	document.getElementById("notify-accept") as HTMLButtonElement;
+
+export function showNotification(text: string, state?: boolean)
 {
 
 	if (!notificationBox || !notificationBoxText) return;
 
 	notificationBoxText.textContent = text;
 
+	let time = 2500;
+	if (state === true) {
+		show(notificationAcceptButton);
+		time = 5000;
+	}
 	show(notificationBox);
 	notificationBox.classList.remove("opacity-0", "pointer-events-none");
 	notificationBox.classList.add("opacity-100");
@@ -354,8 +431,13 @@ export function showNotification(text: string)
 		notificationBox.classList.remove("opacity-100");
 		notificationBox.classList.add("opacity-0");
 
-		setTimeout(() => {hide(notificationBox)}, 200);
-	}, 2500);
+		setTimeout(() => {
+			hide(notificationBox);
+			if (state === true) {
+				hide(notificationAcceptButton);
+			}
+		}, 200);
+	}, time);
 }
 
 //------------------------------------------------------------------------NOTIFICATIONS
@@ -408,14 +490,6 @@ export function drawCrtOverlay(): void {
 export const loadAnimation = // Initial loader Modal
 	document.getElementById("load_animation_modal") as HTMLDivElement;
 
-export function show(elem: HTMLElement): void { // show HTML element
-	elem.classList.remove("hidden"); 
-}
-
-export function hide(elem: HTMLElement): void { // hide HTML
-	elem.classList.add("hidden"); 
-}
-
 
 export function showLoader() { // show Loading animation
 	show(loadAnimation);
@@ -426,42 +500,75 @@ export function hideLoader() { // hide Loading animation
 }
 
 
-export 	function showCanvas() {
-
-	hide(menuModal);
-	show(canvas);
-	drawGame();
-
-	show(topBarOpponentDisplayName);
-	show(topBarOpponentPicture);
-
-	show(topBarDisplayName);
-	show(startMatchButton);
-
-	show(exitMatchButton);
-
+export function show(elem: HTMLElement): void { // show HTML element
+	elem.classList.remove("hidden"); 
 }
 
-export 	function showMenu() {
-	
-	hide(canvas);
-	show(menuModal);
+export function hide(elem: HTMLElement): void { // hide HTML
+	elem.classList.add("hidden"); 
+}
 
-	hide(topBarDisplayName);
-	hide(topBarOpponentPicture);
-	hide(topBarOpponentDisplayName);
-	hide(startMatchButton);
-	hide(exitMatchButton);
+export function makeInvisible(elem: HTMLElement): void {
+	elem.classList.add("invisible-slot");
+	elem.classList.remove("visible-slot");
+}
+
+export function makeVisible(elem: HTMLElement): void {
+	elem.classList.remove("invisible-slot");
+	elem.classList.add("visible-slot");
 }
 
 
-export const nightModeButton = // Search for matches button
+export let SCORES: number[] = [0, 0];
+
+export function setSCORES(scoreA: number, scoreB: number) {
+
+	SCORES[0] = scoreA;
+    SCORES[1] = scoreB;
+}
+
+export function getSCORES() {
+
+	return (SCORES);
+}
+
+export let INVITE_FROM: string;
+
+export function setInviteFrom(target: string) {
+	INVITE_FROM = target;
+}
+
+export function getInviteFrom(): string {
+	return (INVITE_FROM);
+}
+
+//------------------------------------------------------------------------UTILS
+//------------------------------------------------------------------------SETTINGS
+
+
+export let whitish: string = "#5a5244";
+export let blackish: string = "#312521";
+export const redish: string = "#3d0027";
+export const greenish: string = "#003527";
+
+export const pongFont = new Promise<void>((resolve) => { // BLOCK FONT
+
+    const Font = new FontFace("BlockFont", "url(game/assets/block_merged.ttf)");
+    Font.load().then((loadedFont) => {
+        document.fonts.add(loadedFont);
+        console.log("BlockFont loaded");
+        resolve();
+    });
+});
+
+
+export const nightModeButton = //night mode button
 	document.getElementById("night_mode") as HTMLButtonElement;
 
 export let nightMode = false;
 
-export function toggleNightMode(): void
-{
+nightModeButton.onclick = () => {
+
 	nightMode = !nightMode;
 	document.documentElement.classList.toggle("pong-night-mode", nightMode);
 
@@ -472,23 +579,60 @@ export function toggleNightMode(): void
 		whitish = "#5a5244";
 		blackish = "#312521";
 	}
-}
+	drawGame();
+};
 
-let menu_open: boolean = false;
+export const logoutButton = // Logout Button
+	document.getElementById("logout_button") as HTMLButtonElement;
 
-export function toggleMenu(): void
+
+const avatarSymbols: string[] = [
+	"&#9865;", "&#10020;", "&#10026;", "&#10015;",
+	"&#9760;", "&#9786;", "&#9787;", "&#10037;",
+	"&#9883;", "&#9884;", "&#10049;", "&#10057;",
+];
+
+const changeProfilePicButton =
+	document.getElementById("change_profilepic_button") as HTMLButtonElement;
+
+const profilePicModal =
+	document.getElementById("profilepic_modal") as HTMLDivElement;
+
+const profilePicGrid =
+	document.getElementById("profilepic_grid") as HTMLDivElement;
+
+const profilePicCancelButton =
+	document.getElementById("profilepic_cancel_button") as HTMLButtonElement;
+
+const selfProfileImage =
+	document.getElementById("self_profile_image") as HTMLDivElement;
+
+function renderProfilePicGrid(): void
 {
-	if (menu_open) {
-		hide(menuModal);
-		drawGame();
-		show(canvas);
-	}
-	else {
-		hide(canvas);
-		show(menuModal);
-	}
+	profilePicGrid.innerHTML = "";
 
-	menu_open = !menu_open;
+	for (const symbol of avatarSymbols) {
+		const btn = document.createElement("button");
+		btn.className = "profilepic-item";
+		btn.innerHTML = symbol;
+
+		btn.onclick = () => {
+			selfProfileImage.innerHTML = symbol;
+			hide(profilePicModal); 
+		};
+
+		profilePicGrid.appendChild(btn);
+	}
 }
 
-//------------------------------------------------------------------------UTILS
+changeProfilePicButton.onclick = () => {
+	renderProfilePicGrid();
+	show(profilePicModal);
+};
+
+profilePicCancelButton.onclick = () => {
+	hide(profilePicModal);
+};
+
+
+//------------------------------------------------------------------------SETTINGS

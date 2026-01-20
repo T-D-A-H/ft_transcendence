@@ -19,7 +19,8 @@ class Match {
 		this.YDir = [0, 0];
 		this.SCORES = [0, 0];
 		this.WINNER = null;
-		this.LOSER = null; // TESTING
+		this.LOSER = null;
+		this.disconnect = false;
 		if (locally === true) {
 			this.players[1] = user;
 			this.isWaiting = false;
@@ -31,6 +32,7 @@ class Match {
 		LOGGER(200, "Match", "addUserToMatch", "For " + user.getUsername() + " match_id: " + this.id);
 		this.players[1] = user;
 		this.isWaiting = false;
+
 		this.sendDraw();
 		this.sendScores();
 	}
@@ -74,12 +76,13 @@ class Match {
 
 	sendWin(user) {
 
-		this.broadcast({ type: "WIN", msg: user.getUsername() + " Won the game" });
+		let msg = " Won the game";
+		if (this.disconnect === true)
+			msg + " by disconnection"
+		msg += ".";
+		this.broadcast({ type: "WIN", msg: user.getUsername() + msg });
 	}
 
-	sendDisconnect(user) {
-		this.broadcast({type: "NOTIFICATION", msg: user.getUsername() + " disconnected."});
-	}
 
 	updateMatch() {
 
@@ -203,6 +206,10 @@ class Match {
 
 	getPlayers() {
 		return (this.players);
+	}
+
+	setDisconnect() {
+		this.disconnect = true;
 	}
 
 

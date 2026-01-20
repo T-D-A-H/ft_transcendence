@@ -16,41 +16,49 @@ function sendInviteRequest(requestingUser, userManager, username_to_send) {
 	}
 	else {
 		LOGGER(200, "server", "sendInviteRequest", requestingUser.getUsername() + " sent invite to play to " + username_to_send);
-		requestingUser.addPendingRequest(user_to_send);
+		user_to_send.addPendingRequest(requestingUser, requestingUser.getUsername());
 		requestingUser.send({type: "SEND_INVITE_RESPONSE", status: 200, msg: "Sent invite to play with " + username_to_send, target: username_to_send});
 		user_to_send.send({type: "INCOMING_INVITE_REQUEST", msg: requestingUser.getUsername() + " sent you an invite request.", target: requestingUser.getUsername()});
 	}
 }
 
-function replyToInviteRequest(requestingUser, userManager, username_to_send) {
+function replyToInviteRequest(requestingUser, userManager, username_to_send, acceptance) {
 
+	if (requestingUser.hasPendingRequest(username_to_send) === false) {
+		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " couldnt find user in list.", target: username_to_send});
+		return ;
+	}
 	const user_to_send = userManager.getUserByUsername(username_to_send);
 	if (user_to_send === null) {
-		LOGGER(400, "server", "replyToInviteRequest", username_to_send + " couldnt find user.")
-		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " couldnt find user.", target: username_to_send});
+		LOGGER(400, "server", "replyToInviteRequest", username_to_send + " couldnt find user.");
+		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 307, msg: username_to_send + " couldnt find user.", target: username_to_send});
+		requestingUser.removePendingRequest(username_to_send);
+		return ;
 	}
-	else if (user_to_send.getIsConnected() === false) {
+	if (acceptance === "decline") {
+		user_to_send.send({type: "INCOMING_INVITE_RESPONSE", status: 400, msg: requestingUser.getUsername() + " declined your invite.", target: requestingUser.getUsername()});
+		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 307, msg: "You declined " + username_to_send + "'s invite.", target: username_to_send});
+		requestingUser.removePendingRequest(username_to_send);
+		return ;
+	}
+	if (user_to_send.getIsConnected() === false) {
 		LOGGER(400, "server", "replyToInviteRequest", username_to_send + " is offline.")
-		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " is offline.", target: username_to_send});
+		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 307, msg: username_to_send + " is offline.", target: username_to_send});
+		requestingUser.removePendingRequest(username_to_send);
+		return ;
 	}
-	else if (user_to_send.getIsPlaying() === true) {
+	if (user_to_send.getIsPlaying() === true || user_to_send.getCurrentTournament() !== null) {
 
-		LOGGER(400, "server", "replyToInviteRequest", username_to_send + " is already in a match.1")
-		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " is already in a match.", target: username_to_send});
+		LOGGER(400, "server", "replyToInviteRequest", username_to_send + " is already in a match.")
+		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " is currently in a match. Try Later.", target: username_to_send});
+		return;
 	}
-	else if (user_to_send.hasPendingRequest(requestingUser) === false) {
-			LOGGER(400, "server", "acceptInviteRequest", "Unable to send your invite acceptance to " + user_to_send.getUsername());
-		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: "Unable to send your invite acceptance to " + user_to_send.getUsername(), target: user_to_send.getUsername()});
-	}
-	else if (userManager.addToMatch(requestingUser, user_to_send.getCurrentMatch()) === null) {
-		LOGGER(400, "server", "replyToInviteRequest", username_to_send + " is already in a match.2")
-		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " is already in a match.", target: username_to_send});
-	}
-	else {
-		LOGGER(200, "server", "replyToInviteRequest", "You accepted " + username_to_send + "'s invite.");
-		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 200, msg: "You accepted " + username_to_send + "'s invite.", target: username_to_send});
-		user_to_send.send({type: "INCOMING_INVITE_RESPONSE", msg: requestingUser.getUsername() + " accepted your invite.", target: requestingUser.getUsername()});
-	}
+	LOGGER(200, "server", "replyToInviteRequest", "You accepted " + username_to_send + "'s invite.");
+	userManager.addToMatch(requestingUser, user_to_send.getCurrentMatch());
+	requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 200, msg: "You accepted " + username_to_send + "'s invite.", target: username_to_send});
+	user_to_send.send({type: "INCOMING_INVITE_RESPONSE", status: 200, msg: requestingUser.getUsername() + " accepted your invite.", target: requestingUser.getUsername()});
+	requestingUser.removePendingRequest(username_to_send);
+
 
 }
 
@@ -171,6 +179,7 @@ function joinTournamentRequest(requestingUser, userManager, tournament_id, alias
 		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 200, msg: "Joined " + tournament.getCreatorAlias() +  "'s tournament."});
 	}
 }
+
 function exitMatchRequest(requestingUser, userManager) {
 
 	const match = requestingUser.getCurrentMatch();
@@ -184,7 +193,7 @@ function exitMatchRequest(requestingUser, userManager) {
 
 	match.setWINNER(other_user);
     match.setLOSER(1 - other_user);
-    match.sendDisconnect(match.players[other_user]);
+	match.setDisconnect();
 
     if (tournament) {
         userManager.tournamentDisconnect(tournament);
@@ -193,6 +202,39 @@ function exitMatchRequest(requestingUser, userManager) {
 	requestingUser.send({type: "EXIT_MATCH_RESPONSE", status: 200, msg: "Succesfully exited match.", target: requestingUser.getUsername()});
 }
 
+function getInfoRequest(requestingUser, userManager, target) {
+
+	// const userName = requestingUser.getUsername();
+	// if (target !== userName) {
+
+	// 	const user = userManager.getUserByUsername(userName);
+	// 	requestingUser.send({type: "INFO_RESPONSE", status: 200, msg: "", target: {
+	// 		display_name: user.getDisplayName(),
+	// 		username: userName
+	// 	}});
+	// }
+	// else if (target === userName) {
+
+		requestingUser.send({type: "INFO_RESPONSE", status: 200, msg: "", target: {
+			display_name: requestingUser.getDisplayName(),
+			username: requestingUser.getUsername()
+		}});
+	// }
+	// else {
+	// 	requestingUser.send({type: "INFO_RESPONSE", status: 400, msg: "Couldnt get username/display name", target: null});
+	// }
+}
+
+function getPendingRequest(requestingUser) {
+
+
+	const request_list = requestingUser.listPendingRequests();
+	if (request_list === null) {
+		requestingUser.send({type: "GET_PENDING_RESPONSE", status: 400, msg: "You have no pending requests.", target: null});
+		return ;
+	}
+	requestingUser.send({type: "GET_PENDING_RESPONSE", status: 200, msg: "Pending request list updated.", target: request_list});
+}
 
 function handleUserCommands(user, userManager) {
 
@@ -209,7 +251,7 @@ function handleUserCommands(user, userManager) {
 			sendInviteRequest(user, userManager, msg.target);
 		}
 		else if (msg.type === "REPLY_INVITE_REQUEST") {
-			replyToInviteRequest(user, userManager, msg.target);
+			replyToInviteRequest(user, userManager, msg.target, msg.target2);
 		}
 		else if (msg.type === "START_MATCH_REQUEST") {
 			startMatchRequest(user);
@@ -228,6 +270,12 @@ function handleUserCommands(user, userManager) {
 		}
 		else if (msg.type === "JOIN_TOURNAMENT_REQUEST") {
 			joinTournamentRequest(user, userManager, msg.target, msg.target2);
+		}
+		else if (msg.type === "INFO_REQUEST") {
+			getInfoRequest(user, userManager, msg.target);
+		}
+		else if (msg.type === "GET_PENDING_REQUEST") {
+			getPendingRequest(user);
 		}
 		else if (msg.type === "MOVE2" && user.currentMatch) {
 
@@ -265,6 +313,13 @@ function buildGameSocketHandler(userManager, fastify) {
 	}
 
     user.connect(conn.socket);
+
+	//TESTING
+	const {createTestUsers} = require("./TESTING.js");
+	const users = createTestUsers(userManager, 24);
+	for (const u of users) {
+		user.addPendingRequest(u, u.username);
+	}
 
     handleUserCommands(user, userManager);
   };

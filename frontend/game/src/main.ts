@@ -4,44 +4,58 @@ import { registerModal, closeRegisterButton, submitRegisterButton, regUsernameIn
 import { twoFAModal, twoFAOptionModal, twoFAEmailButton, twoFASubmitButton, twoFASkipButton, twoFAAuthButton, twoFAInput, twoFACancelButton} from "./ui.js";
 import { startMatchButton, playLocallyButton, exitMatchButton} from "./ui.js";
 import { playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton} from "./ui.js";
-import { incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton} from "./ui.js";
+import { menuButtons, incomingPlayRequestModal, incomingPlayRequestText, incomingPlayRequestCloseButton, incomingPlayRequestAcceptButton, getInviteFrom } from "./ui.js";
 import { openCreateTournamentButton, closeCreateTournamentButton, submitTournamentCreationButton, createTournamentModal, aliasTournamentInput, tournamentSizeInput} from "./ui.js";
 import { openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, renderTournamentList} from "./ui.js";
-import { show, hide, showMenu, showCanvas, showNotification, toggleNightMode, nightModeButton} from "./ui.js";
-import { topBarOpponentButton, topBarOpponentPicture, topBarOpponentDisplayName} from "./ui.js";
-import { openMenuButton, topBarProfilePicture, topBarDisplayName, menuModal, menuDisplayName, menuUsername, menuButtons, toggleMenu} from "./ui.js";
+import { show, hide, showMenu, showCanvas, showNotification, renderPendingRequests } from "./ui.js";
+import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisible} from "./ui.js";
 
-import {getInviteFrom, TournamentInfo} from "./vars.js";
+import { drawFrame } from "./draw.js";
+
+import {ProfileInfo, TournamentInfo} from "./vars.js";
 
 import {registerUser, loginUser, logoutUser, configure2FA, verify2FA} from "./auth.js";
 
-import { connectWithToken, userSocket } from "./websocket.js";
+import { userSocket, restoreSession } from "./websocket.js";
 
 import { oneTimeEvent, sendKeyPress, send2KeyPress } from "./events.js";
 
-import { drawGame, drawFrame } from "./draw.js";
 
 
-
-let tempToken2FA: string | null | undefined = null;
-
-const token = localStorage.getItem("token");
-
-
-if (token) {
-	connectWithToken(token).catch(() => alert("Error connecting to server"));
-}
-
-
+restoreSession();
 
 window.requestAnimationFrame(drawFrame);
 
-openMenuButton.onclick = toggleMenu;
+menuButtons.forEach(button => {
+
+	button.addEventListener('click', () => {
+
+		const targetId = button.dataset.target;
+		if (!targetId)
+			return;
+		menuButtons.forEach(btn => btn.classList.remove('active-border'));
+		button.classList.add('active-border');
+		const allLists = document.querySelectorAll<HTMLElement>('.pong-list');
+		allLists.forEach(list => {
+
+			if (list.id === targetId)
+				show(list);
+			else
+				hide(list);
+		});
+			if (targetId === "request_list") {
+				renderRequestLists();
+			}
+	});
+});
+
+
+
 
 alreadyHaveAnAccountButton.onclick = () => {
 	hide(registerModal);
 	show(loginModal);
-	showNotification("You must sign in in order to continue!!!");
+	showNotification("You must sign in in order to continue!");
 };
 
 submitRegisterButton.onclick = async () => {
@@ -67,22 +81,22 @@ submitRegisterButton.onclick = async () => {
 
 closeRegisterButton.onclick = () => hide(registerModal);
 
-// openLoginButton.onclick = () => show(loginModal);
 
 dontHaveAnAccountButton.onclick = () => {
 	hide(loginModal);
 	show(registerModal);
+	showNotification("Create a new account.");
 }
 
 submitLoginButton.onclick = async () => {
 
-
 	const result = await loginUser(usernameInput, passwordInput);
+	let tempToken2FA: string | null | undefined = null;
 
 	if (result.status === 0) {
 		hide(loginModal);
 		hide(twoFAModal);
-		show(logoutButton);
+		restoreSession();
 	}
 	else if (result.status === "requires_2fa" && result.method === "email") {
 
@@ -98,7 +112,7 @@ submitLoginButton.onclick = async () => {
 			if (success)
 				tempToken2FA = null;
 			twoFAInput.value = "";
-			show(logoutButton);
+			restoreSession();
 		};
 	}
 	else {
@@ -111,56 +125,6 @@ closeLoginButton.onclick = () => hide(loginModal);
 logoutButton.onclick = () => logoutUser(logoutButton);
 
 
-menuButtons.forEach(button => {
-
-	button.addEventListener('click', () => {
-
-		const targetId = button.dataset.target;
-		if (!targetId)
-			return;
-		menuButtons.forEach(btn => btn.classList.remove('active-border'));
-		button.classList.add('active-border');
-		const allLists = document.querySelectorAll<HTMLElement>('.pong-list');
-		allLists.forEach(list => {
-
-			if (list.id === targetId)
-				show(list);
-			else
-				hide(list);
-		});
-	});
-});
-
-nightModeButton.onclick = () => {
-	toggleNightMode();
-	drawGame();
-};
-
-playRequestSendButton.onclick = () => {
-
-	const target_username = playRequestUsernameInput.value.trim();
-		if (target_username.length === 0) {
-		alert("Username field empty");
-		return ;
-	}
-	oneTimeEvent("SEND_INVITE_REQUEST", "SEND_INVITE_RESPONSE", target_username).then((result) => {
-
-		if (!result || !result.target) {
-			alert("No response from server");
-			return ;
-		}
-		if (result.target !== target_username) {
-			alert("Username response doesnt match invitation target");
-			return ;
-		}
-		if (result.status !== 200) {
-			showNotification(result.msg);
-			return ;
-		}
-		hide(playRequestModal);
-	});
-};
-
 playAgainstUserButton.onclick = () => {
 	if (!userSocket) {
 		show(loginModal);
@@ -170,88 +134,115 @@ playAgainstUserButton.onclick = () => {
 	show(playRequestModal)
 };
 
-incomingPlayRequestCloseButton.onclick = () => hide(incomingPlayRequestModal);
+playRequestSendButton.onclick = async () => {
+
+	const target_username = playRequestUsernameInput.value.trim();
+	if (target_username.length === 0) {
+		alert("Username field empty");
+		return ;
+	}
+
+	try {
+
+		const result = await oneTimeEvent("SEND_INVITE_REQUEST", "SEND_INVITE_RESPONSE", target_username);
+
+		if (!result || !result.target) {
+			showNotification("No response from server");
+			return ;
+		}
+		if (result.target !== target_username) {
+			showNotification("Username response doesnt match invitation target");
+			return ;
+		}
+		if (result.status !== 200) {
+			showNotification(result.msg);
+			return ;
+		}
+		hide(playRequestModal);
+	}
+	catch {
+
+		showNotification("Failed to send invite");
+	}
+};
 
 playRequestCloseButton.onclick = () => hide(playRequestModal);
 
-startMatchButton.onclick = () => {
 
+startMatchButton.onclick = async () => {
 
 	hide(startMatchButton);
 	show(openMenuButton);
-	show(topBarDisplayName);
+	makeVisible(topBarDisplayName);
 	showNotification("Waiting for player...");
-    oneTimeEvent("START_MATCH_REQUEST", "START_MATCH_RESPONSE").then((result) => {
+
+	try {
+
+		const result = await oneTimeEvent("START_MATCH_REQUEST","START_MATCH_RESPONSE");
 
 		if (!result) {
-			alert("No response from server");
+			showNotification("No response from server");
 			return ;
 		}
 		showNotification(result.msg);
-		if (result.status !== 200) {
+		if (result.status !== 200)
 			return ;
-		}
-		showNotification("Waiting for player...");
 		show(exitMatchButton);
 		sendKeyPress();
-    });
+	}
+	catch {
+	
+		showNotification("Failed to start match");
+	}
 };
 
-exitMatchButton.onclick = () => {
-
+exitMatchButton.onclick = async () => {
 
 	hide(exitMatchButton);
-    oneTimeEvent("EXIT_MATCH_REQUEST", "EXIT_MATCH_RESPONSE").then((result) => {
+	try {
+
+		const result = await oneTimeEvent("EXIT_MATCH_REQUEST", "EXIT_MATCH_RESPONSE");
 
 		if (!result) {
-			alert("No response from server");
+			showNotification("No response from server");
 			return ;
 		}
 		showNotification(result.msg);
-		if (result.status !== 200) {
+		if (result.status !== 200)
 			return ;
-		}
 		showMenu();
-    });
+	}
+	catch {
+
+		showNotification("Failed to exit match");
+	}
 };
 
-playLocallyButton.onclick = () => {
+playLocallyButton.onclick = async () => {
 
 	if (!userSocket) {
 		show(loginModal);
 		showNotification("You must sign in in order to continue!!!");
 		return ;
 	}
-	oneTimeEvent("PLAY_LOCALLY_REQUEST", "PLAY_LOCALLY_RESPONSE").then((result) => {
+	try {
+
+		const result = await oneTimeEvent("PLAY_LOCALLY_REQUEST", "PLAY_LOCALLY_RESPONSE");
 
 		if (!result) {
-			alert("No response from server");
+			showNotification("No response from server");
 			return ;
 		}
 		showNotification(result.msg);
-		if (result.status !== 200) {
-			return;
-		}
+		if (result.status !== 200)
+			return ;
 		showCanvas();
 		send2KeyPress();
-		
-	});
-};
- 
-incomingPlayRequestAcceptButton.onclick = () => {
+	}
+	catch {
 
-	oneTimeEvent("REPLY_INVITE_REQUEST", "REPLY_INVITE_RESPONSE", getInviteFrom()).then((result) => {
-
-		if (!result) {
-			alert("No response from server");
-			return ;
-		}
-		showNotification(result.msg);
-		if (result.status === 200) {
-			showCanvas();
-		}
-	});
-	hide(incomingPlayRequestModal);
+		showNotification("Failed to start local match");
+	}
 };
 
 openCreateTournamentButton.onclick = () => {
@@ -263,22 +254,23 @@ openCreateTournamentButton.onclick = () => {
 	show(createTournamentModal);
 };
 
-submitTournamentCreationButton.onclick = () => {
+submitTournamentCreationButton.onclick = async () => {
 
 	const alias = aliasTournamentInput.value.trim();
 	const size = tournamentSizeInput.value;
 
-	if (alias.length === 0 || size.length === 0) {
+	if (alias.length === 0 || size.length === 0)
 		return ;
-	}
 
-	oneTimeEvent("CREATE_TOURNAMENT_REQUEST", "CREATE_TOURNAMENT_RESPONSE", alias, size).then((result) => {
+	try {
+
+		const result = await oneTimeEvent( "CREATE_TOURNAMENT_REQUEST", "CREATE_TOURNAMENT_RESPONSE", alias, size);
 
 		if (!result) {
-			alert("No response from server");
+			showNotification("No response from server");
 			return ;
 		}
-		
+
 		if (result.status !== 200) {
 			hide(createTournamentModal);
 			showNotification(result.msg);
@@ -286,24 +278,28 @@ submitTournamentCreationButton.onclick = () => {
 		}
 		showNotification(result.msg);
 		hide(createTournamentModal);
+	}
+	catch {
 
-	});
-
+		showNotification("Failed to create tournament");
+	}
 };
 
 closeCreateTournamentButton.onclick = () => hide(createTournamentModal);
 
-
-openSearchTournamentButton.onclick = () => {
+openSearchTournamentButton.onclick = async () => {
 
 	if (!userSocket) {
 		show(loginModal);
 		showNotification("You must sign in in order to continue!!!");
 		return ;
 	}
-	oneTimeEvent("SEARCH_TOURNAMENT_REQUEST", "SEARCH_TOURNAMENT_RESPONSE").then((result) => {
+	try {
+
+		const result = await oneTimeEvent( "SEARCH_TOURNAMENT_REQUEST", "SEARCH_TOURNAMENT_RESPONSE");
+
 		if (!result) {
-			alert("No response from server");
+			showNotification("No response from server");
 			return ;
 		}
 		if (result.status !== 200) {
@@ -315,29 +311,103 @@ openSearchTournamentButton.onclick = () => {
 		show(searchTournamentsModal);
 		for (const btn of joinButtons) {
 
-	
 			const id = btn.dataset.id!;
 			const alias = "lolxd";
 
-			btn.onclick = () => {
-				oneTimeEvent("JOIN_TOURNAMENT_REQUEST", "JOIN_TOURNAMENT_RESPONSE", id, alias).then((result) => {
+			btn.onclick = async () => {
 
-					if (!result) {
-						alert("No response from server");
+				try {
+					const joinResult = await oneTimeEvent("JOIN_TOURNAMENT_REQUEST", "JOIN_TOURNAMENT_RESPONSE", id, alias);
+
+					if (!joinResult) {
+						showNotification("No response from server");
 						return ;
 					}
-					showNotification(result.msg);
-					if (result.status !== 200) {
+					showNotification(joinResult.msg);
+					if (joinResult.status !== 200) {
 						hide(searchTournamentsModal);
 						return ;
 					}
 					hide(searchTournamentsModal);
 					showCanvas();
-				});	
+				}
+				catch {
+
+					showNotification("Failed to join tournament");
+				}
 			};
 		}
-	});	
-	
+	}
+	catch {
+		showNotification("Failed to search tournaments");
+	}
 };
 
 closeSearchTournamentButton.onclick = () => hide(searchTournamentsModal);
+
+
+notificationAcceptButton.onclick = async () => {
+
+	try {
+
+		const result = await oneTimeEvent("REPLY_INVITE_REQUEST","REPLY_INVITE_RESPONSE", getInviteFrom(), "yes");
+
+		if (!result) {
+			showNotification("No response from server");
+			return ;
+		}
+		showNotification(result.msg);
+		if (result.status === 200)
+			showCanvas();
+	}
+	catch {
+
+		showNotification("Failed to reply to invite");
+	}
+};
+
+async function renderRequestLists() {
+
+	try {
+
+		const result = await oneTimeEvent("GET_PENDING_REQUEST", "GET_PENDING_RESPONSE");
+		if (!result || result.status !== 200) {
+			showNotification(result?.msg || "Failed to fetch requests");
+			return;
+		}
+		const joinButtons = renderPendingRequests(result.target as ProfileInfo[]);
+		for (const btn of joinButtons) {
+			btn.onclick = async () => {
+				const username = btn.dataset.username!;
+				try {
+
+					if (btn.textContent === "ACCEPT") {
+						const res = await oneTimeEvent("REPLY_INVITE_REQUEST", "REPLY_INVITE_RESPONSE", username);
+						if (!res) {
+							showNotification("No response from server");
+							return ;
+						}
+						showNotification(res.msg);
+						if (res.status === 200)
+							showCanvas();
+					}
+					else if (btn.textContent === "X") {
+						const res = await oneTimeEvent("REPLY_INVITE_REQUEST", "REPLY_INVITE_RESPONSE", username, "decline");
+						if (!res) {
+							showNotification("No response from server");
+							return ;
+						}
+						showNotification(res.msg);
+					}
+				} catch {
+					showNotification("Failed to reply to invite");
+				}
+			}
+
+		};
+	}
+	catch {
+
+		showNotification("Error fetching pending requests");
+	}
+}
