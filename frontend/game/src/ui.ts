@@ -544,8 +544,8 @@ export function getInviteFrom(): string {
 //------------------------------------------------------------------------SETTINGS
 
 
-export let whitish: string = "#5a5244";
-export let blackish: string = "#312521";
+export let whitish: string = "#94856b";
+export let blackish: string = "#3f2b24";
 export const redish: string = "#3d0027";
 export const greenish: string = "#003527";
 
@@ -571,11 +571,11 @@ nightModeButton.onclick = () => {
 	document.documentElement.classList.toggle("pong-night-mode", nightMode);
 
 	if (nightMode) {
-		whitish = "#312521";
-		blackish = "#5a5244";
+		whitish = "#3f2b24";
+		blackish = "#94856b";
 	} else {
-		whitish = "#5a5244";
-		blackish = "#312521";
+		whitish = "#94856b";
+		blackish = "#3f2b24";
 	}
 	drawGame();
 };

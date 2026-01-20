@@ -10,13 +10,13 @@
 	font-style: normal;
 }
 :root {
-	--pong-black: #312521;
-	--pong-white: #5a5244;
+	--pong-black: #3f2b24;
+	--pong-white: #94856b;
 	--pong-text-field: #9a8662;
 }
 :root.pong-night-mode {
-	--pong-black: #5a5244;
-	--pong-white: #312521;
+	--pong-black: #94856b;
+	--pong-white: #3f2b24;
 	--pong-text-field: #4d4537;
 }
 @layer utilities {

@@ -7,9 +7,12 @@
 </head>
 
 	<body class="pong-background ">
+
 		<div class="pong-root scale-150">
+
 			<div class="pong-panel">
-			
+													<!-- CRT EFFECT CANVAS -->
+				<canvas id="crt_overlay" class="fixed inset-0 pointer-events-none z-50 w-full h-full"></canvas>
 				<!-- TOP bar: BUTTON STACK -->
 				<div class="pong-top-bar">
 
@@ -61,8 +64,8 @@
 						<!-- Actions -->
 						<div class="pong-menu-buttons">
 							<button class="pong-button" data-target="settings_list"><span class="pong-icon">&#9881;</span></button>
-							<button class="pong-button" data-target="request_list">Requests</button>
-							<button class="pong-button" data-target="stats_list">Friends</button>
+							<button class="pong-button" data-target="stats_list">Stats</button>
+							<button class="pong-button" data-target="request_list">Friends</button>
 							<button class="pong-button active-border" data-target="play_list">Play</button>
 						</div>
 					
@@ -94,19 +97,71 @@
 									</button>
 								</div>
 
+								<!-- stats -->
+									<div id="stats_list" class="pong-list w-[320px] hidden">
+										<!-- Example friend/request row -->
+										 <div class="pong-box">
+											<div class="pong-list-box-name-msg">
+												<span id="username">Local Games</span>
+											</div>
+											<div class="flex gap-1 shrink-0">
+												<button class="pong-list-box-button pong-font">214</button>
+											</div>
+										</div>
+										<div class="pong-box">
+											<div class="pong-list-box-name-msg">
+												<span id="username">Local Games Won</span>
+											</div>
+											<div class="flex gap-1 shrink-0">
+												<button class="pong-list-box-button pong-font">184</button>
+											</div>
+										</div>
+										<div class="pong-box">
+											<div class="pong-list-box-name-msg">
+												<span id="username">Online Games</span>
+											</div>
+											<div class="flex gap-1 shrink-0">
+												<button class="pong-list-box-button pong-font">127</button>
+											</div>
+										</div>
+										<div class="pong-box">
+											<div class="pong-list-box-name-msg">
+												<span id="username">Online Games Won</span>
+											</div>
+											<div class="flex gap-1 shrink-0">
+												<button class="pong-list-box-button pong-font">76</button>
+											</div>
+										</div>
+										<div class="pong-box">
+											<div class="pong-list-box-name-msg">
+												<span id="username">Tournaments</span>
+											</div>
+											<div class="flex gap-1 shrink-0">
+												<button class="pong-list-box-button pong-font">29</button>
+											</div>
+										</div>
+										<div class="pong-box">
+											<div class="pong-list-box-name-msg">
+												<span id="username">Tournaments Won</span>
+											</div>
+											<div class="flex gap-1 shrink-0">
+												<button class="pong-list-box-button pong-font">8</button>
+											</div>
+										</div>
+									</div>
+						
+
 								<!-- requests -->
 								<div id="request_list" class="pong-list  w-[320px] hidden">
 									<ul id="request_list_ul" class="pong-friends-list"></ul>
 								</div>
 								
-								<!-- stats -->
-								<div id="stats_list" class="pong-list w-[320px]">
-								</div>
+
 
 								<!-- play -->
 								<div id="play_list" class="pong-list  w-full">
 									<button id="play_locally" class="pong-button active-border full-width">PLAY LOCALLY</button>
-									<button id="play_locally" class="pong-button active-border full-width">PLAY AGAINST AI</button>
+									<button id="play_ai" class="pong-button active-border full-width">PLAY AGAINST AI</button>
 									<button id="play_against_user" class="pong-button active-border full-width">PLAY ONLINE</button>
 									<button id="create_tournament" class="pong-button active-border full-width">CREATE TOURNAMENT</button>
 									<button id="search_tournament" class="pong-button active-border full-width">FIND TOURNAMENT</button>
@@ -245,8 +300,7 @@
 					</div>
 				</div>
 
-				<!-- CRT EFFECT CANVAS -->
-				<canvas id="crt_overlay" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
 			</div>
 		</div>
 
