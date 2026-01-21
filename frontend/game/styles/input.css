@@ -2,7 +2,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+html,
+body {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
 @font-face {
 	font-family: "PressStart2P";
 	src: url("../assets/PressStart2P-Regular.ttf") format("truetype");
@@ -12,13 +19,14 @@
 :root {
 	--pong-black: #3f2b24;
 	--pong-white: #94856b;
-	--pong-text-field: #9a8662;
+	--pong-text-field: #bda985;
 }
 :root.pong-night-mode {
 	--pong-black: #94856b;
 	--pong-white: #3f2b24;
 	--pong-text-field: #4d4537;
 }
+
 @layer utilities {
 
 	input[type="number"] {
@@ -58,6 +66,7 @@
 	.pong-root {
 
 		@apply flex justify-center items-center w-screen h-screen;
+		scale: 1.8;
 	}
 	.pong-font {
 
@@ -87,7 +96,6 @@
 				rounded-lg
 				overflow-hidden
 				bg-[var(--pong-white)];
-				
 	}
 	.pong-top-bar {
 

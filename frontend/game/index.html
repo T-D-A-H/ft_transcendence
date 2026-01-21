@@ -5,18 +5,17 @@
 	<title>Mini Pong</title>
 	<link href="/game/styles/tailwind.css" rel="stylesheet" />
 </head>
-
+	
 	<body class="pong-background ">
 
-		<div class="pong-root scale-150">
-
+		<div class="pong-root">
+			<canvas id="crt_overlay" class="fixed inset-0 pointer-events-none z-50"></canvas>
 			<div class="pong-panel">
-													<!-- CRT EFFECT CANVAS -->
-				<canvas id="crt_overlay" class="fixed inset-0 pointer-events-none z-50 w-full h-full"></canvas>
+				
 				<!-- TOP bar: BUTTON STACK -->
 				<div class="pong-top-bar">
 
-
+					
 					<!-- Right: Opponent -->
 					<div id="opponent_profile_button" class="pong-top-bar-profiles items-start invisible-slot">
 						<div>
@@ -225,7 +224,7 @@
 					</div>
 				</div>
 
-				<!-- Create Tournament -->
+				<!-- Create Tournament modal-->
 				<div id="create_tournament_modal" class="pong-modal hidden">
 					<div class="flex items-center justify-center">
 						<button id="tournament_create_cancel_button" class="pong-cancel-button">X</button>
@@ -242,7 +241,7 @@
 					</div>
 				</div>
 
-				<!-- Active tournaments modal -->
+				<!-- Find tournaments modal -->
 				<div id="search_tournaments_modal" class="pong-modal hidden">
 					<div class="flex items-center justify-center">
 						<button id="tournament_search_cancel_button" class="pong-cancel-button">X</button>
@@ -251,7 +250,7 @@
 					<ul id="tournament_list_ul" class="pong-tournament-list"></ul>
 				</div>
 
-				<!-- Play Request Modal--> 
+				<!-- Play Online Modal--> 
 				<div id="play_request_modal" class="pong-modal hidden">
 					<div class="flex items-center justify-center">
 						<button id="close_play_request" class="pong-cancel-button">X</button>
@@ -300,13 +299,10 @@
 					</div>
 				</div>
 
-
 			</div>
 		</div>
-
-
+		
 		<script type="module" src="/game/public/main.js"></script>
-
 	</body>
 </html>
 
