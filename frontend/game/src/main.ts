@@ -8,9 +8,9 @@ import { menuButtons, getInviteFrom } from "./ui.js";
 import { openCreateTournamentButton, closeCreateTournamentButton, submitTournamentCreationButton, createTournamentModal, aliasTournamentInput, tournamentSizeInput} from "./ui.js";
 import { openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, renderTournamentList} from "./ui.js";
 import { show, hide, showMenu, showCanvas, showNotification, renderPendingRequests } from "./ui.js";
-import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisible, resizeCrtCanvas} from "./ui.js";
+import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisible,} from "./ui.js";
 
-import { drawFrame } from "./draw.js";
+
 
 import { ProfileInfo, TournamentInfo } from "./vars.js";
 
@@ -20,11 +20,10 @@ import { userSocket, restoreSession } from "./websocket.js";
 
 import { oneTimeEvent, sendKeyPress, send2KeyPress } from "./events.js";
 
-resizeCrtCanvas();
+
 
 restoreSession();
 
-window.requestAnimationFrame(drawFrame);
 
 menuButtons.forEach(button => {
 
@@ -409,6 +408,3 @@ async function renderRequestLists() {
 		showNotification("Error fetching pending requests");
 	}
 }
-
-//	--pong-black: #312521;
-//	--pong-white: #5a5244;

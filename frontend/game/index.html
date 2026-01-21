@@ -7,15 +7,18 @@
 </head>
 	
 	<body class="pong-background ">
-
+		<div class="scanline"></div>
+		<div class="crt-overlay"></div>
+		
 		<div class="pong-root">
-			<canvas id="crt_overlay" class="fixed inset-0 pointer-events-none z-50"></canvas>
-			<div class="pong-panel">
+			
+			
+			<div class="pong-panel relative z-10">
 				
 				<!-- TOP bar: BUTTON STACK -->
 				<div class="pong-top-bar">
 
-					
+
 					<!-- Right: Opponent -->
 					<div id="opponent_profile_button" class="pong-top-bar-profiles items-start invisible-slot">
 						<div>
@@ -75,7 +78,7 @@
 							<div class="pong-menu-list-container">
 
 								<div id="settings_list" class="pong-list  w-full hidden">
-									<button id="night_mode" class="pong-button active-border full-width flex justify-between items-center">
+									<button id="day_mode" class="pong-button active-border full-width flex justify-between items-center">
 										<span>NIGHT/DAY MODE</span><span class="pong-icon">&#9680;</span>
 									</button>
 								

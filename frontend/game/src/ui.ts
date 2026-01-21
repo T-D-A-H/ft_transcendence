@@ -442,43 +442,7 @@ export function showNotification(text: string, state?: boolean)
 //------------------------------------------------------------------------CRT EFFECT CANVAS
 
 
-export const crtCanvas = // CRT EFFECT
-	document.getElementById("crt_overlay") as HTMLCanvasElement;
 
-export const crtCtx = // CRT CTX
-	crtCanvas.getContext("2d")!;
-
-export function resizeCrtCanvas(): void
-{
-	const dpr = window.devicePixelRatio || 1;
-
-	crtCanvas.width = window.innerWidth * dpr;
-	crtCanvas.height = window.innerHeight * dpr;
-
-	crtCanvas.style.width = window.innerWidth + "px";
-	crtCanvas.style.height = window.innerHeight + "px";
-
-	crtCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-}
-
-export function drawCrtOverlay(): void {
-
-	const w = crtCanvas.width;
-	const h = crtCanvas.height;
-
-	crtCtx.clearRect(0, 0, w, h);
-	crtCtx.save();
-
-	crtCtx.globalAlpha = 0.3;
-
-	const lineHeight = 2;
-	for (let y = 0; y < h; y += lineHeight) {
-	    crtCtx.fillStyle = (y / lineHeight) % 2 === 0 ? greenish : redish;
-	    crtCtx.fillRect(0, y, w, lineHeight);
-	}
-
-	crtCtx.restore();
-}
 
 
 //------------------------------------------------------------------------CRT EFFECT CANVAS
@@ -544,8 +508,8 @@ export function getInviteFrom(): string {
 //------------------------------------------------------------------------SETTINGS
 
 
-export let whitish: string = "#94856b";
-export let blackish: string = "#3f2b24";
+export let whitish: string = "#000708";
+export let blackish: string = "#c7f6ff";
 export const redish: string = "#3d0027";
 export const greenish: string = "#003527";
 
@@ -560,22 +524,23 @@ export const pongFont = new Promise<void>((resolve) => { // BLOCK FONT
 });
 
 
-export const nightModeButton = //night mode button
-	document.getElementById("night_mode") as HTMLButtonElement;
+export const dayModeButton = //night mode button
+	document.getElementById("day_mode") as HTMLButtonElement;
 
-export let nightMode = false;
+export let dayMode = false;
 
-nightModeButton.onclick = () => {
+dayModeButton.onclick = () => {
 
-	nightMode = !nightMode;
-	document.documentElement.classList.toggle("pong-night-mode", nightMode);
+	dayMode = !dayMode;
+	document.documentElement.classList.toggle("pong-day-mode", dayMode);
 
-	if (nightMode) {
-		whitish = "#3f2b24";
-		blackish = "#94856b";
+	if (dayMode) {
+		const temp = whitish;
+		whitish = blackish;
+		blackish = temp;
 	} else {
-		whitish = "#94856b";
-		blackish = "#3f2b24";
+		whitish = "#000708";
+		blackish = "#c7f6ff";
 	}
 	drawGame();
 };

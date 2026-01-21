@@ -1,5 +1,4 @@
-import {texture, canvas, pongFont, whitish, blackish, drawCrtOverlay, getSCORES } from "./ui.js";
-
+import {texture, canvas, pongFont, whitish, blackish, getSCORES } from "./ui.js";
 
 
 export async function drawScores(SCORES: number[]) {
@@ -32,8 +31,7 @@ function drawDottedLine() {
 export function clearBackground() {
 
 	texture.clearRect(0, 0, canvas.width, canvas.height);
-	texture.fillStyle = whitish;
-	texture.fillRect(0, 0, canvas.width, canvas.height);
+
 }
 
 export function drawGame(leftX: number = 10, leftY: number = 170, rightX: number = 580, rightY: number = 170, ballX: number = 900, ballY: number = 900) {
@@ -54,8 +52,3 @@ export function drawGame(leftX: number = 10, leftY: number = 170, rightX: number
 	drawScores(getSCORES());
 }
 
-
-export function drawFrame() {
-
-    drawCrtOverlay();
-}

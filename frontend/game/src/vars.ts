@@ -14,7 +14,6 @@ export interface ProfileInfo {
 }
 
 
-
 export interface StatusMsgTarget {
     status: number; 
     msg: string; 
