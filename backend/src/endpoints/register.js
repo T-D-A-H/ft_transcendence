@@ -52,13 +52,13 @@ function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
 		catch (err) {
 
 			if (err.message && err.message.includes("UNIQUE constraint failed")) {
-				LOGGER(409, "server", "registerHandler", "Una cuenta con ese username, email o display_name ya existe");
+				LOGGER(409, "server", "registerHandler", "An account with that username/email already exists.");
 				return reply.code(409).send({ 
-					error: "Una cuenta con ese username, email o display_name ya existe" 
+					error: "An account with that username/email already exists." 
 				});
 			}
 			LOGGER(500, "server", "registerHandler", "Error registering user:" + err);
-			return reply.code(500).send({ error: "Error interno del servidor" });
+			return reply.code(500).send({ error: "Internal server error" });
 		}
 	};
 }
