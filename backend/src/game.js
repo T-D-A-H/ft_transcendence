@@ -237,7 +237,6 @@ function getPendingRequest(requestingUser) {
 }
 
 function handleUserCommands(user, userManager) {
-
 	user.socket.on("message", (raw) => {
 
 	    let msg;
@@ -285,31 +284,27 @@ function handleUserCommands(user, userManager) {
 			user.currentMatch.updateGame(user, msg.move);
 		}
 	});
-
 }
 
+// ✅ ACTUALIZADO: Ahora recibe userId del backend en lugar de token en URL
 function buildGameSocketHandler(userManager, fastify) {
 
-  return (conn, req) => {
+	return (conn, req, userId) => {
 
-    const token = req.query.token;
+/*     const token = req.query.token;
     if (!token || token === "null") {
 		LOGGER(400, "server", "buildGameSocketHandler", "couldnt get token");
 		return conn.socket.close(1008);
+	} */
+	if (!userId) {
+		LOGGER(400, "buildGameSocketHandler:", "No userId provided");
+		return conn.socket.close(1008, "No user ID");
 	}
 
-    let payload;
-    try {
-		payload = fastify.jwt.verify(token);
-    } catch {
-		LOGGER(400, "server", "buildGameSocketHandler", "jwt.verify failed");
-		return conn.socket.close(1008);
-    }
-
-    const user = userManager.getUserByID(payload.id);
+    const user = userManager.getUserByID(userId);
     if (!user) {
 		LOGGER(500, "server", "buildGameSocketHandler", "couldnt find user");
-		return conn.socket.close(1008);
+		return conn.socket.close(1008, "User not found");
 	}
 
     user.connect(conn.socket);

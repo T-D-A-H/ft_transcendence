@@ -2,15 +2,16 @@
 import {ConstantEvent, receiveMessages, oneTimeEvent} from "./events.js";
 import { logoutButton, show, updateProfileUI} from "./ui.js";
 import { ProfileInfo } from "./vars.js";
+import { setUserSocket } from "./auth.js";
 
 export let userSocket: WebSocket | null = null;
 
-export function initializeWebSocket(token: string) {
+export function initializeWebSocket() {
 
     return new Promise<WebSocket>((resolve, reject) => {
     
-        const ws = new WebSocket(`ws://localhost:4000/proxy-game?token=${token}`);
-
+        const ws = new WebSocket(`wss://localhost:4000/proxy-game`);
+        setUserSocket(ws);
         ws.onopen = () => {
 
             receiveMessages(ws);
@@ -27,59 +28,47 @@ export function initializeWebSocket(token: string) {
         ws.onerror = (err) => {
 
             console.error("WebSocket error:", err);
-            ws.close();
+            setUserSocket(null);
+            try { ws.close(); } catch(e) {}
             reject(err);
         };
 
         ws.onclose = () => {
             console.log("WebSocket disconnected");
-
+            userSocket = null;
+            setUserSocket(null);
         };
     });
 }
 
-export async function connectWithToken(token: string): Promise<WebSocket> {
+export async function restoreSession(): Promise<boolean> {
+    try {
+        console.log("Attempting to restore session...");
+        
+        await initializeWebSocket();
 
-	try {
-
-		const ws = await initializeWebSocket(token);
-		userSocket = ws;
+        const result = await oneTimeEvent("INFO_REQUEST", "INFO_RESPONSE");
+        
+        if (!result || result.status !== 200 || !result.target) {
+            throw new Error("Could not fetch user profile");
+        }
+        const info = result.target as ProfileInfo;
         show(logoutButton);
-		return ws;
-
-	}
+        updateProfileUI(info.display_name, info.username);
+        
+        return true; // Sesión restaurada con éxito
+    }
     catch (err) {
-
-		console.error("WebSocket connection failed:", err);
-		throw err;
-	}
-}
-
-
-export async function restoreSession(): Promise<void>
-{
-	const token = localStorage.getItem("token");
-	if (!token)
-		return ;
-
-	try {
-		await connectWithToken(token);
-
-		const result = await oneTimeEvent("INFO_REQUEST", "INFO_RESPONSE");
-		if (!result || result.status !== 200 || !result.target)
-			return ;
-
-		const info = result.target as ProfileInfo;
-        show(logoutButton);
-		updateProfileUI(info.display_name, info.username);
-	}
-	catch {
-		localStorage.removeItem("token");
-	}
+        // Si fallamos (ej: no había cookie), limpiamos variables
+        console.log("Session restore failed:", err);
+        nullWebsocket();
+        return false;
+    }
 }
 
 export function nullWebsocket(): void {
     userSocket = null;
+    setUserSocket(null);
 }
 
 

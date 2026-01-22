@@ -1,20 +1,30 @@
 
 const LOGGER 	 = require("../LOGGER.js");
 
-function verify2FACode(userManager, fastify) {
+function verify2FAhandle(userManager, fastify, setTokenCookie) {
 
 	return async function verify2FAHandler(req, reply) {
-		const { tempToken, code } = req.body;
+		const {  code } = req.body;
 
 		if (!tempToken || !code) {
 			LOGGER(400, "server", "verify2FAHandler", "Faltan datos");
 			return reply.code(400).send({ 
-			status: "error",
-			error: "Faltan datos" 
+				status: "error",
+				error: "Faltan datos" 
 			});
 		}
 
 		try {
+			// Obtener el token temporal de la cookie (httpOnly)
+			const tempToken = req.cookies?.temp2FA;
+
+			if (!tempToken) {
+				return reply.code(401).send({ 
+					status: "error",
+					error: "Session expirada - intenta login de nuevo" 
+				});
+			}
+
 			// Verificar token temporal
 			const decoded = fastify.jwt.verify(tempToken);
 			
@@ -51,11 +61,16 @@ function verify2FACode(userManager, fastify) {
 				id: userId, 
 				display_name: decoded.display_name 
 			});
+
+			// Setear cookie de acceso
+			setTokenCookie(reply, token);
+
+			// Limpiar cookie temporal
+			reply.clearCookie('temp2FA');
+
 			LOGGER(200, "server", "verify2FAHandler", "Verified 2FA Succesfully");
 			return reply.send({ 
-				status: "ok", 
-				token,
-				userId: userId 
+				status: "ok"
 			});
 
 		} catch (err) {
@@ -68,4 +83,4 @@ function verify2FACode(userManager, fastify) {
 	};
 }
 
-module.exports = verify2FACode;
+module.exports = verify2FAhandle;

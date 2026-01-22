@@ -1,8 +1,6 @@
+const User = require("../Classes/User.js");
 
-const LOGGER 	 = require("../LOGGER.js");
-
-function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
-
+function signupHandler(db, bcrypt, saltRounds, fastify) {
 	return async function registerHandler(req, reply) {
 		const body = req.body || {};
 		const username = body.username;
@@ -11,24 +9,31 @@ function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
 		const password = body.password;
 
 		if (!username || !display_name || !email || !password) {
-			LOGGER(400, "server", "registerHandler", "Missing fields");
 			return reply.code(400).send({ error: "Missing fields" });
 		}
 
 		try {
+			// ! Descomentar cuando este completo
+/* 			const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+			
+			if (!PASSWORD_REGEX.test(password)) {
+				return reply.code(400).send({
+					status: "error",
+					error: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo"
+				});
+			} */
+
 			// Hash de la contraseña
 			const hashed = await bcrypt.hash(password, saltRounds);
 
 			// Insertar usuario con twofa por defecto en 'skip'
 			const userId = await new Promise((resolve, reject) => {
-				db.run(
-					"INSERT INTO users (username, display_name, email, password, twofa) VALUES (?,?,?,?,?)",
-					[username, display_name, email, hashed, "skip"],
+			db.run(
+				"INSERT INTO users (username, display_name, email, password, twofa, oauth_provider, oauth_id) VALUES (?,?,?,?,?,?,?)",
+				[username, display_name, email, hashed, "skip", null, null],
 					function(err) {
-					if (err)
-						reject(err);
-					else
-						resolve(this.lastID);
+						if (err) reject(err);
+						else resolve(this.lastID);
 					}
 				);
 			});
@@ -42,7 +47,7 @@ function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
 					purpose: 'setup_2fa' // Identificador de propósito
 				},
 			);
-			LOGGER(201, "server", "registerHandler", "Registration Successful");
+
 			return reply.code(201).send({ 
 				status: "ok",
 				userId: userId,
@@ -50,17 +55,17 @@ function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
 			});
 		}
 		catch (err) {
+			console.error("Error registering user:", err);
 
 			if (err.message && err.message.includes("UNIQUE constraint failed")) {
-				LOGGER(409, "server", "registerHandler", "An account with that username/email already exists.");
-				return reply.code(409).send({ 
-					error: "An account with that username/email already exists." 
+			return reply.code(409).send({ 
+					error: "Ya existe una cuenta con estos datos" 
 				});
 			}
-			LOGGER(500, "server", "registerHandler", "Error registering user:" + err);
-			return reply.code(500).send({ error: "Internal server error" });
+			
+			return reply.code(500).send({ error: "Error interno del servidor" });
 		}
 	};
 }
 
-module.exports = { buildRegisterHandler };
+module.exports = signupHandler;

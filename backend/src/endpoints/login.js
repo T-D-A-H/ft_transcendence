@@ -3,8 +3,7 @@ const User 		 = require("../Classes/User.js");
 const LOGGER 	 = require("../LOGGER.js");
 
 
-function buildLoginHandler(db, bcrypt, userManager, fastify) {
-
+function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 	return async function handleLogin(req, reply) {
 	const { username, password } = req.body || {};
 
@@ -31,7 +30,7 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 				error: "Credenciales incorrectas" 
 			});
 		}
-
+		
 		// 3. Validar contraseña
 		const match = await bcrypt.compare(password, user.password);
 		if (!match) {
@@ -88,11 +87,18 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 				text: `Tu código de verificación es: ${code}\n\nEste código expira en 10 minutos.`
 			});
 
+			reply.setCookie('temp2FA', temp2FAToken, {
+				httpOnly: true,
+				secure: true,
+				sameSite: 'strict',
+				maxAge: 10 * 60 * 1000, // 10 minutos
+				path: '/'
+			});
+
 			// Retornar que se requiere 2FA
 			return reply.send({ 
 				status: "requires_2fa",
-				method: "email",
-				tempToken: temp2FAToken 
+				method: "email"
 			});
 		}
 
@@ -116,10 +122,11 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 			display_name: user.display_name 
 		});
 
+		// Setear cookie httpOnly
+		setTokenCookie(reply, token);
+
 		return reply.send({ 
-			status: "ok", 
-			token,
-			userId: user.id 
+			status: "ok"
 		});
 
 	} catch (err) {
@@ -132,4 +139,4 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 	};
 }
 
-module.exports = buildLoginHandler;
+module.exports = loginHandler;

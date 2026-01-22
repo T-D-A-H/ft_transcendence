@@ -14,16 +14,11 @@ import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisibl
 
 import { ProfileInfo, TournamentInfo } from "./vars.js";
 
-import { registerUser, loginUser, logoutUser, configure2FA, verify2FA } from "./auth.js";
+import { registerUser, loginUser, logoutUser, configure2FA, verify2FA, startTokenValidationInterval } from "./auth.js";
 
-import { userSocket, restoreSession } from "./websocket.js";
+import { userSocket, restoreSession, initializeWebSocket } from "./websocket.js";
 
 import { oneTimeEvent, sendKeyPress, send2KeyPress } from "./events.js";
-
-
-
-restoreSession();
-
 
 menuButtons.forEach(button => {
 
@@ -109,6 +104,7 @@ submitLoginButton.onclick = async () => {
 			if (success)
 				tempToken2FA = null;
 			twoFAInput.value = "";
+
 			restoreSession();
 		};
 	}
@@ -408,3 +404,17 @@ async function renderRequestLists() {
 		showNotification("Error fetching pending requests");
 	}
 }
+
+(async () => {
+    // Intentar restaurar sesión al cargar la página
+    const restored = await restoreSession();
+
+    if (restored) {
+        // Iniciamos el intervalo de seguridad
+        startTokenValidationInterval();
+    } else {
+        console.log("No hay sesión activa");
+    }
+})();
+
+/* setInterval(refreshToken, 5 * 60 * 1000); */
