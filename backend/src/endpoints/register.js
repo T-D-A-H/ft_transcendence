@@ -58,7 +58,7 @@ function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
 				});
 			}
 			LOGGER(500, "server", "registerHandler", "Error registering user:" + err);
-			return reply.code(500).send({ error: "Internal server error" });
+			return reply.code(500).send({ error: "Internal server" });
 		}
 	};
 }

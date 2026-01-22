@@ -315,11 +315,11 @@ function buildGameSocketHandler(userManager, fastify) {
     user.connect(conn.socket);
 
 	//TESTING
-	const {createTestUsers} = require("./TESTING.js");
-	const users = createTestUsers(userManager, 24);
-	for (const u of users) {
-		user.addPendingRequest(u, u.username);
-	}
+	// const {createTestUsers} = require("./TESTING.js");
+	// const users = createTestUsers(userManager, 24);
+	// for (const u of users) {
+	// 	user.addPendingRequest(u, u.username);
+	// }
 
     handleUserCommands(user, userManager);
   };
