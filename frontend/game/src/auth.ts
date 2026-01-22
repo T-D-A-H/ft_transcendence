@@ -1,5 +1,6 @@
-import { show, hide, updateProfileUI} from "./ui.js";
+import { show, hide} from "./ui.js";
 import { connectWithToken, nullWebsocket} from "./websocket.js";
+import {getProfileInfo} from "./main.js";
 
 export async function registerUser(usernameInput: HTMLInputElement, displaynameInput: HTMLInputElement, emailInput: HTMLInputElement, passwordInput: HTMLInputElement): 
 Promise<{ status: number; userId?: string; setupToken?: string; error?: string }> {
@@ -21,7 +22,7 @@ Promise<{ status: number; userId?: string; setupToken?: string; error?: string }
 
 		const result = await res.json();
 
-		if (res.ok && result.status === "ok" && result.userId && result.setupToken) {
+		if (result.ok && result.status === "ok" && result.userId && result.setupToken) {
 			return { status: 0, userId: String(result.userId), setupToken: result.setupToken };
 		}
 
@@ -98,7 +99,7 @@ export async function logoutUser(logoutButton: HTMLButtonElement) {
 	if (data.status === "ok") {
 		hide(logoutButton);
 		localStorage.removeItem("token");
-		updateProfileUI("PONG", "ft_transcendence.pong.com");
+		getProfileInfo(false);
 		nullWebsocket();
 
 	}

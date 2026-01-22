@@ -41,13 +41,17 @@ export const menuButtons =
 
 export 	function showCanvas() {
 
+	
 	hide(menuModal);
 	show(canvas);
 	drawGame();
-	show(topBarOpponentDisplayName);
 	makeVisible(topBarOpponentButton);
+	show(topBarOpponentDisplayName);
+	makeVisible(topBarDisplayName);
 	show(topBarDisplayName);
+	makeVisible(startMatchButton);
 	show(startMatchButton);
+	makeVisible(exitMatchButton);
 	show(exitMatchButton);
 
 }
@@ -69,11 +73,15 @@ export function toggleMenu(): void
 {
 	if (menu_open) {
 		hide(menuModal);
+		makeVisible(startMatchButton);
+		makeVisible(exitMatchButton);
 		drawGame();
 		show(canvas);
 	}
 	else {
 		hide(canvas);
+		makeInvisible(startMatchButton);
+		makeInvisible(exitMatchButton);
 		show(menuModal);
 	}
 	menu_open = !menu_open;
@@ -81,17 +89,29 @@ export function toggleMenu(): void
 
 openMenuButton.onclick = toggleMenu;
 
-export function updateProfileUI(displayName: string, username: string): void
-{
+export function updateProfileUI(displayName: string, userName: string): void {
+
 	if (topBarDisplayName) {
-		topBarDisplayName.textContent = "@" + username;
+		topBarDisplayName.textContent = displayName;
 	}
-
-	if (menuDisplayName)
+	if (menuDisplayName) {
 		menuDisplayName.textContent = displayName;
+	}
+	if (menuUsername) {
+		menuUsername.textContent = "@" + userName;
+	}
+}
 
-	if (menuUsername)
-		menuUsername.textContent = "@" + username;
+
+export function updateOpponentUI(displayName: string, profilePic?: string)
+{
+	
+	if (topBarOpponentDisplayName) {
+		topBarOpponentDisplayName.textContent =  displayName;
+	}
+	// if (topBarOpponentPicture?) {
+	// 	topBarOpponentPicture.textContent = profilePic;
+	// }
 }
 
 //------------------------------------------------------------------------MANU

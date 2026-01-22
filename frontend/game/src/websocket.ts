@@ -1,6 +1,7 @@
 
 import {ConstantEvent, receiveMessages, oneTimeEvent} from "./events.js";
-import { logoutButton, show, updateProfileUI} from "./ui.js";
+import { logoutButton, show} from "./ui.js";
+import { getProfileInfo } from "./main.js";
 import { ProfileInfo } from "./vars.js";
 
 export let userSocket: WebSocket | null = null;
@@ -65,13 +66,8 @@ export async function restoreSession(): Promise<void>
 	try {
 		await connectWithToken(token);
 
-		const result = await oneTimeEvent("INFO_REQUEST", "INFO_RESPONSE");
-		if (!result || result.status !== 200 || !result.target)
-			return ;
+        await getProfileInfo(false);
 
-		const info = result.target as ProfileInfo;
-        show(logoutButton);
-		updateProfileUI(info.display_name, info.username);
 	}
 	catch {
 		localStorage.removeItem("token");
