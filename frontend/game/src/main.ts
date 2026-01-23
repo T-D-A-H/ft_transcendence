@@ -338,7 +338,6 @@ openSearchTournamentButton.onclick = async () => {
 
 closeSearchTournamentButton.onclick = () => hide(searchTournamentsModal);
 
-
 notificationAcceptButton.onclick = async () => {
 
 	try {
