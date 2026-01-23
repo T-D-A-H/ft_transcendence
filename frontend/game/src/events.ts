@@ -1,4 +1,4 @@
-import {showNotification, show, startMatchButton, showMenu, incomingPlayRequestText, updateOpponentUI, incomingPlayRequestModal, setInviteFrom, setSCORES, showCanvas} from "./ui.js"
+import {setDisplaySide, showNotification, show, startMatchButton, showMenu, incomingPlayRequestText, updateOpponentUI, incomingPlayRequestModal, setInviteFrom, setSCORES, showCanvas, mirrorCanvas, getDisplaySide} from "./ui.js"
 import type {ServerMessage, StatusMsgTarget} from "./vars.js"
 import {drawGame, clearBackground} from "./draw.js"
 import { userSocket } from "./websocket.js"
@@ -121,10 +121,13 @@ export function ConstantEvent(response: ServerMessage["type"]){
 			showMenu();
 
 		}
-		else if (data.type === "NOTIFICATION") {
+		else if (data.type === "MIRROR") {
 
-			showNotification(data.msg);
-			show(startMatchButton);
+			if (data.msg !== getDisplaySide()) {
+
+				setDisplaySide(data.msg);
+				mirrorCanvas();
+			}
 		}
 		else if (data.type === "DRAW") {
 	

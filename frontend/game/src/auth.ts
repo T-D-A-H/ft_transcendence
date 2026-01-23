@@ -22,7 +22,7 @@ Promise<{ status: number; userId?: string; setupToken?: string; error?: string }
 
 		const result = await res.json();
 
-		if (result.ok && result.status === "ok" && result.userId && result.setupToken) {
+		if (res.ok && result.status === "ok" && result.userId && result.setupToken) {
 			return { status: 0, userId: String(result.userId), setupToken: result.setupToken };
 		}
 

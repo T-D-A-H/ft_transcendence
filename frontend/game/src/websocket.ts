@@ -18,7 +18,7 @@ export function initializeWebSocket(token: string) {
             ConstantEvent("INCOMING_INVITE_RESPONSE");
             ConstantEvent("INCOMING_INVITE_REQUEST");
             ConstantEvent("WIN");
-            ConstantEvent("NOTIFICATION");
+            ConstantEvent("MIRROR");
             ConstantEvent("SCORES");
             ConstantEvent("DRAW");
             userSocket = ws;

@@ -2,6 +2,10 @@ const LOGGER = require("../LOGGER.js");
 
 class User {
     
+    static SIDE = {
+        LEFT: -1,
+        RIGHT: 1
+    };
     constructor({ id, username, display_name, socket }) {
         LOGGER(200, "User", "Constructor", "called for " + username);
 
@@ -15,7 +19,7 @@ class User {
         this.pendingMatchRequests = new Map();
         this.currentTournament = null;
         this.isPlaying = false;
-
+        this.displaySide = User.SIDE.RIGHT;
     }
 
     // Enviar mensaje al jugador vía WebSocket
@@ -115,6 +119,24 @@ class User {
         this.currentTournament = null;
     }
 
+    changeDisplaySide() {
+
+        if (this.displaySide === User.SIDE.RIGHT) {
+            this.displaySide = User.SIDE.LEFT;
+        }
+        else if (this.displaySide === User.SIDE.LEFT) {
+            this.displaySide = User.SIDE.RIGHT;
+        }
+    }
+
+    getDisplaySide() {
+        if (this.displaySide === User.SIDE.RIGHT) {
+            return ("right");
+        }
+        else if (this.displaySide === User.SIDE.LEFT) {
+            return ("left");
+        }
+    }
 
     getId() {return this.id;}
     getUsername() {return this.username;}

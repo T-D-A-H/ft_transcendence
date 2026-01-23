@@ -7,7 +7,7 @@ import { playRequestModal, playAgainstUserButton, playRequestUsernameInput, play
 import { menuButtons, getInviteFrom } from "./ui.js";
 import { openCreateTournamentButton, closeCreateTournamentButton, submitTournamentCreationButton, createTournamentModal, aliasTournamentInput, tournamentSizeInput} from "./ui.js";
 import { openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, renderTournamentList} from "./ui.js";
-import { show, hide, showMenu, showCanvas, showNotification, renderPendingRequests } from "./ui.js";
+import { show, hide, showMenu, showCanvas, showNotification, renderPendingRequests,  mirrorCanvas, getDisplaySide, setDisplaySide } from "./ui.js";
 import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisible, updateOpponentUI, updateProfileUI} from "./ui.js";
 
 
@@ -183,6 +183,10 @@ startMatchButton.onclick = async () => {
 		showNotification(result.msg);
 		if (result.status !== 200)
 			return ;
+		if (result.target as string !== getDisplaySide()) {
+			setDisplaySide(result.target as string);
+			mirrorCanvas();
+		}
 		show(exitMatchButton);
 		sendKeyPress();
 	}
@@ -411,8 +415,7 @@ async function renderRequestLists() {
 	}
 }
 
-export async function getProfileInfo(reset: boolean)
-{
+export async function getProfileInfo(reset: boolean) {
 
 	if (reset === true) {
 		updateProfileUI("PONG", "ft_transcendence.pong.com");

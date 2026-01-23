@@ -1,4 +1,4 @@
-
+const LOGGER = require("./LOGGER.js");
 
 function sendInviteRequest(requestingUser, userManager, username_to_send) {
 
@@ -25,7 +25,7 @@ function sendInviteRequest(requestingUser, userManager, username_to_send) {
 function replyToInviteRequest(requestingUser, userManager, username_to_send, acceptance) {
 
 	if (requestingUser.hasPendingRequest(username_to_send) === false) {
-		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: username_to_send + " couldnt find user in list.", target: user_to_send.getDisplayName()});
+		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 400, msg: "Couldnt find user in list.", target: null});
 		return ;
 	}
 	const user_to_send = userManager.getUserByUsername(username_to_send);
@@ -62,21 +62,22 @@ function replyToInviteRequest(requestingUser, userManager, username_to_send, acc
 
 }
 
-function startMatchRequest(requestingUser) {
+function startMatchRequest(requestingUser, userManager) {
 
 	//LOGGER(200, "server", "startMatchRequest", "Sent start match request");
 
 	const match = requestingUser.getCurrentMatch();
 	if (!match) {
 		//LOGGER(400, "server", "startMatchRequest", "Not in a match.");
-		requestingUser.send({type: "START_MATCH_RESPONSE", status: 400, msg: "You are not in a match.", target: requestingUser.getUsername()});
+		requestingUser.send({type: "START_MATCH_RESPONSE", status: 400, msg: "You are not in a match.", target: requestingUser.getDisplaySide()});
 		return;
 	}
 	match.setReady(requestingUser);
 	if (match.isReady[0] && match.isReady[1]) {
 
-		match.players[0].send({type: "START_MATCH_RESPONSE", status: 200, msg: "Started match against " + match.players[1].getUsername(), target: match.players[1].getUsername()});
-		match.players[1].send({type: "START_MATCH_RESPONSE", status: 200, msg: "Started match against " + match.players[0].getUsername(), target: match.players[0].getUsername()});
+
+		match.players[0].send({type: "START_MATCH_RESPONSE", status: 200, msg: "Started match against " + match.players[1].getUsername(), target: match.getPlayerSides(match.players[0])});
+		match.players[1].send({type: "START_MATCH_RESPONSE", status: 200, msg: "Started match against " + match.players[0].getUsername(), target: match.getPlayerSides(match.players[1])});
 	}
 }
 
@@ -236,6 +237,7 @@ function getPendingRequest(requestingUser) {
 	requestingUser.send({type: "GET_PENDING_RESPONSE", status: 200, msg: "Pending request list updated.", target: request_list});
 }
 
+
 function handleUserCommands(user, userManager) {
 
 	user.socket.on("message", (raw) => {
@@ -254,7 +256,7 @@ function handleUserCommands(user, userManager) {
 			replyToInviteRequest(user, userManager, msg.target, msg.target2);
 		}
 		else if (msg.type === "START_MATCH_REQUEST") {
-			startMatchRequest(user);
+			startMatchRequest(user, userManager);
 		}
 		else if (msg.type === "EXIT_MATCH_REQUEST") {
 			exitMatchRequest(user);
