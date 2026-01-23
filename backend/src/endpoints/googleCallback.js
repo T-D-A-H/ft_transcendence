@@ -1,4 +1,5 @@
 const User = require("../Classes/User.js");
+const LOGGER = require("../LOGGER.js");
 
 function googleCallback(userManager, fastify, db, setTokenCookie) {
     return async function (req, reply) {
@@ -25,15 +26,20 @@ function googleCallback(userManager, fastify, db, setTokenCookie) {
             });
 
             let userId;
-
+            let finalUsername = "";
             if (!user) {
                 // Crear usuario nuevo
+                const baseName = userInfo.given_name || userInfo.name || "User";
+                const cleanName = baseName.replace(/\s+/g, '');
+                const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+                const uniqueUsername = `${cleanName}_${randomSuffix}`;
+                finalUsername = uniqueUsername;
                 userId = await new Promise((resolve, reject) => {
                     db.run(
                         `INSERT INTO users (username, display_name, email, password, twofa, oauth_provider, oauth_id)
                          VALUES (?, ?, ?, ?, ?, ?, ?)`,
                         [
-                            userInfo.given_name || userInfo.name,
+                            uniqueUsername,
                             userInfo.email.split('@')[0],
                             userInfo.email,
                             '',
@@ -46,24 +52,23 @@ function googleCallback(userManager, fastify, db, setTokenCookie) {
                             resolve(this.lastID);
                         }
                     );
-                });
+                })
             }
             else if (user.oauth_provider === "google" && user.oauth_id === userInfo.id) {
                 userId = user.id;
+                finalUsername = user.username;
             }
             else {
                 // Email existe pero NO está registrado con Google
-                // ! Cambiar a pagina de error o equivalente
-                return reply.redirect(`/`);
+                return reply.redirect('/?error_google=email_exists_different_provider');
             }
 
             // UserManager
-            let player = userManager.getUser(userId);
-
+            let player = userManager.getUserByID(userId);
             if (!player) {
                 player = new User({
                     id: userId,
-                    username: userInfo.given_name || userInfo.name,
+                    username: finalUsername,
                     display_name: userInfo.email.split('@')[0],
                     socket: null
                 });
@@ -71,8 +76,7 @@ function googleCallback(userManager, fastify, db, setTokenCookie) {
             }
 
             if (userManager.loginUser(userId) === false) {
-                // ! Cambiar a pagina de error o equivalente
-                return reply.redirect(`/`);
+                return reply.redirect('/?error_google=user_login');
             }
 
             // Crear JWT

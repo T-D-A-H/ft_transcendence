@@ -286,21 +286,15 @@ function handleUserCommands(user, userManager) {
 	});
 }
 
-// ✅ ACTUALIZADO: Ahora recibe userId del backend en lugar de token en URL
-function buildGameSocketHandler(userManager, fastify) {
+function buildGameSocketHandler(userManager) {
 
-	return (conn, req, userId) => {
+	return (conn, userId) => {
 
-/*     const token = req.query.token;
-    if (!token || token === "null") {
-		LOGGER(400, "server", "buildGameSocketHandler", "couldnt get token");
-		return conn.socket.close(1008);
-	} */
 	if (!userId) {
 		LOGGER(400, "buildGameSocketHandler:", "No userId provided");
 		return conn.socket.close(1008, "No user ID");
 	}
-
+	
     const user = userManager.getUserByID(userId);
     if (!user) {
 		LOGGER(500, "server", "buildGameSocketHandler", "couldnt find user");

@@ -206,9 +206,15 @@
     			  	<input id="user_input" type="text" class="pong-input-field" placeholder="Username" />
     			  	<input id="pass_input" type="password" class="pong-input-field" placeholder="Password" />
 					<button id="donthaveanaccount_button" class="pong-button text-[8px]">Dont have an account?</button>
-					<div class="flex justify-center mt-4">
-						<button id="login_submit_button" class="pong-submit-button ">SUBMIT</button>
-					</div>
+					<div class="flex flex-col justify-center w-full gap-3 mt-2">
+                        <button id="login_submit_button" class="pong-submit-button w-full">SUBMIT</button>
+                        
+                        <div class="pong-font text-[8px] text-center opacity-50">- OR -</div>
+
+                        <button id="google_login" class="pong-submit-button w-full flex items-center justify-center gap-2">
+                            <span>LOGIN WITH GOOGLE</span>
+                        </button>
+                    </div>
     			</div>
 
 				<!-- Register modal -->
@@ -285,7 +291,6 @@
 					</div>
 					<div class="flex flex-col gap-2 mt-4">
 						<button id="twofa_email_button" class="pong-submit-button w-38">Email</button>
-						<button id="twofa_auth_button" class="pong-submit-button w-38">Authenticator</button>
 						<button id="twofa_skip_button" class="pong-submit-button w-38">Skip For Now</button>
 					</div>
 				</div>

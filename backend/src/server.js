@@ -60,18 +60,17 @@ async function startServer() {
 	fastify.post("/api/logout", buildLogoutHandler(userManager, fastify));
 
 	// ✅ WebSocket del juego - extraer token de cookies
-	const initGameSocket = buildGameSocketHandler(userManager, fastify);
+	const initGameSocket = buildGameSocketHandler(userManager);
 	fastify.get("/proxy-game", { websocket: true }, async (socket, req) => {
-		// Extraer token de la cookie
 		const token = req.cookies?.accessToken;
+
 		if (!token) {
 			socket.close(1008, "No token provided");
 			return;
 		}
 		try {
 			const decoded = fastify.jwt.verify(token);
-			// Pasar el userId al handler del game
-			await initGameSocket(socket, req, decoded.id);
+			await initGameSocket(socket, decoded.id);
 		} catch (err) {
 			socket.close(1008, "Invalid token");
 		}
@@ -88,10 +87,6 @@ async function startServer() {
 	// ✅ Validar token (verificar si sesión activa)
 	const validateToken = require("./endpoints/validateToken.js");
 	fastify.get("/api/validate-token", validateToken(userManager, fastify));
-
-	// ✅ Refresh token (generar nuevo accessToken)
-	const refreshToken = require("./endpoints/refreshToken.js");
-	fastify.post("/api/refresh-token", refreshToken(userManager, fastify, setTokenCookie));
 
 	// ✅ Google OAuth - ahora setea cookies
 	const googleCallback = require("./endpoints/googleCallback.js");

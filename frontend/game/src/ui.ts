@@ -326,7 +326,8 @@ export const openSearchTournamentButton = // Search for matches button
 	document.getElementById("search_tournament") as HTMLButtonElement;
 
 // VIA AUTH
-export const GoogleButton = document.getElementById("google_register") as HTMLButtonElement;
+export const googleLoginButton =
+	document.getElementById("google_login") as HTMLButtonElement;
 
 export const closeSearchTournamentButton =
 	document.getElementById("tournament_search_cancel_button") as HTMLButtonElement;

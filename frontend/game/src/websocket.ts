@@ -43,8 +43,6 @@ export function initializeWebSocket() {
 
 export async function restoreSession(): Promise<boolean> {
     try {
-        console.log("Attempting to restore session...");
-        
         await initializeWebSocket();
 
         const result = await oneTimeEvent("INFO_REQUEST", "INFO_RESPONSE");
@@ -56,11 +54,9 @@ export async function restoreSession(): Promise<boolean> {
         show(logoutButton);
         updateProfileUI(info.display_name, info.username);
         
-        return true; // Sesión restaurada con éxito
+        return true;
     }
     catch (err) {
-        // Si fallamos (ej: no había cookie), limpiamos variables
-        console.log("Session restore failed:", err);
         nullWebsocket();
         return false;
     }

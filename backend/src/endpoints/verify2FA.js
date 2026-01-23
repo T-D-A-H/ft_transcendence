@@ -1,12 +1,11 @@
-
 const LOGGER 	 = require("../LOGGER.js");
 
 function verify2FAhandle(userManager, fastify, setTokenCookie) {
 
 	return async function verify2FAHandler(req, reply) {
-		const {  code } = req.body;
+		const { code } = req.body;
 
-		if (!tempToken || !code) {
+		if (!code) {
 			LOGGER(400, "server", "verify2FAHandler", "Faltan datos");
 			return reply.code(400).send({ 
 				status: "error",

@@ -4,15 +4,7 @@ const LOGGER 	 = require("../LOGGER.js");
 function buildLogoutHandler(userManager, fastify) {
 
 	return async function handleLogout(req, reply) {
-        const cookieOptions = {
-            path: '/', 
-            secure: true, 
-            httpOnly: true, 
-            sameSite: 'strict'
-        };
-        
-        reply.clearCookie('accessToken', cookieOptions);
-        reply.clearCookie('temp2FA', cookieOptions);
+		const token = req.cookies?.accessToken;
 		
 		try {
 			// Obtener token de la cookie
@@ -34,18 +26,14 @@ function buildLogoutHandler(userManager, fastify) {
 				// Obtener usuario
 				const player = userManager.getUserByID(userId);
 				if (player) {
-					userManager.logoutUser(userId);
-					if (player.socket)
-						player.socket.close();
-					userManager.removeUser(userId);
-					LOGGER(200, "server", "handleLogout", "Logged out succesfully");
+					player.isConnected = false;  // Marcar desconectado
+					player.socket = null;        // Limpiar socket si existe
 				}
-				else {
-					LOGGER(501, "server", "handleLogout", "Couldnt find User to log out");
-				}
+
+				// Limpiar la cookie
 				reply.clearCookie('accessToken');
 				reply.clearCookie('temp2FA');
-				return reply.send({ status: "ok" });
+
 			} catch (err) {
 				if (err.name === 'JsonWebTokenError') {
 					LOGGER(401, "server", "handleLogout", "Token inválido");

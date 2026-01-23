@@ -67,6 +67,7 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 				});
 				userManager.addUser(player);
 			}
+			
 			userManager.set2FACode(user.id, code);
 
 			// Enviar email con código

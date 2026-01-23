@@ -8,17 +8,19 @@ import { menuButtons, getInviteFrom } from "./ui.js";
 import { openCreateTournamentButton, closeCreateTournamentButton, submitTournamentCreationButton, createTournamentModal, aliasTournamentInput, tournamentSizeInput} from "./ui.js";
 import { openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, renderTournamentList} from "./ui.js";
 import { show, hide, showMenu, showCanvas, showNotification, renderPendingRequests } from "./ui.js";
-import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisible,} from "./ui.js";
-
-
+import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisible, googleLoginButton} from "./ui.js";
 
 import { ProfileInfo, TournamentInfo } from "./vars.js";
 
 import { registerUser, loginUser, logoutUser, configure2FA, verify2FA, startTokenValidationInterval } from "./auth.js";
 
-import { userSocket, restoreSession, initializeWebSocket } from "./websocket.js";
+import { userSocket, restoreSession } from "./websocket.js";
 
 import { oneTimeEvent, sendKeyPress, send2KeyPress } from "./events.js";
+
+googleLoginButton.onclick = () => {
+	window.location.href = "/auth/google";
+}
 
 menuButtons.forEach(button => {
 
@@ -43,7 +45,6 @@ menuButtons.forEach(button => {
 	});
 });
 
-
 alreadyHaveAnAccountButton.onclick = () => {
 	hide(registerModal);
 	show(loginModal);
@@ -58,9 +59,7 @@ submitRegisterButton.onclick = async () => {
 		hide(registerModal);
 		show(twoFAOptionModal);
 		twoFAEmailButton.onclick = () => {
-
 			configure2FA(result.setupToken!, "2FAmail", twoFAOptionModal, loginModal, registerModal);
-
 		}
 		twoFASkipButton.onclick = twoFACancelButton.onclick = () => {
 
@@ -73,7 +72,6 @@ submitRegisterButton.onclick = async () => {
 
 closeRegisterButton.onclick = () => hide(registerModal);
 
-
 dontHaveAnAccountButton.onclick = () => {
 	hide(loginModal);
 	show(registerModal);
@@ -83,29 +81,31 @@ dontHaveAnAccountButton.onclick = () => {
 submitLoginButton.onclick = async () => {
 
 	const result = await loginUser(usernameInput, passwordInput);
-	let tempToken2FA: string | null | undefined = null;
 
 	if (result.status === 0) {
 		hide(loginModal);
 		hide(twoFAModal);
-		restoreSession();
+		await restoreSession();
+		startTokenValidationInterval();
 	}
 	else if (result.status === "requires_2fa" && result.method === "email") {
 
 		show(twoFAModal);
-		tempToken2FA = result.tempToken;
 
 		twoFASubmitButton.onclick = async () => {
 
 			const code = twoFAInput.value.trim();
 			if (!code) return alert("Ingresa el código 2FA");
 
-			const success = await verify2FA(tempToken2FA!, code, twoFAModal, loginModal);
-			if (success)
-				tempToken2FA = null;
-			twoFAInput.value = "";
-
-			restoreSession();
+			const success = await verify2FA(code, twoFAModal, loginModal);
+			if (success) {
+				twoFAInput.value = "";
+				hide(loginModal);
+				hide(twoFAModal);
+	
+				await restoreSession();
+				startTokenValidationInterval();
+			}
 		};
 	}
 	else {
@@ -406,15 +406,25 @@ async function renderRequestLists() {
 }
 
 (async () => {
-    // Intentar restaurar sesión al cargar la página
+	const urlParams = new URLSearchParams(window.location.search);
+
+    const error = urlParams.get('error_google');
+
+	if (error === 'email_exists_different_provider') {
+        showNotification("Email already registered with password (not Google).");
+        window.history.replaceState({}, document.title, "/");
+    }
+
+	if (error === 'user_login') {
+        showNotification("Login Error: User already connected or internal error.");
+        window.history.replaceState({}, document.title, "/");
+    }
+
     const restored = await restoreSession();
 
     if (restored) {
-        // Iniciamos el intervalo de seguridad
         startTokenValidationInterval();
     } else {
         console.log("No hay sesión activa");
     }
 })();
-
-/* setInterval(refreshToken, 5 * 60 * 1000); */

@@ -34,8 +34,6 @@ Promise<{ status: number; userId?: string; setupToken?: string; error?: string }
 			return { status: 0, userId: String(result.userId), setupToken: result.setupToken };
 		}
 
-		alert("Usuario o nombre ya registrado");
-
 		return { status: 1, error: result.error || "Error en el registro"};
 	}
 	catch (err) {
@@ -92,11 +90,28 @@ Promise<{ status: number | string; token?: string; tempToken?: string; method?: 
 	}
 }
 
-export async function logoutUser(logoutButton: HTMLButtonElement) {
+export async function logoutUser(logoutButton?: HTMLButtonElement) {
 
-    await performLogout();
-    
-    hide(logoutButton);
+    if (userSocket) {
+        userSocket.close(); 
+    }
+
+    nullWebsocket();
+
+    try {
+        const res = await fetch("/api/logout", {
+            method: "POST",
+            credentials: "include" 
+        });
+
+        updateProfileUI("PONG", "ft_transcendence.pong.com");
+    } catch (err) {
+        console.error("Logout error (network):", err);
+        updateProfileUI("PONG", "ft_transcendence.pong.com");
+    }
+    if (logoutButton) {
+   		hide(logoutButton);
+	}
 }
 
 export async function configure2FA(setupToken: string, method: "2FAmail" | "skip", twoFAOptionModal: HTMLElement, loginModal: HTMLElement, registerModal: HTMLElement) {
@@ -125,38 +140,33 @@ export async function configure2FA(setupToken: string, method: "2FAmail" | "skip
 	}
 }
 
-export async function verify2FA(tempToken: string, code: string, twoFAModal: HTMLElement, loginModal: HTMLElement) {
+export async function verify2FA(code: string, twoFAModal: HTMLElement, loginModal: HTMLElement) {
+	if (!code) {
+		alert("Ingresa el código 2FA");
+		return;
+	}
 
-    if (!code) {
-        alert("Ingresa el código 2FA");
-        return;
-    }
+	try {
+		const res = await fetch("/api/verify-2fa", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ code }),
+			credentials: "include"
+		});
 
-    const res = await fetch("/api/verify-2fa", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tempToken, code })
-    });
+		const verifyResult = await res.json();
 
-    const verifyResult = await res.json();
-
-    if (verifyResult.status === "ok") {
-        
-        hide(twoFAModal);
-        hide(loginModal);
-        
-        await initializeWebSocket();
-        
-        startTokenValidationInterval();
-        
-        return true;
-    }
-    else {
-        alert(verifyResult.error || "Código 2FA incorrecto");
-        return false;
-    }
+		if (verifyResult.status === "ok") {
+			return true;
+		} else {
+			alert(verifyResult.error || "Código 2FA incorrecto");
+			return false;
+		}
+	} catch (err) {
+		console.error(err);
+		alert("Error al verificar 2FA");
+	}
 }
-
 
 let userSocket: WebSocket | null = null;
 
@@ -183,39 +193,16 @@ export async function validateSession(): Promise<boolean> {
 	}
 }
 
-
-// 2. Centralizamos toda la lógica de salida en performLogout
-export async function performLogout() {
-    
-    if (userSocket) {
-        userSocket.close(); 
-    }
-
-    nullWebsocket();
-
-    try {
-        const res = await fetch("/api/logout", {
-            method: "POST",
-            credentials: "include" 
-        });
-
-        const data = await res.json();
-        updateProfileUI("PONG", "ft_transcendence.pong.com");
-
-
-    } catch (err) {
-        console.error("Logout error (network):", err);
-        updateProfileUI("PONG", "ft_transcendence.pong.com");
-    }
-}
-
 // Validar token periódicamente
 export function startTokenValidationInterval() {
-	setInterval(async () => {
-		const isValid = await validateSession();
-		if (!isValid) {
-			console.log("Session expired, logging out");
-			await performLogout();
-		}
-	}, 5 * 60 * 1000);
+    const intervalId = setInterval(async () => {
+        const isValid = await validateSession();
+        if (!isValid) {
+            console.log("Session expired or Server restarted, logging out");
+            // No pasamos botón porque es un logout automático
+            await logoutUser(); 
+            // Opcional: Detener el intervalo para que no siga intentando salir
+            clearInterval(intervalId); 
+        }
+    }, 5 * 60 * 1000);
 }
