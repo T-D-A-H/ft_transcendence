@@ -1,11 +1,14 @@
 const nodemailer = require("nodemailer");
-const User = require("../User.js");
+const User 		 = require("../Classes/User.js");
+const LOGGER 	 = require("../LOGGER.js");
 
-function buildLoginHandler(db, bcrypt, userManager, fastify) {
+
+function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 	return async function handleLogin(req, reply) {
-	const { display_name, password } = req.body || {};
+	const { username, password } = req.body || {};
 
-	if (!display_name || !password) {
+	if (!username || !password) {
+		LOGGER(400, "server", "handleLogin", "Missing fields");
 		return reply.code(400).send({ error: "Missing fields" });
 	}
 
@@ -13,23 +16,25 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 		// 1. Buscar usuario en la BD
 		const user = await new Promise((resolve, reject) => {
 			db.get(
-				"SELECT id, username, display_name, email, password, twofa FROM users WHERE display_name = ?",
-				[display_name],
+				"SELECT id, username, display_name, email, password, twofa FROM users WHERE username = ?",
+				[username],
 				(err, row) => err ? reject(err) : resolve(row)
 			);
 		});
 
 		// 2. Validar que el usuario existe
 		if (!user) {
+			LOGGER(401, "server", "handleLogin", "Credenciales incorrectas");
 			return reply.code(401).send({ 
 				status: "error",
 				error: "Credenciales incorrectas" 
 			});
 		}
-
+		
 		// 3. Validar contraseña
 		const match = await bcrypt.compare(password, user.password);
 		if (!match) {
+			LOGGER(401, "server", "handleLogin", "Credenciales incorrectas");
 			return reply.code(401).send({ 
 				status: "error",
 				error: "Credenciales incorrectas" 
@@ -52,7 +57,7 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 			// Generar código 2FA (6 dígitos)
 			const code = Math.floor(100000 + Math.random() * 900000);
 
-			let player = userManager.getUser(user.id);
+			let player = userManager.getUserByID(user.id);
 			if (!player) {
 				player = new User({
 					id: user.id,
@@ -62,6 +67,7 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 				});
 				userManager.addUser(player);
 			}
+			
 			userManager.set2FACode(user.id, code);
 
 			// Enviar email con código
@@ -82,27 +88,30 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 				text: `Tu código de verificación es: ${code}\n\nEste código expira en 10 minutos.`
 			});
 
+			reply.setCookie('temp2FA', temp2FAToken, {
+				httpOnly: true,
+				secure: true,
+				sameSite: 'strict',
+				maxAge: 10 * 60 * 1000, // 10 minutos
+				path: '/'
+			});
+
 			// Retornar que se requiere 2FA
 			return reply.send({ 
 				status: "requires_2fa",
-				method: "email",
-				tempToken: temp2FAToken 
+				method: "email"
 			});
 		}
 
-		let player = userManager.getUser(user.id);
+		let player = userManager.getUserByID(user.id);
 		if (!player) {
-			player = new User({
-				id: user.id,
-				username: user.username,
-				display_name: user.display_name,
-				socket: null
-			});
+			player = userManager.createUser(user.id, user.username, user.display_name, null);
 			userManager.addUser(player);
 		}
 
 		// 5. Login exitoso sin 2FA
 		if (userManager.loginUser(user.id) ===  false) {
+			LOGGER(401, "server", "handleLogin", "Usuario ya logeado");
 			return reply.code(401).send({ 
 				status: "error",
 				error: "Usuario ya logeado" 
@@ -114,14 +123,15 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 			display_name: user.display_name 
 		});
 
+		// Setear cookie httpOnly
+		setTokenCookie(reply, token);
+
 		return reply.send({ 
-			status: "ok", 
-			token,
-			userId: user.id 
+			status: "ok"
 		});
 
 	} catch (err) {
-		console.error("Login error:", err);
+		LOGGER(500, "server", "handleLogin", "Login Error: " + err);
 		return reply.code(500).send({ 
 			status: "error",
 			error: "Error en el servidor" 
@@ -130,4 +140,4 @@ function buildLoginHandler(db, bcrypt, userManager, fastify) {
 	};
 }
 
-module.exports = buildLoginHandler;
+module.exports = loginHandler;

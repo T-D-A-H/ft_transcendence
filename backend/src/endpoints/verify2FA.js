@@ -1,19 +1,34 @@
-function verify2FACode(userManager, fastify) {
-	return async function verify2FAHandler(req, reply) {
-		const { tempToken, code } = req.body;
+const LOGGER 	 = require("../LOGGER.js");
 
-		if (!tempToken || !code) {
+function verify2FAhandle(userManager, fastify, setTokenCookie) {
+
+	return async function verify2FAHandler(req, reply) {
+		const { code } = req.body;
+
+		if (!code) {
+			LOGGER(400, "server", "verify2FAHandler", "Faltan datos");
 			return reply.code(400).send({ 
-			status: "error",
-			error: "Faltan datos" 
+				status: "error",
+				error: "Faltan datos" 
 			});
 		}
 
 		try {
+			// Obtener el token temporal de la cookie (httpOnly)
+			const tempToken = req.cookies?.temp2FA;
+
+			if (!tempToken) {
+				return reply.code(401).send({ 
+					status: "error",
+					error: "Session expirada - intenta login de nuevo" 
+				});
+			}
+
 			// Verificar token temporal
 			const decoded = fastify.jwt.verify(tempToken);
 			
 			if (decoded.step !== "2fa_pending") {
+				LOGGER(401, "server", "verify2FAHandler", "Token inválido");
 				return reply.code(401).send({ 
 					status: "error",
 					error: "Token inválido" 
@@ -24,6 +39,7 @@ function verify2FACode(userManager, fastify) {
 
 			// Verificar código 2FA
 			if (!userManager.verify2FACode(userId, parseInt(code))) {
+				LOGGER(401, "server", "verify2FAHandler", "Código 2FA incorrecto o expirado");
 				return reply.code(401).send({ 
 					status: "error",
 					error: "Código 2FA incorrecto o expirado" 
@@ -32,6 +48,7 @@ function verify2FACode(userManager, fastify) {
 
 			// Login exitoso
 			if (userManager.loginUser(userId) ===  false) {
+				LOGGER(401, "server", "verify2FAHandler", "Usuario ya logeado");
 				return reply.code(401).send({ 
 					status: "error",
 					error: "Usuario ya logeado" 
@@ -44,14 +61,19 @@ function verify2FACode(userManager, fastify) {
 				display_name: decoded.display_name 
 			});
 
+			// Setear cookie de acceso
+			setTokenCookie(reply, token);
+
+			// Limpiar cookie temporal
+			reply.clearCookie('temp2FA');
+
+			LOGGER(200, "server", "verify2FAHandler", "Verified 2FA Succesfully");
 			return reply.send({ 
-				status: "ok", 
-				token,
-				userId: userId 
+				status: "ok"
 			});
 
 		} catch (err) {
-			console.error("2FA verification error:", err);
+			LOGGER(401, "server", "verify2FAHandler", "2FA verification error:" + err);
 			return reply.code(401).send({ 
 				status: "error",
 				error: "Token inválido o expirado" 
@@ -60,4 +82,4 @@ function verify2FACode(userManager, fastify) {
 	};
 }
 
-module.exports = verify2FACode;
+module.exports = verify2FAhandle;

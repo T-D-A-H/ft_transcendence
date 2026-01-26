@@ -23,6 +23,7 @@ DATABASE_CONTAINER = ft_database
 FRONT_SERVICE     = frontend
 FRONT_CONTAINER   = ft_frontend
 FRONT_SCRIPT      = /usr/local/bin/entrypoint-frontend.sh
+FRONT_TAILWINDCSS = ./frontend/game/styles/tailwind.css
 
 NGINX_SERVICE     = nginx
 NGINX_CONTAINER   = ft_nginx
@@ -42,6 +43,7 @@ up-logs:  # Ejecutar contenedores con LOGS
 	$(D_COMPOSE) up $(REMOVE_ORPH)
 
 down: #Tirar contenedores y borrar volumenes
+	rm -rf $(FRONT_TAILWINDCSS)
 	$(D_COMPOSE) down -v --remove-orphans
 
 fclean: down #Borrar builds antiguos y borrar volumenes
@@ -56,7 +58,7 @@ rf: # refresca el frontend por si hay cambios en src/
 	$(D_EXEC) $(FRONT_CONTAINER) sh $(FRONT_SCRIPT)
 
 rn:
-	$(D_COMPOSE) up $(DETTACHED) $(NGINX_SERVICE)
+	$(D_COMPOSE) restart $(NGINX_SERVICE)
 
 rfn: rf rn
 
@@ -69,7 +71,7 @@ rd: # resetea la base de datos a 0 sin construir imagen
 	$(D_RUN) --rm -v $(DB_BACK_VOLUME) alpine sh -c 'rm -f /data/database.sqlite || true'
 	$(D_COMPOSE) restart $(DATABASE_SERVICE) $(BACK_SERVICE)
 
-rdb: rd
+rdb: rd rb
 
 rall: rfn rd # Recompilar backend, database, frontend, nginx , borrar volumenes y ejecutar scripts
 

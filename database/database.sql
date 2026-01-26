@@ -2,8 +2,8 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    display_name TEXT NOT NULL UNIQUE,
+    username TEXT NOT NULL UNIQUE,
+    display_name TEXT NOT NULL,
     email TEXT UNIQUE,
     password TEXT,
     twofa TEXT DEFAULT 'skip',          

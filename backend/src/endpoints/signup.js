@@ -1,6 +1,6 @@
-const User = require("../src/User.js");
+const User = require("../Classes/User.js");
 
-function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
+function signupHandler(db, bcrypt, saltRounds, fastify) {
 	return async function registerHandler(req, reply) {
 		const body = req.body || {};
 		const username = body.username;
@@ -13,17 +13,27 @@ function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
 		}
 
 		try {
+			// ! Descomentar cuando este completo
+/* 			const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+			
+			if (!PASSWORD_REGEX.test(password)) {
+				return reply.code(400).send({
+					status: "error",
+					error: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo"
+				});
+			} */
+
 			// Hash de la contraseña
 			const hashed = await bcrypt.hash(password, saltRounds);
 
 			// Insertar usuario con twofa por defecto en 'skip'
 			const userId = await new Promise((resolve, reject) => {
-				db.run(
-					"INSERT INTO users (username, display_name, email, password, twofa) VALUES (?,?,?,?,?)",
-					[username, display_name, email, hashed, "skip"],
+			db.run(
+				"INSERT INTO users (username, display_name, email, password, twofa, oauth_provider, oauth_id) VALUES (?,?,?,?,?,?,?)",
+				[username, display_name, email, hashed, "skip", null, null],
 					function(err) {
-					if (err) reject(err);
-					else resolve(this.lastID);
+						if (err) reject(err);
+						else resolve(this.lastID);
 					}
 				);
 			});
@@ -46,10 +56,10 @@ function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
 		}
 		catch (err) {
 			console.error("Error registering user:", err);
-			
+
 			if (err.message && err.message.includes("UNIQUE constraint failed")) {
-				return reply.code(409).send({ 
-					error: "Una cuenta con ese username, email o display_name ya existe" 
+			return reply.code(409).send({ 
+					error: "Ya existe una cuenta con estos datos" 
 				});
 			}
 			
@@ -58,4 +68,4 @@ function buildRegisterHandler(db, bcrypt, saltRounds, fastify) {
 	};
 }
 
-module.exports = { buildRegisterHandler };
+module.exports = signupHandler;
