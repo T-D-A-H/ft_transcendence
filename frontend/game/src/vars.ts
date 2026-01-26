@@ -68,12 +68,6 @@ export interface IncomingInviteRequest {
     target: string;
 }
 
-export interface IncomingInviteResponse {
-    type: "INCOMING_INVITE_RESPONSE";
-    status: number;
-    msg: string;
-    target: string;
-}
 
 export interface DrawMessage {
     type: "DRAW";
@@ -87,11 +81,19 @@ export interface ScoresMessage {
     scores: [number, number];
 }
 
-export interface InitialVarsMessage {
-    type: "VARS";
-    PaddleWH: [number, number];
-    BallWH: [number, number];
+export interface IncomingNotification {
+    type: "NOTIFICATION";
+    status: number;
+    msg: string;
 }
+
+export interface IncomingMatchReady {
+    type: "MATCH_READY";
+    status: number;
+    msg: string; 
+    target: string;
+}
+
 
 export interface WinMessage {
     type: "WIN"; 
@@ -137,11 +139,11 @@ export interface PendingRequest {
 
 export type ServerMessage = 
 SendInviteResponse         | ReplyInviteResponse      |
-IncomingInviteRequest      | IncomingInviteResponse   |
+IncomingInviteRequest      | 
 StartMatchResponse         | PlayLocallyResponse      | 
 ScoresMessage              | DrawMessage			  | 
-InitialVarsMessage         | WinMessage               |
+IncomingNotification       | WinMessage               |
 MirrorCanvasMessage        | CreateTournamentRequest  |
 SearchTournamentRequest    | JoinTournamentRequest    |
 ExitMatchResponse          | InfoResponse             |
-PendingRequest             ;
+PendingRequest             | IncomingMatchReady;

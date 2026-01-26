@@ -130,6 +130,8 @@ class UserManager {
         LOGGER(200, "UserManager", "tournamentDisconnect", "user disconnected from tournament");
         const winners = tournament.getWinners();
 
+        if (winners === null)
+            return ;
     	for (const user of winners.keys()) {
 
     		if (user.isConnected === false) {
@@ -231,16 +233,22 @@ class UserManager {
         this.matches.forEach(match => {
 
 
-            if (match.someoneWon() === true) {
-
-                this.stopMatch(match)
+            if (match.START === false && match.readyToStart() === true) {
+                LOGGER(200, "UserManager.js", "updateMatches", "sent match ready");
+                match.sendMatchReady();
             }
-            if (match.shouldContinuePlaying()) {
+            else {
+                if (match.someoneWon() === true) {
 
-				match.updateMatch();
-                // this.matchDisconnect(match);
-                
+                    this.stopMatch(match)
+                }
+                if (match.shouldContinuePlaying()) {
+
+			    	match.updateMatch();
+                    // this.matchDisconnect(match);
+                }
             }
+
         });
     }
 
@@ -264,9 +272,8 @@ class UserManager {
     createTournament(user, alias, size) { LOGGER(200, "UserManager", "createTournament", "Called by user alias: " + alias);
 
         const tournament_id = this.createId();
-		const tournament = new Tournament(tournament_id, size);
+		const tournament = new Tournament(user, alias, tournament_id, size);
 
-        tournament.addCreatorAlias(alias);
         tournament.addUserToTournament(user, alias);
         this.tournaments.set(tournament_id, tournament);
 		user.setTournament(tournament);
@@ -310,6 +317,7 @@ class UserManager {
                 }
     		    if (tournament.isWaitingAndFull() && tournament.TESTING === false) {
 
+                    LOGGER(200, "USerManager.js", "updateTournaments", "Tournament is waiting and full");
                     tournament.setReady();
     		    	this.createNewTournamentMatches(tournament.getPlayers(), tournament);
     		    }

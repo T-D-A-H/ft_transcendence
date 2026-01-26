@@ -204,7 +204,7 @@ body {
 	}
 	.pong-submit-button {
 
-		@apply  pong-button active-border text-[12px] px-3 py-1;
+		@apply  text-[color:var(--pong-black)] bg-[color:var(--pong-white)] font-['PressStart2P',monospace] hover:text-[color:var(--pong-white)] hover:bg-[color:var(--pong-black)] text-[12px] px-3 py-1;
 	}
 	.pong-button-small {
 

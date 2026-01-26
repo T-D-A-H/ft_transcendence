@@ -36,7 +36,7 @@ function replyToInviteRequest(requestingUser, userManager, username_to_send, acc
 		return ;
 	}
 	if (acceptance === "decline") {
-		user_to_send.send({type: "INCOMING_INVITE_RESPONSE", status: 400, msg: requestingUser.getUsername() + " declined your invite.", target: requestingUser.getUsername()});
+		user_to_send.send({type: "NOTIFICATION", status: 200, msg: requestingUser.getUsername() + " declined your invite.", target: requestingUser.getUsername()});
 		requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 307, msg: "You declined " + username_to_send + "'s invite.", target: user_to_send.getDisplayName()});
 		requestingUser.removePendingRequest(username_to_send);
 		return ;
@@ -56,7 +56,7 @@ function replyToInviteRequest(requestingUser, userManager, username_to_send, acc
 	//LOGGER(200, "server", "replyToInviteRequest", "You accepted " + username_to_send + "'s invite.");
 	userManager.addToMatch(requestingUser, user_to_send.getCurrentMatch());
 	requestingUser.send({type: "REPLY_INVITE_RESPONSE", status: 200, msg: "You accepted " + username_to_send + "'s invite.", target: user_to_send.getDisplayName()});
-	user_to_send.send({type: "INCOMING_INVITE_RESPONSE", status: 200, msg: requestingUser.getUsername() + " accepted your invite.", target: requestingUser.getDisplayName()});
+	//user_to_send.send({type: "INCOMING_INVITE_RESPONSE", status: 200, msg: requestingUser.getUsername() + " accepted your invite.", target: requestingUser.getDisplayName()});
 	requestingUser.removePendingRequest(username_to_send);
 
 
@@ -75,7 +75,11 @@ function startMatchRequest(requestingUser, userManager) {
 	match.setReady(requestingUser);
 	if (match.isReady[0] && match.isReady[1]) {
 
-
+		if (match.locally === true) {
+			LOGGER(200, "game.js", "startMatchRequest", "started local match");
+			match.players[0].send({type: "START_MATCH_RESPONSE", status: 202, msg: "Started match against " + match.players[0].getUsername() + "2", target: "right"});
+			return ;
+		}
 		match.players[0].send({type: "START_MATCH_RESPONSE", status: 200, msg: "Started match against " + match.players[1].getUsername(), target: match.getPlayerSides(match.players[0])});
 		match.players[1].send({type: "START_MATCH_RESPONSE", status: 200, msg: "Started match against " + match.players[0].getUsername(), target: match.getPlayerSides(match.players[1])});
 	}
@@ -99,7 +103,8 @@ function playLocalGame(requestingUser, userManager) {
 	}
 	else {
 
-		userManager.createMatch(requestingUser, true, null);
+		const match = userManager.createMatch(requestingUser, true, null);
+		userManager.addToMatch(requestingUser, match);
 		requestingUser.send({type: "PLAY_LOCALLY_RESPONSE", status: 200, msg: "Local Match created.", target: ""});
 	}
 }
@@ -166,18 +171,27 @@ function joinTournamentRequest(requestingUser, userManager, tournament_id, alias
 	}
 	else {
 
-		//LOGGER(200, "server", "joinTournamentRequest", "tournament found: " + 
-		// 	"\nid: " + tournament.getTournamentId() + 
-		// 	"\ncreator: " + tournament.getCreatorAlias() + 
-		// 	"\ncurrent_size: " + tournament.getCurrentSize() + 
-		// 	"\nmax_size: " + tournament.getTournamentSize()
-		// );
+		LOGGER(200, "server", "joinTournamentRequest", "tournament found: " + 
+			"\nid: " + tournament.getTournamentId() + 
+			"\ncreator: " + tournament.getCreatorAlias() + 
+			"\ncurrent_size: " + tournament.getCurrentSize() + 
+			"\nmax_size: " + tournament.getTournamentSize()
+		);
 
 		if (userManager.addToTournament(requestingUser, tournament, alias) === false) {
 			requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 400, msg: "Couldnt find tournament."});
 			return ;
 		}
 		requestingUser.send({type: "JOIN_TOURNAMENT_RESPONSE", status: 200, msg: "Joined " + tournament.getCreatorAlias() +  "'s tournament."});
+		const creatorUser = tournament.getCreator();
+		creatorUser.send({type: "NOTIFICATION", status: 200, msg: alias + " Joined the tournament. " + tournament.getCurrentSize() + "/" + tournament.getTournamentSize()})
+		
+		LOGGER(200, "server", "joinTournamentRequest", "JOINED TOUrnament" + 
+			"\nid: " + tournament.getTournamentId() + 
+			"\ncreator: " + tournament.getCreatorAlias() + 
+			"\ncurrent_size: " + tournament.getCurrentSize() + 
+			"\nmax_size: " + tournament.getTournamentSize()
+		);
 	}
 }
 
@@ -187,6 +201,8 @@ function exitMatchRequest(requestingUser, userManager) {
 	const tournament = requestingUser.getCurrentTournament();
 
 	if (match === null && tournament === null) {
+		if (tournament === null)
+			LOGGER(400, "game.js", "exitMatchRequest", "no tournament");
 		requestingUser.send({type: "EXIT_MATCH_RESPONSE", status: 400, msg: "You are not in a match.", target: requestingUser.getUsername()});
 		return;
 	}
@@ -196,9 +212,12 @@ function exitMatchRequest(requestingUser, userManager) {
     match.setLOSER(1 - other_user);
 	match.setDisconnect();
 
-    if (tournament) {
+    if (tournament !== null) {
+		LOGGER(200, "game.js", "exitMatchRequest", "Succesfully exited Tournament.");
         userManager.tournamentDisconnect(tournament);
         tournament.removeUserFromTournament(requestingUser);
+		requestingUser.send({type: "EXIT_MATCH_RESPONSE", status: 200, msg: "Succesfully exited Tournament.", target: requestingUser.getUsername()});
+		return ;
     }
 	requestingUser.send({type: "EXIT_MATCH_RESPONSE", status: 200, msg: "Succesfully exited match.", target: requestingUser.getUsername()});
 }
@@ -258,7 +277,7 @@ function handleUserCommands(user, userManager) {
 			startMatchRequest(user, userManager);
 		}
 		else if (msg.type === "EXIT_MATCH_REQUEST") {
-			exitMatchRequest(user);
+			exitMatchRequest(user, userManager);
 		}
 		else if (msg.type === "PLAY_LOCALLY_REQUEST") {
 			playLocalGame(user, userManager);
@@ -279,7 +298,6 @@ function handleUserCommands(user, userManager) {
 			getPendingRequest(user);
 		}
 		else if (msg.type === "MOVE2" && user.currentMatch) {
-
 			user.currentMatch.update2PlayerGame(msg.move);
 		}
 		else if (msg.type === "MOVE" && user.currentMatch) {

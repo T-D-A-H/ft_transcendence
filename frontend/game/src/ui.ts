@@ -73,8 +73,8 @@ export function toggleMenu(): void
 {
 	if (menu_open) {
 		hide(menuModal);
-		makeVisible(startMatchButton);
-		makeVisible(exitMatchButton);
+		// makeVisible(startMatchButton);
+		// makeVisible(exitMatchButton);
 		drawGame();
 		show(canvas);
 	}

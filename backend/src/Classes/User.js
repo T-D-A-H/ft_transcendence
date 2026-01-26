@@ -2,10 +2,8 @@ const LOGGER = require("../LOGGER.js");
 
 class User {
     
-    static SIDE = {
-        LEFT: -1,
-        RIGHT: 1
-    };
+    static SIDE = { LEFT: -1, RIGHT: 1};
+
     constructor({ id, username, display_name, socket }) {
         LOGGER(200, "User", "Constructor", "called for " + username);
 
@@ -22,15 +20,12 @@ class User {
         this.displaySide = User.SIDE.RIGHT;
     }
 
-    // Enviar mensaje al jugador vía WebSocket
     send(message) {
         if (this.socket && this.isConnected) {
             this.socket.send(JSON.stringify(message));
         }
     }
 
-
-    // Marcar desconexión
     disconnect() {
         this.isConnected = false;
         this.socket = null;
@@ -41,7 +36,6 @@ class User {
         this.socket = socket;
     }
 
-    // Marcar reconexión
     reconnect(socket) {
         this.isConnected = true;
         this.socket = socket;

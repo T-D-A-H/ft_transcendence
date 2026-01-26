@@ -4,14 +4,16 @@ const Match = require("./Match.js");
 
 class Tournament {
 
-    constructor(tournament_id, size) { LOGGER(200, "Tournament", "Constructor", "Called");
+    constructor(creatorUser, creatorAlias = null, tournament_id, size) { LOGGER(200, "Tournament", "Constructor", "Called");
 
-	
 		this.id = tournament_id;
 		this.maxPlayers = size;
 		this.currentPlayerCount = 0;
 		this.matchDoneCount = 0;
-		this.creatorAlias = null;
+
+		this.creator = creatorUser;
+		this.creatorAlias = (creatorAlias === null) ? "Anonymous" : creatorAlias;
+
 		this.isWaiting = true;
 		this.isReady = false;
 		this.WINNER = null;
@@ -37,13 +39,22 @@ class Tournament {
 	}
 
 	sendWin(user, loserUser) {
-		const loser = this.getPlayerAlias(loserUser).alias;
-		LOGGER(200, "Tournament", "sendWin", "You Won the tournament game against " + loser + ".");
-		this.sendMsg(user, { type: "WIN", msg: "You Won the tournament game against " + loser + "."});
+
+		let loserEntry = this.getPlayerAlias(loserUser);
+
+		if (!loserEntry) {
+			loserEntry = "Anonymous";
+		}
+
+		const loser = loserEntry.alias;
+		this.sendMsg(user, {type: "WIN", msg: "You Won the tournament game against " + loser + "."});
 	}
 
 	sendLose(user, winnerUser) {
-		const winner = this.getPlayerAlias(winnerUser).alias;
+		let winnerEntry = this.getPlayerAlias(winnerUser);
+		if (!winnerEntry)
+			winnerEntry = "Anonymous";
+		const winner = winnerEntry.alias;
 		LOGGER(200, "Tournament", "sendLose", winner + " Won the tournament game.");
 		this.sendMsg(user, { type: "WIN", msg: winner + " Won the tournament game."});
 	}
@@ -60,10 +71,6 @@ class Tournament {
 
 
 
-	addCreatorAlias(alias = null) {
-		const creator_alias = (alias === null) ? "Anonymous" : alias;
-		this.creatorAlias = creator_alias;
-	}
 
 	addUserToTournament(requestingUser, user_alias) { LOGGER(200, "Tournament", "addUserToTournament", "Added user: " + user_alias);
 
@@ -170,6 +177,10 @@ class Tournament {
 		return (this.currentPlayerCount);
 	}
 
+	getCreator() {
+		return (this.creator);
+	}
+
 	getCreatorAlias() {
 		return (this.creatorAlias);
 	}
@@ -184,6 +195,8 @@ class Tournament {
 	}
 
 	getWinners() {
+		if (this.winners.length === 0)
+			return (null);
 		return (this.winners);
 	}
 

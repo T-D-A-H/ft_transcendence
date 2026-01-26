@@ -67,7 +67,7 @@
 						<div class="pong-menu-buttons">
 							<button class="pong-button" data-target="settings_list"><span class="pong-icon">&#9881;</span></button>
 							<button class="pong-button" data-target="stats_list">Stats</button>
-							<button class="pong-button" data-target="request_list">Friends</button>
+							<button class="pong-button" data-target="request_list">Requests</button>
 							<button class="pong-button active-border" data-target="play_list">Play</button>
 						</div>
 					
@@ -96,9 +96,9 @@
 									</button>
 								</div>
 
-								<!-- stats -->
+								<!-- stats (FALSOS de MOMENTO)-->
 									<div id="stats_list" class="pong-list w-[320px] hidden">
-										<!-- Example friend/request row -->
+
 										 <div class="pong-box">
 											<div class="pong-list-box-name-msg">
 												<span id="username">Local Games</span>
@@ -203,14 +203,12 @@
     			  	<input id="user_input" type="text" class="pong-input-field" placeholder="Username" />
     			  	<input id="pass_input" type="password" class="pong-input-field" placeholder="Password" />
 					<button id="donthaveanaccount_button" class="pong-button text-[8px]">Dont have an account?</button>
-					<div class="flex flex-col justify-center w-full gap-3 mt-2">
-                        <button id="login_submit_button" class="pong-submit-button w-full">SUBMIT</button>
+					<div class="flex flex-col justify-center w-full gap-3 mt-12">
+                        <button id="login_submit_button" class="pong-submit-button active-border w-full">SUBMIT</button>
                         
                         <div class="pong-font text-[8px] text-center opacity-50">- OR -</div>
 
-                        <button id="google_login" class="pong-submit-button w-full flex items-center justify-center gap-2">
-                            <span>LOGIN WITH GOOGLE</span>
-                        </button>
+                        <button id="google_login" class="pong-button pt-0 text-[8px]"><span>LOGIN WITH GOOGLE</span></button>
                     </div>
     			</div>
 
@@ -226,7 +224,7 @@
 					<input id="reg_password" type="password" class="pong-input-field" placeholder="Password" />
 					<button id="alreadyhaveanaccount_button" class="pong-button text-[8px]">Already have an account?</button>
 					<div class="flex justify-center mt-4">
-						<button id="register_submit_button" class="pong-submit-button">SUBMIT</button>
+						<button id="register_submit_button" class="pong-submit-button active-border">SUBMIT</button>
 					</div>
 				</div>
 
@@ -243,7 +241,7 @@
 						<button type="button" id="increment" class="pong-button-small">+</button>
 					</div>
 					<div class="flex justify-center mt-4">
-						<button id="tournament_create_submit_button" class="pong-submit-button">SUBMIT</button>
+						<button id="tournament_create_submit_button" class="pong-submit-button active-border">SUBMIT</button>
 					</div>
 				</div>
 
@@ -264,7 +262,7 @@
 					</div>
 					<input id="play_request_username" type="text" class="pong-input-field" placeholder="Enter username" />
 					<div class="flex justify-center mt-4">
-						<button id="send_play_request" class="pong-submit-button">SUBMIT</button>
+						<button id="send_play_request" class="pong-submit-button active-border">SUBMIT</button>
 					</div>
 				</div>
 
@@ -287,8 +285,8 @@
 						<h2 class="pong-modal-top-text">Choose 2FA Method</h2>
 					</div>
 					<div class="flex flex-col gap-2 mt-4">
-						<button id="twofa_email_button" class="pong-submit-button w-38">Email</button>
-						<button id="twofa_skip_button" class="pong-submit-button w-38">Skip For Now</button>
+						<button id="twofa_email_button" class="pong-submit-button active-border w-38">Email</button>
+						<button id="twofa_skip_button" class="pong-submit-button active-border w-38">Skip For Now</button>
 					</div>
 				</div>
 
@@ -300,7 +298,7 @@
 					</div>
 					<input id="twofa_input" type="text" class="pong-input-field" placeholder="Enter 2FA code" />
 					<div class="flex justify-center mt-4">
-						<button id="twofa_submit_button" class="pong-submit-button">SUBMIT</button>
+						<button id="twofa_submit_button" class="pong-submit-button active-border">SUBMIT</button>
 					</div>
 				</div>
 

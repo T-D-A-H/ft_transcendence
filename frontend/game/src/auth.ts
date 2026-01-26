@@ -1,5 +1,5 @@
-import { show, hide} from "./ui.js";
-import { connectWithToken, nullWebsocket} from "./websocket.js";
+import { show, hide, updateProfileUI} from "./ui.js";
+import { nullWebsocket} from "./websocket.js";
 import {getProfileInfo} from "./main.js";
 
 export async function registerUser(usernameInput: HTMLInputElement, displaynameInput: HTMLInputElement, emailInput: HTMLInputElement, passwordInput: HTMLInputElement): 
@@ -106,6 +106,7 @@ export async function logoutUser(logoutButton?: HTMLButtonElement) {
         });
 
         updateProfileUI("PONG", "ft_transcendence.pong.com");
+
     } catch (err) {
         console.error("Logout error (network):", err);
         updateProfileUI("PONG", "ft_transcendence.pong.com");

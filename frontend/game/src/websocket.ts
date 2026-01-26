@@ -1,7 +1,6 @@
 
 import {ConstantEvent, receiveMessages, oneTimeEvent} from "./events.js";
-import { logoutButton, show} from "./ui.js";
-import { getProfileInfo } from "./main.js";
+import { logoutButton, show, updateProfileUI, } from "./ui.js";
 import { ProfileInfo } from "./vars.js";
 import { setUserSocket } from "./auth.js";
 
@@ -16,7 +15,8 @@ export function initializeWebSocket() {
         ws.onopen = () => {
 
             receiveMessages(ws);
-            ConstantEvent("INCOMING_INVITE_RESPONSE");
+            ConstantEvent("NOTIFICATION");
+            ConstantEvent("MATCH_READY");
             ConstantEvent("INCOMING_INVITE_REQUEST");
             ConstantEvent("WIN");
             ConstantEvent("MIRROR");

@@ -1,10 +1,15 @@
 TODO
 
+.SERVER
+ - TORNEO: si haces exit y solo quedan 2 deberia ensenyar mensaje de you won the game o equivalente
 
 
-- REGISTER and SELECT EMAIL
-  modal to enter code;
+.DATABASE
+ - Al crear cuenta con datos: x, x, x, x TIRA ERROR por unique constraint failed pero crea la cuenta
 
-- LOGIN IF 2fa SET MODAL TO ENTER code
 
+.GUI
+ - cuando no hay torneos sale mensaje de no available tournaments en vez de ensenar el modal y sin torneos ahi
+
+ - boton de login with google no matchea el estilo 
 

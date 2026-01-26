@@ -7,7 +7,7 @@ import { playRequestModal, playAgainstUserButton, playRequestUsernameInput, play
 import { menuButtons, getInviteFrom } from "./ui.js";
 import { openCreateTournamentButton, closeCreateTournamentButton, submitTournamentCreationButton, createTournamentModal, aliasTournamentInput, tournamentSizeInput} from "./ui.js";
 import { openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, renderTournamentList} from "./ui.js";
-import { show, hide, showMenu, showCanvas, showNotification, renderPendingRequests,  mirrorCanvas, getDisplaySide, setDisplaySide } from "./ui.js";
+import { show, hide, showMenu, showNotification, renderPendingRequests,  mirrorCanvas, getDisplaySide, setDisplaySide } from "./ui.js";
 import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisible, updateOpponentUI, updateProfileUI,  googleLoginButton} from "./ui.js";
 
 
@@ -17,7 +17,7 @@ import { registerUser, loginUser, logoutUser, configure2FA, verify2FA, startToke
 
 import { userSocket, restoreSession } from "./websocket.js";
 
-import { oneTimeEvent, sendKeyPress, send2KeyPress } from "./events.js";
+import { oneTimeEvent, setMatchMode, initKeyHandling} from "./events.js";
 
 googleLoginButton.onclick = () => {
 	window.location.href = "/auth/google";
@@ -179,14 +179,18 @@ startMatchButton.onclick = async () => {
 			return ;
 		}
 		showNotification(result.msg);
-		if (result.status !== 200)
+		if (result.status !== 200 && result.status !== 202)
 			return ;
 		if (result.target as string !== getDisplaySide()) {
 			setDisplaySide(result.target as string);
 			mirrorCanvas();
 		}
 		show(exitMatchButton);
-		sendKeyPress();
+		if (result.status === 200)
+			setMatchMode("single");
+		else if (result.status === 202)
+			setMatchMode("dual");
+		initKeyHandling();
 	}
 	catch {
 	
@@ -234,8 +238,6 @@ playLocallyButton.onclick = async () => {
 		showNotification(result.msg);
 		if (result.status !== 200)
 			return ;
-		showCanvas();
-		send2KeyPress();
 	}
 	catch {
 
@@ -327,7 +329,6 @@ openSearchTournamentButton.onclick = async () => {
 						return ;
 					}
 					hide(searchTournamentsModal);
-					showCanvas();
 				}
 				catch {
 
@@ -347,6 +348,7 @@ notificationAcceptButton.onclick = async () => {
 
 	try {
 
+		hide(notificationAcceptButton);
 		const result = await oneTimeEvent("REPLY_INVITE_REQUEST","REPLY_INVITE_RESPONSE", getInviteFrom(), "yes");
 
 		if (!result) {
@@ -355,10 +357,6 @@ notificationAcceptButton.onclick = async () => {
 		}
 		
 		showNotification(result.msg);
-		if (result.status === 200) {
-			updateOpponentUI(result.target as string);
-			showCanvas();
-		}
 	}
 	catch {
 
@@ -388,8 +386,8 @@ async function renderRequestLists() {
 							return ;
 						}
 						showNotification(res.msg);
-						if (res.status === 200)
-							showCanvas();
+						// if (res.status === 200)
+						// 	showCanvas();
 					}
 					else if (btn.textContent === "X") {
 						const res = await oneTimeEvent("REPLY_INVITE_REQUEST", "REPLY_INVITE_RESPONSE", username, "decline");

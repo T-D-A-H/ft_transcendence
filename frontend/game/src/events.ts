@@ -1,4 +1,4 @@
-import {setDisplaySide, showNotification, show, startMatchButton, showMenu, incomingPlayRequestText, updateOpponentUI, incomingPlayRequestModal, setInviteFrom, setSCORES, showCanvas, mirrorCanvas, getDisplaySide} from "./ui.js"
+import {setDisplaySide, showNotification, showMenu, updateOpponentUI, setInviteFrom, setSCORES, showCanvas, mirrorCanvas, getDisplaySide} from "./ui.js"
 import type {ServerMessage, StatusMsgTarget} from "./vars.js"
 import {drawGame, clearBackground} from "./draw.js"
 import { userSocket } from "./websocket.js"
@@ -95,14 +95,14 @@ export function ConstantEvent(response: ServerMessage["type"]){
 	
 	registerHandler(response, (data) => {
 
-		if (data.type === "INCOMING_INVITE_RESPONSE") {
+		if (data.type === "MATCH_READY") {
+			showNotification(data.msg);
+			updateOpponentUI(data.target);
+			showCanvas();
+		}
+		if (data.type === "NOTIFICATION") {
 
 			showNotification(data.msg);
-			if (data.status === 200) {
-				updateOpponentUI(data.target);
-				showCanvas();
-			}
-
 		}
 		else if (data.type === "INCOMING_INVITE_REQUEST") {
 
@@ -137,46 +137,56 @@ export function ConstantEvent(response: ServerMessage["type"]){
 
 }
 
-export function sendKeyPress(): void {
+type MatchMode = "single" | "dual";
 
-	document.addEventListener("keydown", (e: KeyboardEvent) => {
+export let matchMode: MatchMode = "single";
+
+export function setMatchMode(mode: string): void {
+	matchMode = mode as MatchMode;
+}
+
+export function initKeyHandling(): void {
+
+	document.addEventListener("keydown", onKeyDown);
+	document.addEventListener("keyup", onKeyUp);
+}
+
+function onKeyDown(e: KeyboardEvent): void {
+
+	if (matchMode === "single") {
 
 		if (e.key === "w")
 			sendRequest("MOVE", { move: "UP" });
-		if (e.key === "s")
+		else if (e.key === "s")
 			sendRequest("MOVE", { move: "DOWN" });
-
-	});
-
-	document.addEventListener("keyup", (e: KeyboardEvent) => {
-
-		if (e.key === "w" || e.key === "s")
-			sendRequest("MOVE", { move: "STOP" });
-	});
-}
-
-export function send2KeyPress(): void {
-
-	document.addEventListener("keydown", (e: KeyboardEvent) => {
+	}
+	else {
 
 		if (e.key === "w")
 			sendRequest("MOVE2", { move: "UP1" });
-		if (e.key === "s")
+		else if (e.key === "s")
 			sendRequest("MOVE2", { move: "DOWN1" });
-		if (e.key === "ArrowUp")
+		else if (e.key === "ArrowUp")
 			sendRequest("MOVE2", { move: "UP2" });
-		if (e.key === "ArrowDown")
+		else if (e.key === "ArrowDown")
 			sendRequest("MOVE2", { move: "DOWN2" });
+	}
+}
 
-	});
+function onKeyUp(e: KeyboardEvent): void {
 
-	document.addEventListener("keyup", (e: KeyboardEvent) => {
+	if (matchMode === "single") {
+
+		if (e.key === "w" || e.key === "s")
+			sendRequest("MOVE", { move: "STOP" });
+	}
+	else {
 
 		if (e.key === "w" || e.key === "s")
 			sendRequest("MOVE2", { move: "STOP1" });
-		if (e.key === "ArrowUp" || e.key === "ArrowDown")
+		else if (e.key === "ArrowUp" || e.key === "ArrowDown")
 			sendRequest("MOVE2", { move: "STOP2" });
-	});
+	}
 }
 
 

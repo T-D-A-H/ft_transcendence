@@ -26,6 +26,7 @@ class Match {
 			this.isWaiting = false;
 			// this.isReady = [true, true];
 		}
+		this.START = false;
 	}
 
 	addUserToMatch(user) {
@@ -80,6 +81,16 @@ class Match {
 			msg + " by disconnection"
 		msg += ".";
 		this.broadcast({ type: "WIN", msg: user.getUsername() + msg });
+	}
+
+	sendMatchReady() {
+
+		if (this.locally === true) {
+			this.players[0].send({type: "MATCH_READY", status: 200, msg: "Playing Against " + this.players[0].getDisplayName() + "_2", target: this.players[1].getDisplayName() + "_2"});
+			return ;
+		}
+		this.players[0].send({type: "MATCH_READY", status: 200, msg: "Playing Against " + this.players[1].getDisplayName(), target: this.players[1].getDisplayName()});
+		this.players[1].send({type: "MATCH_READY", status: 200, msg: "Playing Against " + this.players[0].getDisplayName(), target: this.players[0].getDisplayName()})
 	}
 
 
@@ -158,9 +169,18 @@ class Match {
             this.YDir[1] = 0;
 	}
 
+	readyToStart() {
+
+		if (this.isWaiting === false) {
+			this.START = true;
+			return (true);
+		}
+		return (false);
+	}
+
 	shouldContinuePlaying() {
 
-		if (this.isWaiting)
+		if (this.START === false)
 			return (false);
 	    else if (!this.players[0] || !this.players[1])
 			return (false);
@@ -211,17 +231,12 @@ class Match {
 		this.disconnect = true;
 	}
 
-
-
 	getPlayerSides(user) {
 		if (this.players[0] === user)
 			return ("left");
 		else if (this.players[1] === user)
 			return ("right");
 	}
-
-
-
 }
 
 module.exports = Match;
