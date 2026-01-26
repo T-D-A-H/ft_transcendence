@@ -59,22 +59,14 @@ class Match {
 		});
 	}
 
-
 	sendDraw() {
 
-		this.players[0].socket.send(JSON.stringify({ 
+		this.broadcast({
 			type: "DRAW", 
 			LeftXY: this.game.getLeftPlayerXY(),
 			RightXY: this.game.getRightPlayerXY(),
 			BallXY: this.game.getBallXY()
-		}));
-
-		this.players[1].socket.send(JSON.stringify({ 
-			type: "DRAW", 
-			LeftXY: this.game.getLeftPlayerXY(),
-			RightXY: this.game.getRightPlayerXY(),
-			BallXY: this.game.getBallXY()
-		}));
+		});
 	}
 
 	sendScores() {
@@ -218,6 +210,16 @@ class Match {
 	setDisconnect() {
 		this.disconnect = true;
 	}
+
+
+
+	getPlayerSides(user) {
+		if (this.players[0] === user)
+			return ("left");
+		else if (this.players[1] === user)
+			return ("right");
+	}
+
 
 
 }

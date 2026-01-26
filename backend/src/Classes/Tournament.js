@@ -39,7 +39,7 @@ class Tournament {
 	sendWin(user, loserUser) {
 		const loser = this.getPlayerAlias(loserUser).alias;
 		LOGGER(200, "Tournament", "sendWin", "You Won the tournament game against " + loser + ".");
-		this.sendMsg(user, { type: "NOTIFICATION", msg: "You Won the tournament game against " + loser + "."});
+		this.sendMsg(user, { type: "WIN", msg: "You Won the tournament game against " + loser + "."});
 	}
 
 	sendLose(user, winnerUser) {

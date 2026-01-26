@@ -98,8 +98,8 @@ export interface WinMessage {
     msg: string;
 }
 
-export interface NotificationMessage {
-    type: "NOTIFICATION";
+export interface MirrorCanvasMessage {
+    type: "MIRROR";
     msg: string;
 }
 
@@ -132,13 +132,16 @@ export interface PendingRequest {
     target: ProfileInfo[] | null;
 }
 
+
+
+
 export type ServerMessage = 
 SendInviteResponse         | ReplyInviteResponse      |
 IncomingInviteRequest      | IncomingInviteResponse   |
 StartMatchResponse         | PlayLocallyResponse      | 
 ScoresMessage              | DrawMessage			  | 
 InitialVarsMessage         | WinMessage               |
-NotificationMessage        | CreateTournamentRequest  |
+MirrorCanvasMessage        | CreateTournamentRequest  |
 SearchTournamentRequest    | JoinTournamentRequest    |
 ExitMatchResponse          | InfoResponse             |
-PendingRequest;
+PendingRequest             ;

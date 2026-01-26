@@ -7,8 +7,9 @@ import { playRequestModal, playAgainstUserButton, playRequestUsernameInput, play
 import { menuButtons, getInviteFrom } from "./ui.js";
 import { openCreateTournamentButton, closeCreateTournamentButton, submitTournamentCreationButton, createTournamentModal, aliasTournamentInput, tournamentSizeInput} from "./ui.js";
 import { openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, renderTournamentList} from "./ui.js";
-import { show, hide, showMenu, showCanvas, showNotification, renderPendingRequests } from "./ui.js";
-import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisible, googleLoginButton} from "./ui.js";
+import { show, hide, showMenu, showCanvas, showNotification, renderPendingRequests,  mirrorCanvas, getDisplaySide, setDisplaySide } from "./ui.js";
+import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisible, updateOpponentUI, updateProfileUI,  googleLoginButton} from "./ui.js";
+
 
 import { ProfileInfo, TournamentInfo } from "./vars.js";
 
@@ -66,7 +67,7 @@ submitRegisterButton.onclick = async () => {
 			configure2FA(result.setupToken!, "skip", twoFAOptionModal, loginModal, registerModal);
 		};
 	} else {
-		showNotification("User with that username already exists");
+		showNotification("1 Account with that username/email already exists.");
 	}
 };
 
@@ -180,6 +181,10 @@ startMatchButton.onclick = async () => {
 		showNotification(result.msg);
 		if (result.status !== 200)
 			return ;
+		if (result.target as string !== getDisplaySide()) {
+			setDisplaySide(result.target as string);
+			mirrorCanvas();
+		}
 		show(exitMatchButton);
 		sendKeyPress();
 	}
@@ -348,9 +353,12 @@ notificationAcceptButton.onclick = async () => {
 			showNotification("No response from server");
 			return ;
 		}
+		
 		showNotification(result.msg);
-		if (result.status === 200)
+		if (result.status === 200) {
+			updateOpponentUI(result.target as string);
 			showCanvas();
+		}
 	}
 	catch {
 
@@ -427,3 +435,27 @@ async function renderRequestLists() {
         console.log("No hay sesión activa");
     }
 })();
+
+export async function getProfileInfo(reset: boolean) {
+
+	if (reset === true) {
+		updateProfileUI("PONG", "ft_transcendence.pong.com");
+		return;
+	}
+	try {
+
+		const result = await oneTimeEvent("INFO_REQUEST", "INFO_RESPONSE");
+		if (!result || result.status !== 200 || !result.target)
+			return ;
+        show(logoutButton);
+
+		const info = result.target as ProfileInfo;
+		updateProfileUI(info.display_name, info.username);
+
+	}
+	catch {
+
+		showNotification("Failed to fetch personal data from server");
+	}
+	
+}

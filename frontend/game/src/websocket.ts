@@ -1,6 +1,7 @@
 
 import {ConstantEvent, receiveMessages, oneTimeEvent} from "./events.js";
-import { logoutButton, show, updateProfileUI} from "./ui.js";
+import { logoutButton, show} from "./ui.js";
+import { getProfileInfo } from "./main.js";
 import { ProfileInfo } from "./vars.js";
 import { setUserSocket } from "./auth.js";
 
@@ -18,7 +19,7 @@ export function initializeWebSocket() {
             ConstantEvent("INCOMING_INVITE_RESPONSE");
             ConstantEvent("INCOMING_INVITE_REQUEST");
             ConstantEvent("WIN");
-            ConstantEvent("NOTIFICATION");
+            ConstantEvent("MIRROR");
             ConstantEvent("SCORES");
             ConstantEvent("DRAW");
             userSocket = ws;

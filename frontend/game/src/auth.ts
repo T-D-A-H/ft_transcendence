@@ -1,5 +1,6 @@
-import { show, hide, updateProfileUI} from "./ui.js";
-import { nullWebsocket, initializeWebSocket} from "./websocket.js";
+import { show, hide} from "./ui.js";
+import { connectWithToken, nullWebsocket} from "./websocket.js";
+import {getProfileInfo} from "./main.js";
 
 export async function registerUser(usernameInput: HTMLInputElement, displaynameInput: HTMLInputElement, emailInput: HTMLInputElement, passwordInput: HTMLInputElement): 
 Promise<{ status: number; userId?: string; setupToken?: string; error?: string }> {

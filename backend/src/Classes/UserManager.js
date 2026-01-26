@@ -159,7 +159,6 @@ class UserManager {
 
             LOGGER(400, "UserManager", "checkMatchDisconnect", "player disconnected");
         }
-
     }
 //----------------------------------------------------------------------------------------USER
 //----------------------------------------------------------------------------------------MATCH
@@ -222,6 +221,7 @@ class UserManager {
         }
         else
             match.sendWin(match.getWinner());
+        this.sendDisplaySide(match);
         this.unsetMatches(match);
         this.removeMatch(match);
     }
@@ -243,6 +243,18 @@ class UserManager {
             }
         });
     }
+
+
+    sendDisplaySide(match) {
+        LOGGER(200, "UserManarger", "sendDIsplaySide", "Swapping display side from: \n");
+		match.players.forEach(user => {
+			const defaultSide = user.getDisplaySide();
+			user.socket.send(JSON.stringify({
+				type: "MIRROR",
+                msg: defaultSide
+			}));
+		});
+	}
 
 
 //----------------------------------------------------------------------------------------MATCH

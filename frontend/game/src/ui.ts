@@ -41,13 +41,17 @@ export const menuButtons =
 
 export 	function showCanvas() {
 
+	
 	hide(menuModal);
 	show(canvas);
 	drawGame();
-	show(topBarOpponentDisplayName);
 	makeVisible(topBarOpponentButton);
+	show(topBarOpponentDisplayName);
+	makeVisible(topBarDisplayName);
 	show(topBarDisplayName);
+	makeVisible(startMatchButton);
 	show(startMatchButton);
+	makeVisible(exitMatchButton);
 	show(exitMatchButton);
 
 }
@@ -69,11 +73,15 @@ export function toggleMenu(): void
 {
 	if (menu_open) {
 		hide(menuModal);
+		makeVisible(startMatchButton);
+		makeVisible(exitMatchButton);
 		drawGame();
 		show(canvas);
 	}
 	else {
 		hide(canvas);
+		makeInvisible(startMatchButton);
+		makeInvisible(exitMatchButton);
 		show(menuModal);
 	}
 	menu_open = !menu_open;
@@ -81,17 +89,29 @@ export function toggleMenu(): void
 
 openMenuButton.onclick = toggleMenu;
 
-export function updateProfileUI(displayName: string, username: string): void
-{
+export function updateProfileUI(displayName: string, userName: string): void {
+
 	if (topBarDisplayName) {
-		topBarDisplayName.textContent = "@" + username;
+		topBarDisplayName.textContent = displayName;
 	}
-
-	if (menuDisplayName)
+	if (menuDisplayName) {
 		menuDisplayName.textContent = displayName;
+	}
+	if (menuUsername) {
+		menuUsername.textContent = "@" + userName;
+	}
+}
 
-	if (menuUsername)
-		menuUsername.textContent = "@" + username;
+
+export function updateOpponentUI(displayName: string, profilePic?: string)
+{
+	
+	if (topBarOpponentDisplayName) {
+		topBarOpponentDisplayName.textContent =  displayName;
+	}
+	// if (topBarOpponentPicture?) {
+	// 	topBarOpponentPicture.textContent = profilePic;
+	// }
 }
 
 //------------------------------------------------------------------------MANU
@@ -511,12 +531,6 @@ export function getInviteFrom(): string {
 //------------------------------------------------------------------------UTILS
 //------------------------------------------------------------------------SETTINGS
 
-
-export let whitish: string = "#000708";
-export let blackish: string = "#c7f6ff";
-export const redish: string = "#3d0027";
-export const greenish: string = "#003527";
-
 export const pongFont = new Promise<void>((resolve) => { // BLOCK FONT
 
     const Font = new FontFace("BlockFont", "url(game/assets/block_merged.ttf)");
@@ -526,6 +540,18 @@ export const pongFont = new Promise<void>((resolve) => { // BLOCK FONT
         resolve();
     });
 });
+
+export let whitish: string = 
+	"#000708";
+
+export let blackish: string = 
+	"#c7f6ff";
+
+export const redish: string = 
+	"#3d0027";
+
+export const greenish: string = 
+	"#003527";
 
 
 export const dayModeButton = //night mode button
@@ -552,7 +578,6 @@ dayModeButton.onclick = () => {
 export const logoutButton = // Logout Button
 	document.getElementById("logout_button") as HTMLButtonElement;
 
-
 const avatarSymbols: string[] = [
 	"&#9865;", "&#10020;", "&#10026;", "&#10015;",
 	"&#9760;", "&#9786;", "&#9787;", "&#10037;",
@@ -574,8 +599,7 @@ const profilePicCancelButton =
 const selfProfileImage =
 	document.getElementById("self_profile_image") as HTMLDivElement;
 
-function renderProfilePicGrid(): void
-{
+function renderProfilePicGrid(): void {
 	profilePicGrid.innerHTML = "";
 
 	for (const symbol of avatarSymbols) {
@@ -600,6 +624,23 @@ changeProfilePicButton.onclick = () => {
 profilePicCancelButton.onclick = () => {
 	hide(profilePicModal);
 };
+
+let displaySide: string = "right";
+
+
+export function getDisplaySide(): string {
+	return (displaySide);
+}
+
+export function setDisplaySide(side: string): void {
+
+	displaySide = side;
+}
+
+export function mirrorCanvas(): void {
+
+	canvas.classList.toggle("scale-x-[-1]");
+}
 
 
 //------------------------------------------------------------------------SETTINGS
