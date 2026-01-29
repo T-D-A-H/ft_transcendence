@@ -41,6 +41,11 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 			});
 		}
 
+		if (userManager.isUserConnected(user.id)) {			
+			userManager.forceDisconnect(user.id);
+			await new Promise(r => setTimeout(r, 100)); 
+		}
+
 		// 4. Credenciales válidas - verificar si tiene 2FA activado
 		if (user.twofa === "2FAmail") {
 			// Generar token temporal

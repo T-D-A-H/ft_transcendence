@@ -1,26 +1,46 @@
 import { show, hide, updateProfileUI} from "./ui.js";
 import { nullWebsocket} from "./websocket.js";
-import {getProfileInfo} from "./main.js";
 
 export async function registerUser(usernameInput: HTMLInputElement, displaynameInput: HTMLInputElement, emailInput: HTMLInputElement, passwordInput: HTMLInputElement): 
 Promise<{ status: number; userId?: string; setupToken?: string; error?: string }> {
 
+	const username = usernameInput.value.trim();
+    const display_name = displaynameInput.value.trim();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+	const usernameRegex = /^[a-zA-Z0-9_]+$/;
+	
+    if (!usernameRegex.test(username)) {
+		return { 
+			status: 1, 
+            error: "El usuario solo puede contener letras, números y guiones bajos (sin espacios)." 
+        };
+    }
+	
+    if (username.length < 3 || username.length > 20) {
+		return { 
+			status: 1, 
+            error: "El usuario debe tener entre 3 y 20 caracteres." 
+        };
+    }
+	
+	// ! Descomentar cuando este completo
+/* 	const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+	
+	if (!PASSWORD_REGEX.test(passwordInput.value)) {
+		alert("Contraseña insegura");
+		return {status: 1};
+	} */
+		
 	const body = {
-		username: usernameInput.value,
-		display_name: displaynameInput.value,
-		email: emailInput.value,
-		password: passwordInput.value
-	};
+        username: username,
+        display_name: display_name,
+        email: email,
+        password: password
+    };
 
 	try {
-		// ! Descomentar cuando este completo
-/* 		const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
-
-		if (!PASSWORD_REGEX.test(passwordInput.value)) {
-			alert("Contraseña insegura");
-			return { 
-				status: 1
-			};*/
 
 		const res = await fetch("/api/sign-up", {
 			method: "POST",

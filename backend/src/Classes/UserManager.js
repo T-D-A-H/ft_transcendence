@@ -15,6 +15,23 @@ class UserManager {
 
 //----------------------------------------------------------------------------------------USER
 
+    isUserConnected(userId) {
+        return this.users.has(userId);
+    }
+
+    // Método para forzar la desconexión
+    forceDisconnect(userId) {
+        if (this.users.has(userId)) {
+            const userSession = this.users.get(userId);
+            
+            if (userSession.socket) {
+                userSession.socket.close(1000, "New login detected"); 
+            }
+            this.users.delete(userId);
+            return true;
+        }
+        return false;
+    }
 
     set2FACode(userId, code) {
         const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutos de validez

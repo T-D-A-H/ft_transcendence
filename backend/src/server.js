@@ -92,6 +92,13 @@ async function startServer() {
 	const googleCallback = require("./endpoints/googleCallback.js");
 	fastify.get("/auth/google/callback", googleCallback(userManager, fastify, db, setTokenCookie));
 
+	// ✅ Cambiar Display Name
+	const changeDisplayName = require("./endpoints/change_displayName.js");
+	fastify.post("/api/change-display-name", changeDisplayName(userManager, fastify, db));
+
+	const changeUserName = require("./endpoints/change_userName.js");
+	fastify.post("/api/change-username", changeUserName(userManager, fastify, db));
+
 	setInterval(() => {
 
 		userManager.updateGames();

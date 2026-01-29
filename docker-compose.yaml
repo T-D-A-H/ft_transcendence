@@ -27,7 +27,7 @@ services:
       dockerfile: Dockerfile
     user: "root"
     ports:
-      - "5000:8080"
+      - "5001:8080"
     volumes:
       - db_data:/data
     restart: unless-stopped

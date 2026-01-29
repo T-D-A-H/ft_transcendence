@@ -140,6 +140,8 @@ class User {
     getCurrentMatch() {return this.currentMatch;}
     getIsPlaying() {return this.isPlaying;}
     getCurrentTournament() {return this.currentTournament;}
+    updateDisplayName(newName) {this.display_name = newName;}
+    updateUserName(newName) {this.username = newName;}
 }
 
 module.exports = User;

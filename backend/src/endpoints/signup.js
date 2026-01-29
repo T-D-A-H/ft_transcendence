@@ -23,6 +23,21 @@ function signupHandler(db, bcrypt, saltRounds, fastify) {
 				});
 			} */
 
+			const cleanUsername = username.trim();
+            
+            // Solo letras (a-z, A-Z), números (0-9) y guión bajo (_)
+            const usernameRegex = /^[a-zA-Z0-9_]+$/;
+
+            if (!usernameRegex.test(cleanUsername)) {
+                return reply.code(400).send({ 
+                    error: "Invalid username. Only letters, numbers, and underscores are allowed (no spaces or emojis)" 
+                });
+            }
+
+            if (cleanUsername.length < 3 || cleanUsername.length > 20) {
+                return reply.code(400).send({ error: "El usuario debe tener entre 3 y 20 caracteres." });
+            }
+
 			// Hash de la contraseña
 			const hashed = await bcrypt.hash(password, saltRounds);
 

@@ -34,10 +34,22 @@ export function initializeWebSocket() {
             reject(err);
         };
 
-        ws.onclose = () => {
+        ws.onclose = async (event) => {
             console.log("WebSocket disconnected");
-            userSocket = null;
-            setUserSocket(null);
+            nullWebsocket();
+            if (event.reason === "New login detected") {
+                
+                alert("Tu sesión se ha cerrado porque has entrado desde otro dispositivo o pestaña.");
+                try {
+                    await fetch('/api/logout', { 
+                        method: "POST",
+                        credentials: "include" 
+                    });
+                } catch (e) {
+                    console.error("Error al intentar hacer logout:", e);
+                }
+                window.location.reload(); 
+            }
         };
     });
 }

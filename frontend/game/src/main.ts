@@ -9,7 +9,16 @@ import { openCreateTournamentButton, closeCreateTournamentButton, submitTourname
 import { openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, renderTournamentList} from "./ui.js";
 import { show, hide, showMenu, showNotification, renderPendingRequests,  mirrorCanvas, getDisplaySide, setDisplaySide } from "./ui.js";
 import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisible, updateOpponentUI, updateProfileUI,  googleLoginButton} from "./ui.js";
+// Añade esto a tus imports existentes de ./ui.js
+import { 
+    changeUsernameButton, changeUsernameModal, closeChangeUsernameButton, submitNewUsernameButton, newUsernameInput,
+    changeEmailButton, changeEmailModal, closeChangeEmailButton, submitNewEmailButton, newEmailInput,
+    changePasswordButton, changePasswordModal, closeChangePasswordButton, submitNewPasswordButton, oldPasswordInput, newPasswordInput, confirmPasswordInput,
+    changeDisplayNameButton, changeDisplayNameModal, closeChangeDisplayNameButton, submitNewDisplayNameButton, newDisplayNameInput,
+    menuModal
+} from "./ui.js";
 
+import { changeDisplayName, changeUserName} from "./change.js";
 
 import { ProfileInfo, TournamentInfo } from "./vars.js";
 
@@ -53,8 +62,11 @@ alreadyHaveAnAccountButton.onclick = () => {
 };
 
 submitRegisterButton.onclick = async () => {
+	submitRegisterButton.disabled = true;
 
 	const result = await registerUser(regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput);
+
+	submitRegisterButton.disabled = false;
 
 	if (result.status === 0 && result.setupToken) {
 		hide(registerModal);
@@ -67,7 +79,7 @@ submitRegisterButton.onclick = async () => {
 			configure2FA(result.setupToken!, "skip", twoFAOptionModal, loginModal, registerModal);
 		};
 	} else {
-		showNotification("1 Account with that username/email already exists.");
+		showNotification(result.error || "Error creating account");
 	}
 };
 
@@ -409,6 +421,155 @@ async function renderRequestLists() {
 		showNotification("Error fetching pending requests");
 	}
 }
+
+
+// ==========================================
+// SETTINGS MENU LOGIC
+// ==========================================
+
+// --- DISPLAY NAME ---
+if (changeDisplayNameButton) {
+    changeDisplayNameButton.onclick = () => {
+		if (!userSocket) {
+			hide(changeDisplayNameModal);
+			show(loginModal);
+			showNotification("You must sign in in order to continue!!!");
+			return ;
+		}
+        hide(menuModal);
+        show(changeDisplayNameModal);
+        newDisplayNameInput.value = "";
+    };
+
+	closeChangeDisplayNameButton.onclick = () => {
+        hide(changeDisplayNameModal);
+        show(menuModal);
+    };
+
+	submitNewDisplayNameButton.onclick = async () => {
+		if (!userSocket) {
+			show(loginModal);
+			hide(changeDisplayNameModal);
+			showNotification("You must sign in in order to continue!!!");
+			return ;
+		}
+		const newName = newDisplayNameInput.value.trim();
+
+		const result = await changeDisplayName(newName);
+		if (result && result.status === 0) {
+			showNotification("Display name updated successfully!");
+			const currentUserName = document.getElementById("profile_username")?.textContent?.replace("@", "") || "user";
+			updateProfileUI(newName, currentUserName); 
+			hide(changeDisplayNameModal);
+			show(menuModal);
+		} else {
+			showNotification(result.msg || "Connection error");
+			
+			if (result.status === 401 || result.status === 403) {
+				show(loginModal);
+			}
+		}
+		hide(changeDisplayNameModal);
+		show(menuModal);
+	};
+}
+
+
+// --- USERNAME ---
+if (changeUsernameButton) {
+    changeUsernameButton.onclick = () => {
+		if (!userSocket) {
+			hide(changeUsernameModal);
+			show(loginModal);
+			showNotification("You must sign in in order to continue!!!");
+			return ;
+		}
+        hide(menuModal);
+        show(changeUsernameModal);
+        newUsernameInput.value = "";
+    };
+	closeChangeUsernameButton.onclick = () => {
+        hide(changeUsernameModal);
+        show(menuModal);
+    };
+	submitNewUsernameButton.onclick = async () => {
+    	if (!userSocket) {
+			hide(changeUsernameModal);
+			show(loginModal);
+			showNotification("You must sign in in order to continue!!!");
+			return ;
+		}
+		const newUserName = newUsernameInput.value.trim();
+
+		const result = await changeUserName(newUserName);
+		if (result && result.status === 0) {
+			showNotification("Username updated successfully!");
+			const currentDisplayname = document.getElementById("profile_displayname")?.textContent || "user";
+			updateProfileUI(currentDisplayname, newUserName); 
+			hide(changeUsernameModal);
+			show(menuModal);
+		} else {
+			showNotification(result.msg || "Connection error");
+			
+			if (result.status === 401 || result.status === 403) {
+				show(loginModal);
+			}
+		}
+	};
+}
+
+// --- EMAIL ---
+if (changeEmailButton) {
+    changeEmailButton.onclick = () => {
+        hide(menuModal);
+        show(changeEmailModal);
+        newEmailInput.value = "";
+    };
+}
+if (closeChangeEmailButton) {
+    closeChangeEmailButton.onclick = () => {
+        hide(changeEmailModal);
+        show(menuModal);
+    };
+}
+submitNewEmailButton.onclick = async () => {
+    const newEmail = newEmailInput.value.trim();
+    if (!newEmail) return alert("Please enter an email");
+    console.log("Updating Email to:", newEmail);
+    hide(changeEmailModal);
+    show(menuModal);
+};
+
+// --- PASSWORD ---
+if (changePasswordButton) {
+    changePasswordButton.onclick = () => {
+        hide(menuModal);
+        show(changePasswordModal);
+        oldPasswordInput.value = "";
+        newPasswordInput.value = "";
+        confirmPasswordInput.value = "";
+    };
+}
+if (closeChangePasswordButton) {
+    closeChangePasswordButton.onclick = () => {
+        hide(changePasswordModal);
+        show(menuModal);
+    };
+}
+
+submitNewPasswordButton.onclick = async () => {
+    const oldPass = oldPasswordInput.value;
+    const newPass = newPasswordInput.value;
+    const confirmPass = confirmPasswordInput.value;
+
+    if (!oldPass || !newPass) return alert("Please fill fields");
+    if (newPass !== confirmPass) return alert("New passwords do not match");
+
+    // AQUÍ TU LÓGICA DE BACKEND
+    console.log("Updating Password...");
+    hide(changePasswordModal);
+    show(menuModal);
+};
 
 (async () => {
 	const urlParams = new URLSearchParams(window.location.search);

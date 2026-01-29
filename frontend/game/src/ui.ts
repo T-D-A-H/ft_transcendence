@@ -593,8 +593,6 @@ const profilePicModal =
 const profilePicGrid =
 	document.getElementById("profilepic_grid") as HTMLDivElement;
 
-const profilePicCancelButton =
-	document.getElementById("profilepic_cancel_button") as HTMLButtonElement;
 
 const selfProfileImage =
 	document.getElementById("self_profile_image") as HTMLDivElement;
@@ -621,9 +619,6 @@ changeProfilePicButton.onclick = () => {
 	show(profilePicModal);
 };
 
-profilePicCancelButton.onclick = () => {
-	hide(profilePicModal);
-};
 
 let displaySide: string = "right";
 
@@ -644,3 +639,103 @@ export function mirrorCanvas(): void {
 
 
 //------------------------------------------------------------------------SETTINGS
+
+//------------------------------------------------------------------------
+// PROFILE EDITING (NUEVO CÓDIGO)
+//------------------------------------------------------------------------
+
+// 1. CHANGE DISPLAY NAME
+export const changeDisplayNameButton = 
+    document.getElementById("change_displayname_button") as HTMLButtonElement;
+
+export const changeDisplayNameModal = 
+    document.getElementById("change_displayname_modal") as HTMLDivElement;
+
+export const closeChangeDisplayNameButton = 
+    document.getElementById("close_change_displayname") as HTMLButtonElement;
+
+export const newDisplayNameInput = 
+    document.getElementById("new_displayname_input") as HTMLInputElement;
+
+export const submitNewDisplayNameButton = 
+    document.getElementById("submit_new_displayname") as HTMLButtonElement;
+
+	// --- USERNAME ELEMENTS ---
+export const changeUsernameButton = 
+    document.getElementById("change_username_button") as HTMLButtonElement;
+export const changeUsernameModal = 
+    document.getElementById("change_username_modal") as HTMLDivElement;
+export const closeChangeUsernameButton = 
+    document.getElementById("close_change_username") as HTMLButtonElement;
+export const newUsernameInput = 
+    document.getElementById("new_username_input") as HTMLInputElement;
+export const submitNewUsernameButton = 
+    document.getElementById("submit_new_username") as HTMLButtonElement;
+
+// --- EMAIL ELEMENTS ---
+export const changeEmailButton = 
+    document.getElementById("change_email_button") as HTMLButtonElement;
+export const changeEmailModal = 
+    document.getElementById("change_email_modal") as HTMLDivElement;
+export const closeChangeEmailButton = 
+    document.getElementById("close_change_email") as HTMLButtonElement;
+export const newEmailInput = 
+    document.getElementById("new_email_input") as HTMLInputElement;
+export const submitNewEmailButton = 
+    document.getElementById("submit_new_email") as HTMLButtonElement;
+
+// --- PASSWORD ELEMENTS (Si no las tenías ya exportadas) ---
+export const changePasswordButton = 
+    document.getElementById("change_password_button") as HTMLButtonElement;
+export const changePasswordModal = 
+    document.getElementById("change_password_modal") as HTMLDivElement;
+export const closeChangePasswordButton = 
+    document.getElementById("close_change_password") as HTMLButtonElement;
+export const oldPasswordInput = 
+    document.getElementById("old_password_input") as HTMLInputElement;
+export const newPasswordInput = 
+    document.getElementById("new_password_input") as HTMLInputElement;
+export const confirmPasswordInput = 
+    document.getElementById("confirm_password_input") as HTMLInputElement;
+export const submitNewPasswordButton = 
+    document.getElementById("submit_new_password") as HTMLButtonElement;
+
+// Lógica para abrir/cerrar Display Name
+changeDisplayNameButton.onclick = () => {
+    // Ocultamos el menú principal para enfocar el modal
+    hide(menuModal); 
+    show(changeDisplayNameModal);
+};
+
+closeChangeDisplayNameButton.onclick = () => {
+    hide(changeDisplayNameModal);
+    // Volvemos a mostrar el menú principal al cerrar
+    show(menuModal);
+};
+
+
+// Lógica para abrir/cerrar Password
+if (changePasswordButton) {
+    changePasswordButton.onclick = () => {
+        hide(menuModal);
+        show(changePasswordModal);
+    };
+}
+
+if (closeChangePasswordButton) {
+    closeChangePasswordButton.onclick = () => {
+        hide(changePasswordModal);
+        show(menuModal);
+    };
+}
+
+// 3. ACTUALIZACIÓN CHANGE PROFILE PIC (Ya tenías parte, lo ajustamos)
+// Asegúrate de que al cancelar la selección de avatar, vuelva al menú
+const profilePicCancelButton = document.getElementById("profilepic_cancel_button") as HTMLButtonElement;
+
+if (profilePicCancelButton) {
+    profilePicCancelButton.onclick = () => {
+        hide(document.getElementById("profilepic_modal") as HTMLDivElement);
+        show(menuModal); // Regresar al menú
+    };
+}
