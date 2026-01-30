@@ -267,6 +267,10 @@ function handleUserCommands(user, userManager) {
 			//LOGGER(500, "server", "handleUserCommands", "invalid json");
 		    return ;
 	    }
+		if (msg.type === "PING") {
+            user.socket.send(JSON.stringify({ type: "PONG" })); 
+            return;
+        }
 		if (msg.type === "SEND_INVITE_REQUEST") {
 			sendInviteRequest(user, userManager, msg.target);
 		}

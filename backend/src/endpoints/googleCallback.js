@@ -80,10 +80,13 @@ function googleCallback(userManager, fastify, db, setTokenCookie) {
             }
 
             // Crear JWT
-            const jwtToken = fastify.jwt.sign({
-                id: userId,
-                display_name: userInfo.email.split('@')[0]
-            });
+            const jwtToken = fastify.jwt.sign(
+                {
+                    id: userId,
+                    display_name: userInfo.email.split('@')[0]
+                },
+                { expiresIn: "7d" }
+            );
 
             // Cookie
             setTokenCookie(reply, jwtToken);

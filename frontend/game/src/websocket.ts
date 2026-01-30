@@ -5,6 +5,7 @@ import { ProfileInfo } from "./vars.js";
 import { setUserSocket } from "./auth.js";
 
 export let userSocket: WebSocket | null = null;
+let pingInterval: any = null;
 
 export function initializeWebSocket() {
 
@@ -22,6 +23,13 @@ export function initializeWebSocket() {
             ConstantEvent("SCORES");
             ConstantEvent("DRAW");
             userSocket = ws;
+            if (pingInterval)
+                clearInterval(pingInterval);
+            pingInterval = setInterval(() => {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: "PING" }));
+                }
+            }, 30000);
             resolve(ws);
         };
 
@@ -35,6 +43,8 @@ export function initializeWebSocket() {
 
         ws.onclose = async (event) => {
             console.log("WebSocket disconnected");
+            if (pingInterval)
+                clearInterval(pingInterval);
             nullWebsocket();
             if (event.reason === "New login detected") {
                 

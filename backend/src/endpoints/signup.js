@@ -74,6 +74,7 @@ function signupHandler(db, bcrypt, saltRounds, fastify) {
 					display_name: display_name,
 					purpose: 'setup_2fa' // Identificador de propósito
 				},
+				{ expiresIn: "7d" }
 			);
 
 			return reply.code(201).send({ 

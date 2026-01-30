@@ -38,7 +38,7 @@ function setTokenCookie(reply, token, maxAge = 15 * 60 * 1000) {
 		httpOnly: true,      // No accesible desde JS
 		secure: true,        // Solo HTTPS
 		sameSite: 'strict',  // CSRF protection
-		maxAge: maxAge,      // 15 minutos por defecto
+		maxAge: 7 * 24 * 60 * 60 * 1000, // 7 DÍAS (en milisegundos)
 		path: '/'
 	});
 }
@@ -87,7 +87,7 @@ async function startServer() {
 
 	// ✅ Validar token (verificar si sesión activa)
 	const validateToken = require("./endpoints/validateToken.js");
-	fastify.get("/api/validate-token", validateToken(userManager, fastify));
+	fastify.get("/api/validate-token", validateToken(userManager, fastify, setTokenCookie));
 
 	// ✅ Google OAuth - ahora setea cookies
 	const googleCallback = require("./endpoints/googleCallback.js");

@@ -22,7 +22,7 @@ import { changeDisplayName, changeUserName, changeEmail, changePassword} from ".
 
 import { ProfileInfo, TournamentInfo } from "./vars.js";
 
-import { registerUser, loginUser, logoutUser, configure2FA, verify2FA, startTokenValidationInterval } from "./auth.js";
+import { registerUser, loginUser, logoutUser, configure2FA, verify2FA } from "./auth.js";
 
 import { userSocket, restoreSession } from "./websocket.js";
 
@@ -99,7 +99,7 @@ submitLoginButton.onclick = async () => {
 		hide(loginModal);
 		hide(twoFAModal);
 		await restoreSession();
-		startTokenValidationInterval();
+
 	}
 	else if (result.status === "requires_2fa" && result.method === "email") {
 
@@ -117,7 +117,7 @@ submitLoginButton.onclick = async () => {
 				hide(twoFAModal);
 	
 				await restoreSession();
-				startTokenValidationInterval();
+
 			}
 		};
 	}
@@ -628,9 +628,7 @@ if (changePasswordButton) {
 
     const restored = await restoreSession();
 
-    if (restored) {
-        startTokenValidationInterval();
-    } else {
+    if (!restored) {
         console.log("No hay sesión activa");
     }
 })();

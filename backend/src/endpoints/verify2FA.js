@@ -56,10 +56,13 @@ function verify2FAhandle(userManager, fastify, setTokenCookie) {
 			}
 
 			// Generar token final
-			const token = fastify.jwt.sign({ 
-				id: userId, 
-				display_name: decoded.display_name 
-			});
+			const token = fastify.jwt.sign(
+				{ 
+					id: user.id, 
+					display_name: user.display_name 
+				},
+				{ expiresIn: "7d" }
+			);
 
 			// Setear cookie de acceso
 			setTokenCookie(reply, token);

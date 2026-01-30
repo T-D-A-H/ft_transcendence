@@ -226,7 +226,7 @@ export async function validateSession(): Promise<boolean> {
 }
 
 // Validar token periódicamente
-export function startTokenValidationInterval() {
+/* export function startTokenValidationInterval() {
     const intervalId = setInterval(async () => {
         const isValid = await validateSession();
         if (!isValid) {
@@ -237,4 +237,4 @@ export function startTokenValidationInterval() {
             clearInterval(intervalId); 
         }
     }, 5 * 60 * 1000);
-}
+} */

@@ -119,10 +119,13 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 		userManager.addUser(newPlayer);
 		userManager.loginUser(user.id);
 
-		const token = fastify.jwt.sign({ 
+		const token = fastify.jwt.sign(
+			{ 
 			id: user.id, 
-			display_name: user.display_name 
-		});
+			display_name: user.display_name
+			},
+			{ expiresIn: "7d" }
+		);
 
 		// Setear cookie httpOnly
 		setTokenCookie(reply, token);
