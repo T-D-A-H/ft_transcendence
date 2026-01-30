@@ -100,6 +100,12 @@ async function startServer() {
 	const changeUserName = require("./endpoints/change_userName.js");
 	fastify.post("/api/change-username", changeUserName(userManager, fastify, db));
 
+	const changeEmail = require("./endpoints/change_Email.js");
+	fastify.post("/api/change-email", changeEmail(fastify, db));
+
+	const changePass = require("./endpoints/change_Pass.js");
+	fastify.post("/api/change-pass", changePass(fastify, db,bcrypt, saltRounds));
+
 	setInterval(() => {
 
 		userManager.updateGames();

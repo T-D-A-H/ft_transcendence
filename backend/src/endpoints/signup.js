@@ -13,17 +13,8 @@ function signupHandler(db, bcrypt, saltRounds, fastify) {
 		}
 
 		try {
-			// ! Descomentar cuando este completo
-/* 			const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
-			
-			if (!PASSWORD_REGEX.test(password)) {
-				return reply.code(400).send({
-					status: "error",
-					error: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo"
-				});
-			} */
-
-			const cleanUsername = username.trim();
+			// ! ---- Validate Username ----
+/* 			const cleanUsername = username.trim();
             
             // Solo letras (a-z, A-Z), números (0-9) y guión bajo (_)
             const usernameRegex = /^[a-zA-Z0-9_]+$/;
@@ -36,7 +27,29 @@ function signupHandler(db, bcrypt, saltRounds, fastify) {
 
             if (cleanUsername.length < 3 || cleanUsername.length > 20) {
                 return reply.code(400).send({ error: "El usuario debe tener entre 3 y 20 caracteres." });
-            }
+            } */
+
+			// ! ---- Validate Password ----
+/* 			const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+			
+			if (!PASSWORD_REGEX.test(password)) {
+				return reply.code(400).send({
+					status: "error",
+					error: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo"
+				});
+			} */
+
+			// ! ---- Validate Email ----
+/* 			const cleanEmail = email.trim().toLowerCase();
+			// Esta regex verifica: texto + @ + texto + . + extensión de 2 a 6 letras
+			const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+			
+			if (!emailRegex.test(cleanEmail)) {
+				return reply.code(400).send({ 
+					status: "error",
+					error: "Formato de correo electrónico inválido (ejemplo: usuario@dominio.com)" 
+				});
+			} */
 
 			// Hash de la contraseña
 			const hashed = await bcrypt.hash(password, saltRounds);

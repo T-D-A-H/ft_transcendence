@@ -13,11 +13,12 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 	}
 
 	try {
+		const cleanUsername = username.trim();
 		// 1. Buscar usuario en la BD
 		const user = await new Promise((resolve, reject) => {
 			db.get(
 				"SELECT id, username, display_name, email, password, twofa FROM users WHERE username = ?",
-				[username],
+				[cleanUsername],
 				(err, row) => err ? reject(err) : resolve(row)
 			);
 		});

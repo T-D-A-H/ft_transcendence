@@ -18,7 +18,7 @@ import {
     menuModal
 } from "./ui.js";
 
-import { changeDisplayName, changeUserName} from "./change.js";
+import { changeDisplayName, changeUserName, changeEmail, changePassword} from "./change.js";
 
 import { ProfileInfo, TournamentInfo } from "./vars.js";
 
@@ -173,7 +173,6 @@ playRequestSendButton.onclick = async () => {
 };
 
 playRequestCloseButton.onclick = () => hide(playRequestModal);
-
 
 startMatchButton.onclick = async () => {
 
@@ -521,55 +520,96 @@ if (changeUsernameButton) {
 // --- EMAIL ---
 if (changeEmailButton) {
     changeEmailButton.onclick = () => {
+		if (!userSocket) {
+			hide(changeEmailModal);
+			show(loginModal);
+			showNotification("You must sign in in order to continue!!!");
+			return ;
+		}
         hide(menuModal);
         show(changeEmailModal);
         newEmailInput.value = "";
     };
-}
-if (closeChangeEmailButton) {
-    closeChangeEmailButton.onclick = () => {
+	closeChangeEmailButton.onclick = () => {
         hide(changeEmailModal);
         show(menuModal);
     };
+	submitNewEmailButton.onclick = async () => {
+		if (!userSocket) {
+			hide(changeEmailModal);
+			show(loginModal);
+			showNotification("You must sign in in order to continue!!!");
+			return ;
+		}
+		const newEmail = newEmailInput.value.trim();
+
+		const result = await changeEmail(newEmail);
+		if (result && result.status === 0) {
+			showNotification("Email updated successfully!");
+			hide(changeEmailModal);
+			show(menuModal);
+		} else {
+			showNotification(result.msg || "Connection error");
+			
+			if (result.status === 401 || result.status === 403) {
+				show(loginModal);
+			}
+		}
+	};
 }
-submitNewEmailButton.onclick = async () => {
-    const newEmail = newEmailInput.value.trim();
-    if (!newEmail) return alert("Please enter an email");
-    console.log("Updating Email to:", newEmail);
-    hide(changeEmailModal);
-    show(menuModal);
-};
+
 
 // --- PASSWORD ---
 if (changePasswordButton) {
     changePasswordButton.onclick = () => {
+		if (!userSocket) {
+			hide(changePasswordModal);
+			show(loginModal);
+			showNotification("You must sign in in order to continue!!!");
+			return ;
+		}
         hide(menuModal);
         show(changePasswordModal);
         oldPasswordInput.value = "";
         newPasswordInput.value = "";
         confirmPasswordInput.value = "";
     };
-}
-if (closeChangePasswordButton) {
-    closeChangePasswordButton.onclick = () => {
+	closeChangePasswordButton.onclick = () => {
         hide(changePasswordModal);
         show(menuModal);
     };
+	submitNewPasswordButton.onclick = async () => {
+		if (!userSocket) {
+			hide(changePasswordModal);
+			show(loginModal);
+			showNotification("You must sign in in order to continue!!!");
+			return ;
+		}
+		const oldPass = oldPasswordInput.value;
+		const newPass = newPasswordInput.value;
+		const confirmPass = confirmPasswordInput.value;
+
+		if (!oldPass || !newPass)
+			return showNotification("Please fill fields");
+		if (newPass !== confirmPass)
+			return showNotification("New passwords do not match");
+
+		const cleanNewPass = newPasswordInput.value.trim();
+
+		const result = await changePassword(cleanNewPass, oldPass);
+		if (result && result.status === 0) {
+			showNotification("Password updated successfully!");
+			hide(changePasswordModal);
+			show(menuModal);
+		} else {
+			showNotification(result.msg || "Connection error");
+			
+			if (result.status === 401 || result.status === 403) {
+				show(loginModal);
+			}
+		}
+	};
 }
-
-submitNewPasswordButton.onclick = async () => {
-    const oldPass = oldPasswordInput.value;
-    const newPass = newPasswordInput.value;
-    const confirmPass = confirmPasswordInput.value;
-
-    if (!oldPass || !newPass) return alert("Please fill fields");
-    if (newPass !== confirmPass) return alert("New passwords do not match");
-
-    // AQUÍ TU LÓGICA DE BACKEND
-    console.log("Updating Password...");
-    hide(changePasswordModal);
-    show(menuModal);
-};
 
 (async () => {
 	const urlParams = new URLSearchParams(window.location.search);

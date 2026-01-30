@@ -1,6 +1,6 @@
-const User 		 = require("../Classes/User.js");
 
-function changeDisplayName(userManager, fastify, db) {
+
+function changeDisplayName(userManager, fastify, db ) {
 	return async function (req, reply) {
         const { newName } = req.body;
         if (!newName || newName.trim() === "") {
@@ -31,26 +31,18 @@ function changeDisplayName(userManager, fastify, db) {
                 );
             });
 
-            let player = userManager.getUserByID(decoded.id);
-			if (!player) {
-
-                player = new User({
-                    id: decoded.id,
-                    username: decoded.username,
-                    display_name: decoded.display_name,
-                    socket: null
-                });
-                userManager.addUser(player);
-			}
-            userManager.getUserByID(decoded.id).updateDisplayName(newName);
+            const userInMemory = userManager.getUserByID(decoded.id);
+            if (userInMemory) {
+                userInMemory.updateDisplayName(newName);
+            }
 
             if (changes === 0) {
                 return reply.code(404).send({ error: "User not found or name is identical" });
             }
             return reply.code(200).send({ status: 200, msg: "Display Name Updated" });
 
-        } catch (error) {
-            fastify.log.error(error);
+        } catch (err) {
+            fastify.log.error(err);
             return reply.code(500).send({ error: "Database error" });
         }
     }

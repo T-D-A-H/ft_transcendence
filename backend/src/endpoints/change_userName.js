@@ -1,5 +1,3 @@
-const User 		 = require("../Classes/User.js");
-
 function changeUserName(userManager, fastify, db) {
 	return async function (req, reply) {
         const { newName } = req.body;
@@ -7,10 +5,9 @@ function changeUserName(userManager, fastify, db) {
             return reply.code(400).send({ error: "Name cannot be empty" });
         }
 
+        // ! ---- Validate Username ----
         const cleanUsername = newName.trim();
-            
-        // Solo letras (a-z, A-Z), números (0-9) y guión bajo (_)
-        const usernameRegex = /^[a-zA-Z0-9_]+$/;
+/*         const usernameRegex = /^[a-zA-Z0-9_]+$/;
 
         if (!usernameRegex.test(cleanUsername)) {
             return reply.code(400).send({ 
@@ -20,7 +17,7 @@ function changeUserName(userManager, fastify, db) {
 
         if (cleanUsername.length < 3 || cleanUsername.length > 20) {
             return reply.code(400).send({ error: "El usuario debe tener entre 3 y 20 caracteres." });
-        }
+        } */
 
         const token = req.cookies?.accessToken;
         if (!token) {
@@ -46,25 +43,19 @@ function changeUserName(userManager, fastify, db) {
                 );
             });
 
-            let player = userManager.getUserByID(decoded.id);
-			if (!player) {
-                player = new User({
-                    id: decoded.id,
-                    username: decoded.username,
-                    display_name: decoded.display_name,
-                    socket: null
-                });
-                userManager.addUser(player);
-			}
-            userManager.getUserByID(decoded.id).updateUserName(newName);
-
             if (changes === 0) {
                 return reply.code(404).send({ error: "User not found or name is identical" });
             }
+
+            const userInMemory = userManager.getUserByID(decoded.id);
+            if (userInMemory) {
+                userInMemory.updateUserName(cleanUsername);
+            }
+
             return reply.code(200).send({ status: 200, msg: "User Name Updated" });
 
-        } catch (error) {
-            fastify.log.error(error);
+        } catch (err) {
+            fastify.log.error(err);
             return reply.code(500).send({ error: "Database error" });
         }
     }

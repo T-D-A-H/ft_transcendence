@@ -6,10 +6,11 @@ Promise<{ status: number; userId?: string; setupToken?: string; error?: string }
 
 	const username = usernameInput.value.trim();
     const display_name = displaynameInput.value.trim();
-    const email = emailInput.value.trim();
+    const email = emailInput.value.trim().toLowerCase();
     const password = passwordInput.value;
 
-	const usernameRegex = /^[a-zA-Z0-9_]+$/;
+	// ! ---- Validate Username ----
+/* 	const usernameRegex = /^[a-zA-Z0-9_]+$/;
 	
     if (!usernameRegex.test(username)) {
 		return { 
@@ -23,15 +24,24 @@ Promise<{ status: number; userId?: string; setupToken?: string; error?: string }
 			status: 1, 
             error: "El usuario debe tener entre 3 y 20 caracteres." 
         };
-    }
+    } */
 	
-	// ! Descomentar cuando este completo
+	// ! ---- Validate Password ----
 /* 	const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 	
 	if (!PASSWORD_REGEX.test(passwordInput.value)) {
-		alert("Contraseña insegura");
-		return {status: 1};
+		return {status: 1, error: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo."};
 	} */
+
+	// ! ---- Validate Email ----
+/* 	const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+
+    if (!emailRegex.test(email)) {
+        return { 
+            status: 1, 
+            error: "Formato de correo electrónico inválido (ej: usuario@dominio.com)" 
+        };
+    } */
 		
 	const body = {
         username: username,
