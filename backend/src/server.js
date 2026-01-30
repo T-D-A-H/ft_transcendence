@@ -61,7 +61,8 @@ async function startServer() {
 
 	// ✅ WebSocket del juego - extraer token de cookies
 	const initGameSocket = buildGameSocketHandler(userManager);
-	fastify.get("/proxy-game", { websocket: true }, async (socket, req) => {
+	fastify.get("/proxy-game", { websocket: true }, async (connection, req) => {
+		const socket = connection.socket;
 		const token = req.cookies?.accessToken;
 
 		if (!token) {

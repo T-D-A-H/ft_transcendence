@@ -308,27 +308,20 @@ function handleUserCommands(user, userManager) {
 
 function buildGameSocketHandler(userManager) {
 
-	return (conn, userId) => {
+	return (socket, userId) => {
 
 	if (!userId) {
 		LOGGER(400, "buildGameSocketHandler:", "No userId provided");
-		return conn.socket.close(1008, "No user ID");
+		return socket.close(1008, "No user ID");
 	}
 	
     const user = userManager.getUserByID(userId);
     if (!user) {
 		LOGGER(500, "server", "buildGameSocketHandler", "couldnt find user");
-		return conn.socket.close(1008, "User not found");
+		return socket.close(1008, "User not found");
 	}
 
-    user.connect(conn.socket);
-
-	//TESTING
-	// const {createTestUsers} = require("./TESTING.js");
-	// const users = createTestUsers(userManager, 24);
-	// for (const u of users) {
-	// 	user.addPendingRequest(u, u.username);
-	// }
+    user.connect(socket);
 
     handleUserCommands(user, userManager);
   };

@@ -13,7 +13,6 @@ export function initializeWebSocket() {
         const ws = new WebSocket(`wss://localhost:4000/proxy-game`);
         setUserSocket(ws);
         ws.onopen = () => {
-
             receiveMessages(ws);
             ConstantEvent("NOTIFICATION");
             ConstantEvent("MATCH_READY");
@@ -41,12 +40,12 @@ export function initializeWebSocket() {
                 
                 alert("Tu sesión se ha cerrado porque has entrado desde otro dispositivo o pestaña.");
                 try {
-                    await fetch('/api/logout', { 
+                    await fetch('/api/logout?soft=true', { 
                         method: "POST",
                         credentials: "include" 
                     });
                 } catch (e) {
-                    console.error("Error al intentar hacer logout:", e);
+                    console.error("Error limpiando cookies:", e);
                 }
                 window.location.reload(); 
             }

@@ -41,11 +41,6 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 			});
 		}
 
-		if (userManager.isUserConnected(user.id)) {			
-			userManager.forceDisconnect(user.id);
-			await new Promise(r => setTimeout(r, 100)); 
-		}
-
 		// 4. Credenciales válidas - verificar si tiene 2FA activado
 		if (user.twofa === "2FAmail") {
 			// Generar token temporal
@@ -108,20 +103,20 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 			});
 		}
 
-		let player = userManager.getUserByID(user.id);
-		if (!player) {
-			player = userManager.createUser(user.id, user.username, user.display_name, null);
-			userManager.addUser(player);
+		const existingPlayer = userManager.getUserByID(user.id);
+		if (existingPlayer) {
+			userManager.forceDisconnect(user.id); 
 		}
 
-		// 5. Login exitoso sin 2FA
-		if (userManager.loginUser(user.id) ===  false) {
-			LOGGER(401, "server", "handleLogin", "Usuario ya logeado");
-			return reply.code(401).send({ 
-				status: "error",
-				error: "Usuario ya logeado" 
-			});
-		}
+		const newPlayer = new User({
+			id: user.id,
+			username: user.username,
+			display_name: user.display_name,
+			socket: null
+		});
+
+		userManager.addUser(newPlayer);
+		userManager.loginUser(user.id);
 
 		const token = fastify.jwt.sign({ 
 			id: user.id, 
