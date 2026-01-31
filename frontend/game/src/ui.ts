@@ -637,4 +637,6 @@ export function mirrorCanvas(): void {
   canvas.classList.toggle("scale-x-[-1]");
 }
 
+
+export { drawGame };
 //------------------------------------------------------------------------SETTINGS

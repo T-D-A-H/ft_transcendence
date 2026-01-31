@@ -65,9 +65,6 @@ import {
   mirrorCanvas,
   getDisplaySide,
   setDisplaySide,
-  showCanvas,
-  setSCORES,
-  canvas,
 } from "./ui.js";
 import {
   openMenuButton,
@@ -93,7 +90,7 @@ import {
 import { userSocket, restoreSession } from "./websocket.js";
 
 import { oneTimeEvent, setMatchMode, initKeyHandling } from "./events.js";
-import { drawGame } from "./draw.js";
+import { startAiMode, stopAiMode, isAiModeActive } from "./ai.js";
 
 googleLoginButton.onclick = () => {
   window.location.href = "/auth/google";
@@ -272,91 +269,8 @@ startMatchButton.onclick = async () => {
   }
 };
 
-let aiModeActive = false;
-let aiAnimationId: number | null = null;
-let aiLeftY = 170;
-const aiRightY = 170;
-const aiBallX = 900;
-const aiBallY = 900;
-const aiPaddleHeight = 60;
-const aiSpeed = 6;
-const aiKeys = { up: false, down: false };
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
-
-function aiRenderFrame(): void {
-  if (!aiModeActive) return;
-
-  if (aiKeys.up) aiLeftY -= aiSpeed;
-  if (aiKeys.down) aiLeftY += aiSpeed;
-
-  aiLeftY = clamp(aiLeftY, 0, canvas.height - aiPaddleHeight);
-  drawGame(10, aiLeftY, 580, aiRightY, aiBallX, aiBallY);
-  aiAnimationId = requestAnimationFrame(aiRenderFrame);
-}
-
-function onAiKeyDown(e: KeyboardEvent): void {
-  if (!aiModeActive) return;
-  if (e.key === "w" || e.key === "W") {
-    aiKeys.up = true;
-    e.preventDefault();
-  } else if (e.key === "s" || e.key === "S") {
-    aiKeys.down = true;
-    e.preventDefault();
-  }
-}
-
-function onAiKeyUp(e: KeyboardEvent): void {
-  if (!aiModeActive) return;
-  if (e.key === "w" || e.key === "W") {
-    aiKeys.up = false;
-    e.preventDefault();
-  } else if (e.key === "s" || e.key === "S") {
-    aiKeys.down = false;
-    e.preventDefault();
-  }
-}
-
-function startAiMode(): void {
-  aiModeActive = true;
-  aiKeys.up = false;
-  aiKeys.down = false;
-  aiLeftY = 170;
-  setSCORES(0, 0);
-  updateOpponentUI("AI");
-
-  if (getDisplaySide() !== "right") {
-    setDisplaySide("right");
-    mirrorCanvas();
-  }
-
-  showCanvas();
-  hide(startMatchButton);
-  show(exitMatchButton);
-
-  document.addEventListener("keydown", onAiKeyDown);
-  document.addEventListener("keyup", onAiKeyUp);
-
-  if (aiAnimationId !== null) cancelAnimationFrame(aiAnimationId);
-  aiAnimationId = requestAnimationFrame(aiRenderFrame);
-}
-
-function stopAiMode(): void {
-  if (!aiModeActive) return;
-  aiModeActive = false;
-  if (aiAnimationId !== null) {
-    cancelAnimationFrame(aiAnimationId);
-    aiAnimationId = null;
-  }
-  document.removeEventListener("keydown", onAiKeyDown);
-  document.removeEventListener("keyup", onAiKeyUp);
-  showMenu();
-}
-
 exitMatchButton.onclick = async () => {
-  if (aiModeActive) {
+  if (isAiModeActive()) {
     stopAiMode();
     return;
   }
