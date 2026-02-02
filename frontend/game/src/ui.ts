@@ -1,4 +1,5 @@
 import { drawGame } from "./draw.js";
+import { boardThemes } from "./themes.js";
 import { TournamentInfo, ProfileInfo } from "./vars.js";
 
 //------------------------------------------------------------------------OPPONENT
@@ -559,6 +560,139 @@ dayModeButton.onclick = () => {
   drawGame();
 };
 
+const boardThemeButton = document.getElementById(
+  "board_theme_button",
+) as HTMLButtonElement;
+
+const boardThemeModal = document.getElementById(
+  "board_theme_modal",
+) as HTMLDivElement;
+
+const boardThemePrevButton = document.getElementById(
+  "board_theme_prev",
+) as HTMLButtonElement;
+
+const boardThemeNextButton = document.getElementById(
+  "board_theme_next",
+) as HTMLButtonElement;
+
+const boardThemeApplyButton = document.getElementById(
+  "board_theme_apply",
+) as HTMLButtonElement;
+
+const boardThemeCancelButton = document.getElementById(
+  "board_theme_cancel",
+) as HTMLButtonElement;
+
+const boardThemePreview = document.getElementById(
+  "board_theme_preview",
+) as HTMLCanvasElement;
+
+const boardThemePreviewCtx = boardThemePreview.getContext(
+  "2d",
+) as CanvasRenderingContext2D;
+
+const boardThemeName = document.getElementById(
+  "board_theme_name",
+) as HTMLDivElement;
+
+const boardThemeClassNames = boardThemes.map((theme) => theme.className);
+
+let boardThemeIndex = Math.max(
+  0,
+  boardThemes.findIndex(
+    (theme) => theme.id === localStorage.getItem("pong_board_theme"),
+  ),
+);
+
+function applyBoardThemeById(themeId: string, redraw: boolean = true): void {
+  const theme = boardThemes.find((t) => t.id === themeId) || boardThemes[0];
+  boardThemeClassNames.forEach((className) =>
+    canvas.classList.remove(className),
+  );
+  canvas.classList.add(theme.className);
+  localStorage.setItem("pong_board_theme", theme.id);
+  if (redraw) drawGame();
+}
+
+async function drawBoardThemePreview(): Promise<void> {
+  await pongFont;
+
+  const width = boardThemePreview.width;
+  const height = boardThemePreview.height;
+  const scaleX = width / 600;
+  const scaleY = height / 400;
+
+  boardThemePreviewCtx.clearRect(0, 0, width, height);
+
+  const paddleWidth = Math.max(2, Math.round(10 * scaleX));
+  const paddleHeight = Math.max(8, Math.round(60 * scaleY));
+  const ballSize = Math.max(3, Math.round(10 * scaleX));
+  const lineWidth = Math.max(2, Math.round(5 * scaleX));
+  const dashHeight = Math.max(4, Math.round(10 * scaleY));
+  const dashGap = Math.max(3, Math.round(5 * scaleY));
+
+  const leftX = Math.round(10 * scaleX);
+  const leftY = Math.round(170 * scaleY);
+  const rightX = Math.round(580 * scaleX);
+  const rightY = Math.round(170 * scaleY);
+  const ballX = Math.round(300 * scaleX);
+  const ballY = Math.round(200 * scaleY);
+
+  boardThemePreviewCtx.fillStyle = blackish;
+  boardThemePreviewCtx.fillRect(leftX, leftY, paddleWidth, paddleHeight);
+  boardThemePreviewCtx.fillRect(rightX, rightY, paddleWidth, paddleHeight);
+  boardThemePreviewCtx.fillRect(ballX, ballY, ballSize, ballSize);
+
+  const centerX = Math.round(width / 2 - lineWidth / 2);
+  for (let y = 0; y < height; y += dashHeight + dashGap) {
+    boardThemePreviewCtx.fillRect(centerX, y, lineWidth, dashHeight);
+  }
+
+  boardThemePreviewCtx.textAlign = "center";
+  boardThemePreviewCtx.textBaseline = "top";
+  boardThemePreviewCtx.font = `${Math.max(12, Math.round(48 * scaleY))}px BlockFont`;
+  boardThemePreviewCtx.fillText("2", width / 4, Math.round(12 * scaleY));
+  boardThemePreviewCtx.fillText("1", (width / 4) * 3, Math.round(12 * scaleY));
+}
+
+function updateBoardThemePreview(): void {
+  const theme = boardThemes[boardThemeIndex] || boardThemes[0];
+  boardThemeClassNames.forEach((className) =>
+    boardThemePreview.classList.remove(className),
+  );
+  boardThemePreview.classList.add(theme.className);
+  boardThemeName.textContent = theme.name;
+  void drawBoardThemePreview();
+}
+
+boardThemeButton.onclick = () => {
+  updateBoardThemePreview();
+  show(boardThemeModal);
+};
+
+boardThemeCancelButton.onclick = () => hide(boardThemeModal);
+
+boardThemePrevButton.onclick = () => {
+  boardThemeIndex =
+    (boardThemeIndex - 1 + boardThemes.length) % boardThemes.length;
+  updateBoardThemePreview();
+};
+
+boardThemeNextButton.onclick = () => {
+  boardThemeIndex = (boardThemeIndex + 1) % boardThemes.length;
+  updateBoardThemePreview();
+};
+
+boardThemeApplyButton.onclick = () => {
+  const theme = boardThemes[boardThemeIndex] || boardThemes[0];
+  applyBoardThemeById(theme.id);
+  hide(boardThemeModal);
+};
+
+applyBoardThemeById(boardThemes[boardThemeIndex]?.id || "default", false);
+updateBoardThemePreview();
+
 export const logoutButton = // Logout Button
   document.getElementById("logout_button") as HTMLButtonElement;
 
@@ -636,7 +770,6 @@ export function setDisplaySide(side: string): void {
 export function mirrorCanvas(): void {
   canvas.classList.toggle("scale-x-[-1]");
 }
-
 
 export { drawGame };
 //------------------------------------------------------------------------SETTINGS
