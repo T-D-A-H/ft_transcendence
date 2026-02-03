@@ -11,6 +11,7 @@ export interface ProfileInfo {
     id: string;
 	display_name: string;
     username: string;
+    avatar?: string;
 }
 
 

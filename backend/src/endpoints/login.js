@@ -16,12 +16,12 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 		const cleanUsername = username.trim();
 		// 1. Buscar usuario en la BD
 		const user = await new Promise((resolve, reject) => {
-			db.get(
-				"SELECT id, username, display_name, email, password, twofa FROM users WHERE username = ?",
-				[cleanUsername],
-				(err, row) => err ? reject(err) : resolve(row)
-			);
-		});
+            db.get(
+                "SELECT id, username, display_name, email, password, twofa, avatar FROM users WHERE username = ?",
+                [cleanUsername],
+                (err, row) => err ? reject(err) : resolve(row)
+            );
+        });
 
 		// 2. Validar que el usuario existe
 		if (!user) {

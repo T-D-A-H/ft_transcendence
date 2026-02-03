@@ -9,13 +9,12 @@ import { openCreateTournamentButton, closeCreateTournamentButton, submitTourname
 import { openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, renderTournamentList} from "./ui.js";
 import { show, hide, showMenu, showNotification, renderPendingRequests,  mirrorCanvas, getDisplaySide, setDisplaySide } from "./ui.js";
 import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisible, updateOpponentUI, updateProfileUI,  googleLoginButton} from "./ui.js";
-// Añade esto a tus imports existentes de ./ui.js
 import { 
     changeUsernameButton, changeUsernameModal, closeChangeUsernameButton, submitNewUsernameButton, newUsernameInput,
     changeEmailButton, changeEmailModal, closeChangeEmailButton, submitNewEmailButton, newEmailInput,
     changePasswordButton, changePasswordModal, closeChangePasswordButton, submitNewPasswordButton, oldPasswordInput, newPasswordInput, confirmPasswordInput,
     changeDisplayNameButton, changeDisplayNameModal, closeChangeDisplayNameButton, submitNewDisplayNameButton, newDisplayNameInput,
-    menuModal
+    menuModal, topBarProfilePicture
 } from "./ui.js";
 
 import { changeDisplayName, changeUserName, changeEmail, changePassword} from "./change.js";
@@ -634,6 +633,7 @@ if (changePasswordButton) {
 })();
 
 export async function getProfileInfo(reset: boolean) {
+	
 
 	if (reset === true) {
 		updateProfileUI("PONG", "ft_transcendence.pong.com");
@@ -642,12 +642,16 @@ export async function getProfileInfo(reset: boolean) {
 	try {
 
 		const result = await oneTimeEvent("INFO_REQUEST", "INFO_RESPONSE");
+		
 		if (!result || result.status !== 200 || !result.target)
 			return ;
         show(logoutButton);
 
 		const info = result.target as ProfileInfo;
 		updateProfileUI(info.display_name, info.username);
+		if (info.avatar) {
+			topBarProfilePicture.innerHTML = info.avatar;
+		}
 
 	}
 	catch {

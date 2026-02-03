@@ -224,17 +224,3 @@ export async function validateSession(): Promise<boolean> {
 		return false;
 	}
 }
-
-// Validar token periódicamente
-/* export function startTokenValidationInterval() {
-    const intervalId = setInterval(async () => {
-        const isValid = await validateSession();
-        if (!isValid) {
-            console.log("Session expired or Server restarted, logging out");
-            // No pasamos botón porque es un logout automático
-            await logoutUser(); 
-            // Opcional: Detener el intervalo para que no siga intentando salir
-            clearInterval(intervalId); 
-        }
-    }, 5 * 60 * 1000);
-} */

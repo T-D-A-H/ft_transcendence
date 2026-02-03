@@ -1,6 +1,6 @@
 
 import {ConstantEvent, receiveMessages, oneTimeEvent} from "./events.js";
-import { logoutButton, show, updateProfileUI, } from "./ui.js";
+import { logoutButton, show, updateProfileUI, topBarProfilePicture} from "./ui.js";
 import { ProfileInfo } from "./vars.js";
 import { setUserSocket } from "./auth.js";
 
@@ -75,6 +75,9 @@ export async function restoreSession(): Promise<boolean> {
         const info = result.target as ProfileInfo;
         show(logoutButton);
         updateProfileUI(info.display_name, info.username);
+        if (info.avatar && topBarProfilePicture) {
+            topBarProfilePicture.innerHTML = info.avatar;
+        }
         
         return true;
     }

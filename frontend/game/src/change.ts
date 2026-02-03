@@ -126,3 +126,17 @@ export async function changePassword(newPass: string, oldPass: string): Promise<
         return { status: 1, msg: "Connection error" };
     }
 }
+
+export async function changeAvatar(avatarSymbol: string) {
+    try {
+        const response = await fetch("/api/change-avatar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ avatar: avatarSymbol }),
+            credentials: "include"
+        });
+        return await response.json();
+    } catch (error) {
+        return { status: 1, msg: "Connection error" };
+    }
+}

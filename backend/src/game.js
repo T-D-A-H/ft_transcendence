@@ -234,10 +234,10 @@ function getInfoRequest(requestingUser, userManager, target) {
 	// 	}});
 	// }
 	// else if (target === userName) {
-
 		requestingUser.send({type: "INFO_RESPONSE", status: 200, msg: "", target: {
 			display_name: requestingUser.getDisplayName(),
-			username: requestingUser.getUsername()
+			username: requestingUser.getUsername(),
+			avatar: requestingUser.avatar
 		}});
 	// }
 	// else {

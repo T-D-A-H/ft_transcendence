@@ -597,21 +597,31 @@ const profilePicGrid =
 const selfProfileImage =
 	document.getElementById("self_profile_image") as HTMLDivElement;
 
+import { changeAvatar } from "./change.js";
+
 function renderProfilePicGrid(): void {
-	profilePicGrid.innerHTML = "";
+    profilePicGrid.innerHTML = "";
 
-	for (const symbol of avatarSymbols) {
-		const btn = document.createElement("button");
-		btn.className = "profilepic-item";
-		btn.innerHTML = symbol;
+    for (const symbol of avatarSymbols) {
+        const btn = document.createElement("button");
+        btn.className = "profilepic-item";
+        btn.innerHTML = symbol;
 
-		btn.onclick = () => {
-			selfProfileImage.innerHTML = symbol;
-			hide(profilePicModal); 
-		};
+        btn.onclick = async () => {
+            const result = await changeAvatar(symbol);
+            
+            if (result.status === 0) {
+                selfProfileImage.innerHTML = symbol;
+                showNotification("Avatar guardado!");
+                hide(profilePicModal);
+                show(menuModal);
+            } else {
+                showNotification("Error al guardar avatar");
+            }
+        };
 
-		profilePicGrid.appendChild(btn);
-	}
+        profilePicGrid.appendChild(btn);
+    }
 }
 
 changeProfilePicButton.onclick = () => {

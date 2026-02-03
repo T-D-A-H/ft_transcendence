@@ -106,6 +106,9 @@ async function startServer() {
 	const changePass = require("./endpoints/change_Pass.js");
 	fastify.post("/api/change-pass", changePass(fastify, db,bcrypt, saltRounds));
 
+	const changeAvatar = require("./endpoints/change_avatar.js");
+	fastify.post("/api/change-avatar", changeAvatar(userManager, fastify, db));
+
 	setInterval(() => {
 
 		userManager.updateGames();

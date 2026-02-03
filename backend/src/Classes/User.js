@@ -4,7 +4,7 @@ class User {
     
     static SIDE = { LEFT: -1, RIGHT: 1};
 
-    constructor({ id, username, display_name, socket }) {
+    constructor({ id, username, display_name, socket, avatar }) {
         LOGGER(200, "User", "Constructor", "called for " + username);
 
         this.id = id;
@@ -18,6 +18,8 @@ class User {
         this.currentTournament = null;
         this.isPlaying = false;
         this.displaySide = User.SIDE.RIGHT;
+
+        this.avatar = avatar || "&#9865;";
     }
 
     send(message) {
