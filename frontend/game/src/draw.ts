@@ -1,40 +1,54 @@
+import {texture, canvas, pongFont, whitish, blackish, getSCORES } from "./ui.js";
 
-interface MoveMessage  {type: "MOVE"; playerY1: number; playerY2: number;};
-type ServerMessage = MoveMessage;
 
-function drawBrackground(canvas: HTMLCanvasElement, paddle: CanvasRenderingContext2D) {
+export async function drawScores(SCORES: number[]) {
 
-	paddle.clearRect(0, 0, canvas.width, canvas.height);
-	paddle.fillStyle = "black";
-	paddle.fillRect(0, 0, canvas.width, canvas.height);
-}
+	await pongFont;
+	texture.fillStyle = blackish;
+	texture.textAlign = "center";
+	texture.textBaseline = "top";
+	texture.font = "48px BlockFont";
 
-function drawPlayerOne(paddle: CanvasRenderingContext2D, y: number, x: number) {
-    
-	paddle.fillStyle = "white";
-	paddle.fillRect(x, y, 10, 60);
-}
-
-function drawPlayerTwo(paddle: CanvasRenderingContext2D, y: number, x: number) {
-
-	paddle.fillStyle = "white";
-	paddle.fillRect(x, y, 10, 60);
+	texture.fillText(SCORES[0].toString(), canvas.width / 4, 20);
+	texture.fillText(SCORES[1].toString(), (canvas.width / 4) * 3, 20);
 }
 
 
-export function drawGame(userSocket: WebSocket, canvas: HTMLCanvasElement, paddle: CanvasRenderingContext2D): void {
+function drawDottedLine() {
+
+	texture.fillStyle = blackish;
+	const dashHeight = 10;
+	const dashGap = 5;
+	const lineWidth = 5; 
+	const centerX = canvas.width / 2 - lineWidth / 2;
 	
-	userSocket.onmessage = (event: MessageEvent) => {
-		try {
-			const data: ServerMessage = JSON.parse(event.data);
+	for (let y = 0; y < canvas.height; y += dashHeight + dashGap) {
 
-			if (data.type === "MOVE") {
-				drawBrackground(canvas, paddle);
-				drawPlayerOne(paddle, data.playerY1, 10);
-				drawPlayerTwo(paddle, data.playerY2, canvas.width - 20);
-			}
-		} catch (err) {
-			console.error("Error parsing move message:", err);
-		}
-	};
+		texture.fillRect(centerX, y, lineWidth, dashHeight);
+	}
 }
+
+export function clearBackground() {
+
+	texture.clearRect(0, 0, canvas.width, canvas.height);
+
+}
+
+export function drawGame(leftX: number = 10, leftY: number = 170, rightX: number = 580, rightY: number = 170, ballX: number = 900, ballY: number = 900) {
+
+	clearBackground();
+
+	texture.fillStyle = blackish;
+	texture.fillRect(leftX, leftY, 10, 60);
+
+	texture.fillStyle = blackish;
+	texture.fillRect(rightX, rightY, 10, 60);
+
+	texture.fillStyle = blackish;
+	texture.fillRect(ballX, ballY, 10, 10);
+
+	drawDottedLine();
+
+	drawScores(getSCORES());
+}
+

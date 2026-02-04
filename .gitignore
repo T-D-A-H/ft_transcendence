@@ -1,6 +1,7 @@
 /backend/.env
 /frontend/game/public
 .env
+<<<<<<< HEAD
 
 # ELK Stack .env & certs
 /ops/ELK/.env
@@ -25,3 +26,6 @@
 
 # Logstash logs
 /ops/ELK/Logstash/logs/*.log
+=======
+/frontend/game/styles/tailwind.css
+>>>>>>> aa727deff36f6eeeabfd889842fb4a93e7490b1b

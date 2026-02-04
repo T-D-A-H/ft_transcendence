@@ -1,318 +1,459 @@
-import { 
-	loginModal, openLogin, closeLogin, submitLoginButton,
-	usernameInput, passwordInput, logoutButton,
-	registerModal, openRegister, closeRegister, submitRegisterButton,
-	regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput,
-	startMatchButton, searchForMatchButton, createMatchButton, waitingPlayers,
-	activeMatchesModal, playersListUL, renderMatchList,
-	show, hide, canvas, paddle, twoFAModal, twoFAOptionModal, twoFAEmailButton,
-	twoFASkipButton, twoFASubmitButton,twoFAInput, initialLoader,} from "./ui.js";
-
-import { registerUser } from "./register.js"
-import { login } from "./login.js"
-import { createNewMatch, searchForMatch, joinMatch, playerJoinedMatch} from "./match.js"
-import { sendKeyPressEvents } from "./keypress.js";
-import { drawGame } from "./draw.js";
+import {loadAnimation, showLoader, hideLoader} from "./ui.js";
+import { loginModal, closeLoginButton, logoutButton,usernameInput, passwordInput, submitLoginButton, dontHaveAnAccountButton} from "./ui.js";
+import { registerModal, closeRegisterButton, submitRegisterButton, regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput, alreadyHaveAnAccountButton} from "./ui.js";
+import { twoFAModal, twoFAOptionModal, twoFAEmailButton, twoFASubmitButton, twoFASkipButton, twoFAAuthButton, twoFAInput, twoFACancelButton} from "./ui.js";
+import { startMatchButton, playLocallyButton, exitMatchButton} from "./ui.js";
+import { playRequestModal, playAgainstUserButton, playRequestUsernameInput, playRequestCloseButton, playRequestSendButton} from "./ui.js";
+import { menuButtons, getInviteFrom } from "./ui.js";
+import { openCreateTournamentButton, closeCreateTournamentButton, submitTournamentCreationButton, createTournamentModal, aliasTournamentInput, tournamentSizeInput} from "./ui.js";
+import { openSearchTournamentButton, closeSearchTournamentButton, searchTournamentsModal, renderTournamentList} from "./ui.js";
+import { show, hide, showMenu, showNotification, renderPendingRequests,  mirrorCanvas, getDisplaySide, setDisplaySide } from "./ui.js";
+import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisible, updateOpponentUI, updateProfileUI,  googleLoginButton} from "./ui.js";
 
 
-if (!loginModal || !openLogin || !closeLogin || !submitLoginButton ||
-	!usernameInput || !passwordInput ||
-	!registerModal || !openRegister || !closeRegister || !submitRegisterButton ||
-	!regUsernameInput || !regDisplaynameInput || !regEmailInput || !regPasswordInput ||
-	!waitingPlayers || !startMatchButton || !searchForMatchButton || !createMatchButton ||
-	!activeMatchesModal || !playersListUL || !renderMatchList
-	|| !canvas || !paddle) {
-	console.error("One or more UI elements are missing");
+import { ProfileInfo, TournamentInfo } from "./vars.js";
+
+import { registerUser, loginUser, logoutUser, configure2FA, verify2FA, startTokenValidationInterval } from "./auth.js";
+
+import { userSocket, restoreSession } from "./websocket.js";
+
+import { oneTimeEvent, setMatchMode, initKeyHandling} from "./events.js";
+
+googleLoginButton.onclick = () => {
+	window.location.href = "/auth/google";
 }
 
-let tempToken2FA: string | null | undefined = null;
-let userSocket: WebSocket | null = null;
+menuButtons.forEach(button => {
 
-openLogin.onclick = () => show(loginModal);
-closeLogin.onclick = () => hide(loginModal);
-openRegister.onclick = () => show(registerModal);
-closeRegister.onclick = () => hide(registerModal);
+	button.addEventListener('click', () => {
 
-function showLoader() {
-	show(initialLoader);
-}
+		const targetId = button.dataset.target;
+		if (!targetId)
+			return;
+		menuButtons.forEach(btn => btn.classList.remove('active-border'));
+		button.classList.add('active-border');
+		const allLists = document.querySelectorAll<HTMLElement>('.pong-list');
+		allLists.forEach(list => {
 
-function hideLoader() {
-	hide(initialLoader);
-}
+			if (list.id === targetId)
+				show(list);
+			else
+				hide(list);
+		});
+			if (targetId === "request_list") {
+				renderRequestLists();
+			}
+	});
+});
 
-// Función para inicializar la conexión WebSocket con el token
-function initializeWebSocket(token: string) {
-	showLoader();
-	userSocket = new WebSocket(`ws://localhost:4000/proxy-game?token=${token}`);
-	userSocket.onopen = () => {
-		console.log("User WebSocket connected");
-		show(startMatchButton);
-		hideLoader();
-	};
-	userSocket.onerror = (err) => { 
-		console.error(err); 
-		userSocket?.close();
-		userSocket = null;
-		alert("Error de conexión. Por favor, inicia sesión nuevamente.");
-		hide(startMatchButton);
-		hideLoader();
-	};
-	userSocket.onclose = () => {
-		console.log("WebSocket disconnected");
-		userSocket = null;
-		hide(startMatchButton);
-		hideLoader();
-	};
-}
-
-showLoader();
-
-// Verificar si hay token al cargar la página
-const token = localStorage.getItem("token");
-if (!token || token === "null") {
-	// Usuario NO autenticado
-	hide(openLogin);
-	hide(openRegister);
-	hide(logoutButton);
-	// Mostrar solo después de ocultar todo
-	show(openLogin);
-	show(openRegister);
-	setTimeout(hideLoader, 300)
-} else {
-	// Usuario autenticado
-	hide(openLogin);
-	hide(openRegister);
-	show(logoutButton);
-	initializeWebSocket(token);
-}
-
-
-submitLoginButton.onclick = async () => {
-	showLoader();
-  
-	try {
-		// 1. PRIMERO: Intentar login (backend valida usuario + contraseña)
-		const result = await login(usernameInput, passwordInput);
-
-		// 2. El backend decide si necesita 2FA DESPUÉS de validar credenciales
-		if (result.status === "requires_2fa" && result.method === "email") {
-			// Usuario válido y necesita 2FA
-			hideLoader();
-			show(twoFAModal);
-			tempToken2FA = result.tempToken; // Token temporal del backend
-			
-			// Configurar el botón de verificación 2FA
-			twoFASubmitButton.onclick = async () => {
-				const code = twoFAInput.value.trim();
-				if (!code) {
-					alert("Ingresa el código 2FA");
-					return;
-				}
-				
-				showLoader();
-				try {
-					const res = await fetch("/verify-2fa-mail", {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ 
-							tempToken: tempToken2FA, 
-							code 
-						})
-					});
-					
-					const verifyResult = await res.json();
-
-					if (verifyResult.status === "ok" && verifyResult.token) {
-						// Login completo
-						localStorage.setItem("token", verifyResult.token);
-						hide(twoFAModal);
-						hide(openRegister);
-						hide(openLogin);
-						hide(loginModal);
-						show(logoutButton);
-						initializeWebSocket(verifyResult.token);
-						tempToken2FA = null;
-						twoFAInput.value = "";
-					} else {
-						alert(verifyResult.error || "Código 2FA incorrecto");
-						hideLoader();
-					}
-				} catch (err) {
-					console.error(err);
-					alert("Error al verificar 2FA");
-					hideLoader();
-				}
-			};
-			
-		} else if (result.status === 0 && result.token) {
-			// Login exitoso sin 2FA
-			localStorage.setItem("token", result.token);
-			hide(twoFAModal);
-			hide(openRegister);
-			hide(openLogin);
-			hide(loginModal);
-			show(logoutButton);
-			initializeWebSocket(result.token);
-			hideLoader();
-			
-		} else {
-			// Credenciales incorrectas
-			alert(result.error || "Usuario o contraseña incorrectos");
-			hideLoader();
-		}
-
-		} catch (err) {
-		console.error(err);
-		alert("Error al iniciar sesión");
-		hideLoader();
-	}
+alreadyHaveAnAccountButton.onclick = () => {
+	hide(registerModal);
+	show(loginModal);
+	showNotification("You must sign in in order to continue!");
 };
 
 submitRegisterButton.onclick = async () => {
+
 	const result = await registerUser(regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput);
 
-	if (result.status === 0 && result.userId && result.setupToken) {
+	if (result.status === 0 && result.setupToken) {
+		hide(registerModal);
 		show(twoFAOptionModal);
+		twoFAEmailButton.onclick = () => {
+			configure2FA(result.setupToken!, "2FAmail", twoFAOptionModal, loginModal, registerModal);
+		}
+		twoFASkipButton.onclick = twoFACancelButton.onclick = () => {
 
-		twoFAEmailButton.onclick = async () => {
-			const res = await fetch("/set-2fa", {
-				method: "POST",
-				headers: { 
-					"Content-Type": "application/json",
-					"Authorization": `Bearer ${result.setupToken}`
-				},
-				body: JSON.stringify({ method: "2FAmail" })
-			});
-			const data = await res.json();
-			if (data.status === "ok") {
-				hide(twoFAOptionModal);
-				hide(registerModal);
-				show(loginModal);
-			} else {
-				alert(data.error || "Error al configurar 2FA");
-			}
-			hide(twoFAOptionModal);
-			hide(registerModal);
-			show(loginModal);
+			configure2FA(result.setupToken!, "skip", twoFAOptionModal, loginModal, registerModal);
 		};
-
-		twoFASkipButton.onclick = async () => {
-			const res = await fetch("/set-2fa", {
-				method: "POST",
-				headers: { 
-					"Content-Type": "application/json",
-					"Authorization": `Bearer ${result.setupToken}`
-				},
-				body: JSON.stringify({ method: "skip" })
-			});
-
-			const data = await res.json();
-			if (data.status === "ok") {
-				hide(twoFAOptionModal);
-				hide(registerModal);
-				show(loginModal);
-			} else {
-				alert(data.error || "Error al configurar 2FA");
-			}
-		};
+	} else {
+		showNotification("1 Account with that username/email already exists.");
 	}
 };
 
+closeRegisterButton.onclick = () => hide(registerModal);
 
-logoutButton.onclick = async () => {
-	if (userSocket) {
-		userSocket.close();
-		userSocket = null;
-	}
-	let token = localStorage.getItem("token");
-	const res = await fetch("/logout", {
-		method: "POST",
-		headers: { 
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({ token })
-	});
-
-	const data = await res.json();
-	if (data.status === "ok") {
-		localStorage.removeItem("token");
-		hide(startMatchButton);
-		hide(waitingPlayers);
-		hide(logoutButton);
-		show(openLogin);
-		show(openRegister);
-	}
-};
-
-createMatchButton.onclick = () => {
-
-	if (!userSocket || userSocket.readyState !== WebSocket.OPEN) {
-		alert("WebSocket not ready. Try again in a moment.");
-		return;
-	}
-	createNewMatch(userSocket!).then((new_match_status) => {
-		if (new_match_status === 0) {
-			alert("Match created");
-			// hide(createMatchButton);
-		}
-		else if (new_match_status === 1) {
-			alert("Match already created.");
-		}
-		else if (new_match_status === 2) {
-			alert("An error occured creating your match.")
-		}
-	});
+dontHaveAnAccountButton.onclick = () => {
+	hide(loginModal);
+	show(registerModal);
+	showNotification("Create a new account.");
 }
 
-searchForMatchButton.onclick = () => {
-	
-	if (!userSocket || userSocket.readyState !== WebSocket.OPEN) {
-		alert("WebSocket not ready. Try again in a moment.");
-		return;
+submitLoginButton.onclick = async () => {
+
+	const result = await loginUser(usernameInput, passwordInput);
+
+	if (result.status === 0) {
+		hide(loginModal);
+		hide(twoFAModal);
+		await restoreSession();
+		startTokenValidationInterval();
 	}
-	searchForMatch(userSocket!).then((matches) => {
+	else if (result.status === "requires_2fa" && result.method === "email") {
 
-		if (!matches) {
-			alert("No Matches found.");
-			hide(activeMatchesModal);
-			return;
+		show(twoFAModal);
+
+		twoFASubmitButton.onclick = async () => {
+
+			const code = twoFAInput.value.trim();
+			if (!code) return alert("Ingresa el código 2FA");
+
+			const success = await verify2FA(code, twoFAModal, loginModal);
+			if (success) {
+				twoFAInput.value = "";
+				hide(loginModal);
+				hide(twoFAModal);
+	
+				await restoreSession();
+				startTokenValidationInterval();
+			}
+		};
+	}
+	else {
+		showNotification(result.error || "User/Password Incorrect");
+	}
+};
+
+closeLoginButton.onclick = () => hide(loginModal);
+
+logoutButton.onclick = () => logoutUser(logoutButton);
+
+
+playAgainstUserButton.onclick = () => {
+	if (!userSocket) {
+		show(loginModal);
+		showNotification("You must sign in in order to continue!!!");
+		return ;
+	}
+	show(playRequestModal)
+};
+
+playRequestSendButton.onclick = async () => {
+
+	const target_username = playRequestUsernameInput.value.trim();
+	if (target_username.length === 0) {
+		alert("Username field empty");
+		return ;
+	}
+
+	try {
+
+		const result = await oneTimeEvent("SEND_INVITE_REQUEST", "SEND_INVITE_RESPONSE", target_username);
+
+		if (!result || !result.target) {
+			showNotification("No response from server");
+			return ;
 		}
-		const joinButtons = renderMatchList(matches!);
+		if (result.target !== target_username) {
+			showNotification("Username response doesnt match invitation target");
+			return ;
+		}
+		if (result.status !== 200) {
+			showNotification(result.msg);
+			return ;
+		}
+		hide(playRequestModal);
+	}
+	catch {
+
+		showNotification("Failed to send invite");
+	}
+};
+
+playRequestCloseButton.onclick = () => hide(playRequestModal);
+
+
+startMatchButton.onclick = async () => {
+
+	hide(startMatchButton);
+	show(openMenuButton);
+	makeVisible(topBarDisplayName);
+	showNotification("Waiting for player...");
+
+	try {
+
+		const result = await oneTimeEvent("START_MATCH_REQUEST","START_MATCH_RESPONSE");
+
+		if (!result) {
+			showNotification("No response from server");
+			return ;
+		}
+		showNotification(result.msg);
+		if (result.status !== 200 && result.status !== 202)
+			return ;
+		if (result.target as string !== getDisplaySide()) {
+			setDisplaySide(result.target as string);
+			mirrorCanvas();
+		}
+		show(exitMatchButton);
+		if (result.status === 200)
+			setMatchMode("single");
+		else if (result.status === 202)
+			setMatchMode("dual");
+		initKeyHandling();
+	}
+	catch {
+	
+		showNotification("Failed to start match");
+	}
+};
+
+exitMatchButton.onclick = async () => {
+
+	hide(exitMatchButton);
+	try {
+
+		const result = await oneTimeEvent("EXIT_MATCH_REQUEST", "EXIT_MATCH_RESPONSE");
+
+		if (!result) {
+			showNotification("No response from server");
+			return ;
+		}
+		showNotification(result.msg);
+		if (result.status !== 200)
+			return ;
+		showMenu();
+	}
+	catch {
+
+		showNotification("Failed to exit match");
+	}
+};
+
+playLocallyButton.onclick = async () => {
+
+	if (!userSocket) {
+		show(loginModal);
+		showNotification("You must sign in in order to continue!!!");
+		return ;
+	}
+	try {
+
+		const result = await oneTimeEvent("PLAY_LOCALLY_REQUEST", "PLAY_LOCALLY_RESPONSE");
+
+		if (!result) {
+			showNotification("No response from server");
+			return ;
+		}
+		showNotification(result.msg);
+		if (result.status !== 200)
+			return ;
+	}
+	catch {
+
+		showNotification("Failed to start local match");
+	}
+};
+
+openCreateTournamentButton.onclick = () => {
+	if (!userSocket) {
+		show(loginModal);
+		showNotification("You must sign in in order to continue!!!");
+		return ;
+	}
+	show(createTournamentModal);
+};
+
+submitTournamentCreationButton.onclick = async () => {
+
+	const alias = aliasTournamentInput.value.trim();
+	const size = tournamentSizeInput.value;
+
+	if (alias.length === 0 || size.length === 0)
+		return ;
+
+	try {
+
+		const result = await oneTimeEvent( "CREATE_TOURNAMENT_REQUEST", "CREATE_TOURNAMENT_RESPONSE", alias, size);
+
+		if (!result) {
+			showNotification("No response from server");
+			return ;
+		}
+
+		if (result.status !== 200) {
+			hide(createTournamentModal);
+			showNotification(result.msg);
+			return ;
+		}
+		showNotification(result.msg);
+		hide(createTournamentModal);
+	}
+	catch {
+
+		showNotification("Failed to create tournament");
+	}
+};
+
+closeCreateTournamentButton.onclick = () => hide(createTournamentModal);
+
+openSearchTournamentButton.onclick = async () => {
+
+	if (!userSocket) {
+		show(loginModal);
+		showNotification("You must sign in in order to continue!!!");
+		return ;
+	}
+	try {
+
+		const result = await oneTimeEvent( "SEARCH_TOURNAMENT_REQUEST", "SEARCH_TOURNAMENT_RESPONSE");
+
+		if (!result) {
+			showNotification("No response from server");
+			return ;
+		}
+		if (result.status !== 200) {
+			showNotification(result.msg);
+			hide(searchTournamentsModal);
+			return ;
+		}
+		const joinButtons = renderTournamentList(result.target as TournamentInfo[]);
+		show(searchTournamentsModal);
 		for (const btn of joinButtons) {
-			const target = btn.dataset.username!;
 
-			btn.onclick = () => {
+			const id = btn.dataset.id!;
+			const alias = "lolxd";
 
-				if (!userSocket || userSocket.readyState !== WebSocket.OPEN) {
-					userSocket!.onopen = () => joinMatch(userSocket!, target);
-				} else {
-					joinMatch(userSocket!, target);
+			btn.onclick = async () => {
+
+				try {
+					const joinResult = await oneTimeEvent("JOIN_TOURNAMENT_REQUEST", "JOIN_TOURNAMENT_RESPONSE", id, alias);
+
+					if (!joinResult) {
+						showNotification("No response from server");
+						return ;
+					}
+					showNotification(joinResult.msg);
+					if (joinResult.status !== 200) {
+						hide(searchTournamentsModal);
+						return ;
+					}
+					hide(searchTournamentsModal);
 				}
-				hide(activeMatchesModal);
+				catch {
+
+					showNotification("Failed to join tournament");
+				}
 			};
 		}
-		show(activeMatchesModal);
-	});
+	}
+	catch {
+		showNotification("Failed to search tournaments");
+	}
 };
 
-startMatchButton.onclick = () => {
+closeSearchTournamentButton.onclick = () => hide(searchTournamentsModal);
 
-	if (!userSocket || userSocket.readyState !== WebSocket.OPEN) {
-		alert("WebSocket not ready. Try again in a moment.");
+notificationAcceptButton.onclick = async () => {
+
+	try {
+
+		hide(notificationAcceptButton);
+		const result = await oneTimeEvent("REPLY_INVITE_REQUEST","REPLY_INVITE_RESPONSE", getInviteFrom(), "yes");
+
+		if (!result) {
+			showNotification("No response from server");
+			return ;
+		}
+		
+		showNotification(result.msg);
+	}
+	catch {
+
+		showNotification("Failed to reply to invite");
+	}
+};
+
+async function renderRequestLists() {
+
+	try {
+
+		const result = await oneTimeEvent("GET_PENDING_REQUEST", "GET_PENDING_RESPONSE");
+		if (!result || result.status !== 200) {
+			showNotification(result?.msg || "Failed to fetch requests");
+			return;
+		}
+		const joinButtons = renderPendingRequests(result.target as ProfileInfo[]);
+		for (const btn of joinButtons) {
+			btn.onclick = async () => {
+				const username = btn.dataset.username!;
+				try {
+
+					if (btn.textContent === "ACCEPT") {
+						const res = await oneTimeEvent("REPLY_INVITE_REQUEST", "REPLY_INVITE_RESPONSE", username);
+						if (!res) {
+							showNotification("No response from server");
+							return ;
+						}
+						showNotification(res.msg);
+						// if (res.status === 200)
+						// 	showCanvas();
+					}
+					else if (btn.textContent === "X") {
+						const res = await oneTimeEvent("REPLY_INVITE_REQUEST", "REPLY_INVITE_RESPONSE", username, "decline");
+						if (!res) {
+							showNotification("No response from server");
+							return ;
+						}
+						showNotification(res.msg);
+					}
+				} catch {
+					showNotification("Failed to reply to invite");
+				}
+			}
+
+		};
+	}
+	catch {
+
+		showNotification("Error fetching pending requests");
+	}
+}
+
+(async () => {
+	const urlParams = new URLSearchParams(window.location.search);
+
+    const error = urlParams.get('error_google');
+
+	if (error === 'email_exists_different_provider') {
+        showNotification("Email already registered with password (not Google).");
+        window.history.replaceState({}, document.title, "/");
+    }
+
+	if (error === 'user_login') {
+        showNotification("Login Error: User already connected or internal error.");
+        window.history.replaceState({}, document.title, "/");
+    }
+
+    const restored = await restoreSession();
+
+    if (restored) {
+        startTokenValidationInterval();
+    } else {
+        console.log("No hay sesión activa");
+    }
+})();
+
+export async function getProfileInfo(reset: boolean) {
+
+	if (reset === true) {
+		updateProfileUI("PONG", "ft_transcendence.pong.com");
 		return;
 	}
-	show(waitingPlayers);
-    playerJoinedMatch(userSocket!).then((joined_status) => {
-    	if (joined_status === 0) {
-    		hide(waitingPlayers);
-    		// hide(createMatchButton);
-    	}
-    	else if (joined_status === 1) {
-    		alert("idk, error");
-    	}
-    });
+	try {
 
-	sendKeyPressEvents(userSocket!);
-	drawGame(userSocket!, canvas!, paddle!);
-};
+		const result = await oneTimeEvent("INFO_REQUEST", "INFO_RESPONSE");
+		if (!result || result.status !== 200 || !result.target)
+			return ;
+        show(logoutButton);
+
+		const info = result.target as ProfileInfo;
+		updateProfileUI(info.display_name, info.username);
+
+	}
+	catch {
+
+		showNotification("Failed to fetch personal data from server");
+	}
+	
+}

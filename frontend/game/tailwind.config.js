@@ -5,7 +5,11 @@ module.exports = {
     './public/**/*.{js,html}'
   ],
   theme: {
-    extend: {},
-  },
+      extend: {
+        fontFamily: {
+          block: ['BlockFont', 'sans-serif'],
+        },
+      },
+    },
   plugins: [],
 };
