@@ -13,6 +13,7 @@ import {
   updateOpponentUI,
   exitMatchButton,
   startMatchButton,
+  showNotification,
 } from "./ui.js";
 
 let aiDifficulty = 3; // Difficulty level from 1 (easiest) to 5 (hardest)
@@ -44,6 +45,8 @@ let aiOpponentSpeed = aiOpponentSpeedSlow;
 let aiLastHit: "player" | "ai" | null = null;
 let aiTargetY: number | null = null;
 let aiHasTarget = false;
+
+const AI_SCORE_MAX = 5;
 
 const aiPlayerKeys = { up: false, down: false };
 const aiOpponentKeys = { up: false, down: false };
@@ -210,12 +213,52 @@ function stepAiPhysics(dt: number): void {
     const scores = getSCORES();
     setSCORES(scores[0], scores[1] + 1);
     resetAiBall(1);
+    checkAiWin();
   }
   if (aiBallX > canvas.width) {
     const scores = getSCORES();
     setSCORES(scores[0] + 1, scores[1]);
     resetAiBall(-1);
+    checkAiWin();
   }
+}
+
+function checkAiWin(): void {
+  const [aiScore, playerScore] = getSCORES();
+  if (aiScore >= AI_SCORE_MAX || playerScore >= AI_SCORE_MAX) {
+    finishAiMatch(playerScore >= AI_SCORE_MAX ? "player" : "ai");
+  }
+}
+
+async function saveAiMatch(
+  playerScore: number,
+  aiScore: number,
+): Promise<void> {
+  try {
+    await fetch("/api/match-result", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        scorePlayer: playerScore,
+        scoreOpponent: aiScore,
+        opponentId: null,
+      }),
+    });
+  } catch {
+    // ignore
+  }
+}
+
+function finishAiMatch(winner: "player" | "ai"): void {
+  const [aiScore, playerScore] = getSCORES();
+  stopAiMode();
+  hide(exitMatchButton);
+  showNotification(
+    winner === "player" ? "You won against AI!" : "AI won the match.",
+  );
+  saveAiMatch(playerScore, aiScore);
+  setSCORES(0, 0);
 }
 
 function aiRenderFrame(now: number): void {

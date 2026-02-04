@@ -91,10 +91,13 @@ import { userSocket, restoreSession } from "./websocket.js";
 
 import { oneTimeEvent, setMatchMode, initKeyHandling } from "./events.js";
 import { startAiMode, stopAiMode, isAiModeActive } from "./ai.js";
+import { initStatsDashboard, loadDashboard } from "./stats.js";
 
 googleLoginButton.onclick = () => {
   window.location.href = "/auth/google";
 };
+
+initStatsDashboard();
 
 menuButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -109,6 +112,9 @@ menuButtons.forEach((button) => {
     });
     if (targetId === "request_list") {
       renderRequestLists();
+    }
+    if (targetId === "stats_list") {
+      loadDashboard();
     }
   });
 });

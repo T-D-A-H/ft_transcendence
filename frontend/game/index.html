@@ -148,60 +148,101 @@
                   </button>
                 </div>
 
-                <!-- stats (FALSOS de MOMENTO)-->
-                <div id="stats_list" class="pong-list w-[320px] hidden">
-                  <div class="pong-box">
-                    <div class="pong-list-box-name-msg">
-                      <span id="username">Local Games</span>
+                <!-- stats dashboard -->
+                <div id="stats_list" class="pong-list w-[380px] hidden">
+                  <div class="grid grid-cols-3 items-center mb-2">
+                    <div></div>
+                    <div class="pong-font text-[10px] text-center">
+                      DASHBOARD
                     </div>
-                    <div class="flex gap-1 shrink-0">
-                      <button class="pong-list-box-button pong-font">
-                        214
+                    <div class="flex justify-end">
+                      <button
+                        id="stats_refresh_button"
+                        class="pong-button active-border px-2 py-0.5 text-[7px]"
+                      >
+                        REFRESH
                       </button>
                     </div>
                   </div>
-                  <div class="pong-box">
-                    <div class="pong-list-box-name-msg">
-                      <span id="username">Local Games Won</span>
+
+                  <div class="grid gap-2">
+                    <div class="pong-box">
+                      <div class="pong-list-box-name-msg text-center w-full">
+                        <span class="w-full text-center">Player</span>
+                        <span class="w-full text-center">Summary</span>
+                      </div>
+                      <div
+                        class="grid grid-cols-2 gap-2 mt-2 text-[8px] leading-tight text-[color:var(--pong-white)]"
+                      >
+                        <div
+                          class="flex items-center justify-between gap-2 min-w-0"
+                        >
+                          <span class="truncate pong-font text-[5px]">Matches</span>
+                          <span id="stats_total_games" class="pong-font"
+                            >0</span
+                          >
+                        </div>
+                        <div
+                          class="flex items-center justify-between gap-2 min-w-0"
+                        >
+                          <span class="truncate pong-font text-[5px]">Win rate</span>
+                          <span id="stats_win_rate" class="pong-font">0%</span>
+                        </div>
+                        <div
+                          class="flex items-center justify-between gap-2 min-w-0"
+                        >
+                          <span class="truncate pong-font text-[5px]">Current streak</span>
+                          <span id="stats_streak" class="pong-font">0</span>
+                        </div>
+                        <div
+                          class="flex items-center justify-between gap-2 min-w-0"
+                        >
+                          <span class="truncate pong-font text-[5px]">Best streak</span>
+                          <span id="stats_best_streak" class="pong-font"
+                            >0</span
+                          >
+                        </div>
+                        <div
+                          class="flex items-center justify-between gap-2 min-w-0"
+                        >
+                          <span class="truncate pong-font text-[5px]">Tournaments</span>
+                          <span id="stats_tournaments" class="pong-font"
+                            >0</span
+                          >
+                        </div>
+                        <div
+                          class="flex items-center justify-between gap-2 min-w-0"
+                        >
+                          <span class="truncate pong-font text-[5px]"
+                            >Tournaments won</span
+                          >
+                          <span id="stats_tournaments_won" class="pong-font"
+                            >0</span
+                          >
+                        </div>
+                      </div>
                     </div>
-                    <div class="flex gap-1 shrink-0">
-                      <button class="pong-list-box-button pong-font">
-                        184
-                      </button>
+
+                    <div class="pong-box">
+                      <div class="pong-list-box-name-msg ">
+                        <span>Wins vs losses</span>
+                      </div>
+                      <canvas
+                        id="stats_winloss_chart"
+                        width="320"
+                        height="120"
+                        class="w-full"
+                      ></canvas>
                     </div>
-                  </div>
-                  <div class="pong-box">
-                    <div class="pong-list-box-name-msg">
-                      <span id="username">Online Games</span>
-                    </div>
-                    <div class="flex gap-1 shrink-0">
-                      <button class="pong-list-box-button pong-font">
-                        127
-                      </button>
-                    </div>
-                  </div>
-                  <div class="pong-box">
-                    <div class="pong-list-box-name-msg">
-                      <span id="username">Online Games Won</span>
-                    </div>
-                    <div class="flex gap-1 shrink-0">
-                      <button class="pong-list-box-button pong-font">76</button>
-                    </div>
-                  </div>
-                  <div class="pong-box">
-                    <div class="pong-list-box-name-msg">
-                      <span id="username">Tournaments</span>
-                    </div>
-                    <div class="flex gap-1 shrink-0">
-                      <button class="pong-list-box-button pong-font">29</button>
-                    </div>
-                  </div>
-                  <div class="pong-box">
-                    <div class="pong-list-box-name-msg">
-                      <span id="username">Tournaments Won</span>
-                    </div>
-                    <div class="flex gap-1 shrink-0">
-                      <button class="pong-list-box-button pong-font">8</button>
+
+                    <div class="pong-box">
+                      <div class="pong-list-box-name-msg">
+                        <span>Match history</span>
+                      </div>
+                      <div
+                        id="stats_history_list"
+                        class="flex flex-col gap-1 max-h-40 overflow-y-auto pong-scrollbar-hidden text-[8px] text-[color:var(--pong-white)]"
+                      ></div>
                     </div>
                   </div>
                 </div>

@@ -53,6 +53,26 @@ body {
     border-radius: 0;
     min-height: 8px;
   }
+
+  .pong-scrollbar-hidden {
+    scrollbar-width: none;
+    scrollbar-color: transparent transparent;
+  }
+
+  .pong-scrollbar-hidden::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  #stats_history_list {
+    scrollbar-width: none;
+    scrollbar-color: transparent transparent;
+  }
+
+  #stats_history_list::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
 }
 @keyframes scanline {
   0% {
