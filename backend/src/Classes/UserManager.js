@@ -5,8 +5,9 @@ const Tournament = require("./Tournament.js");
 
 class UserManager {
 
-    constructor() {
+    constructor(db) {
         LOGGER(200, "UserManager", "Constructor", "Called");
+        this.db = db;
         this.users = new Map();
         this.matches = new Map();
         this.tournaments = new Map();
@@ -15,11 +16,36 @@ class UserManager {
 
 //----------------------------------------------------------------------------------------USER
 
+    saveGameStatsToDB(winnerId, loserId, type) {
+        if (!this.db)
+            return;
+
+        let updateWinner = "";
+        let updateLoser = "";
+
+        if (type === "online") {
+            updateWinner = "UPDATE users SET online_played = online_played + 1, online_won = online_won + 1 WHERE id = ?";
+            updateLoser = "UPDATE users SET online_played = online_played + 1 WHERE id = ?";
+            this.db.run(updateLoser, [loserId], (err) => { if(err) console.error(err) });
+        }
+        else if (type === "local") {
+            updateWinner = "UPDATE users SET local_played = local_played + 1, local_won = local_won + 1 WHERE id = ?";
+        }
+        else if (type === "tournament") {
+            updateWinner = "UPDATE users SET tournaments_played = tournaments_played + 1, tournaments_won = tournaments_won + 1 WHERE id = ?";
+        }
+
+        if (updateWinner) {
+            this.db.run(updateWinner, [winnerId], (err) => { 
+                if (err) console.error("Error saving stats:", err); 
+            });
+        }
+    }
+
     isUserConnected(userId) {
         return this.users.has(userId);
     }
 
-    // Método para forzar la desconexión
     forceDisconnect(userId) {
         if (this.users.has(userId)) {
             const userSession = this.users.get(userId);
@@ -44,13 +70,12 @@ class UserManager {
 
         if (record.expiresAt < Date.now()) {
             this.pending2FA.delete(userId);
-            return false; // Código expirado
+            return false;
         }
 
         if (record.code !== Number(code))
             return false;
 
-        // Código correcto, eliminar del registro
         this.pending2FA.delete(userId);
         return true;
     }
@@ -61,8 +86,10 @@ class UserManager {
         const user = new User({
             id: user_id,
             username: user_name,
-			display_name: display_name,
-            socket: user_socket
+            display_name: display_name,
+            socket: user_socket,
+            avatar: avatar,
+            stats: stats
         });
         return (user);
     }
@@ -224,6 +251,8 @@ class UserManager {
     stopMatch(match) {
         LOGGER(200, "UserManager", "stopMatch", "called");
         const tournament = match.getTournament();
+        const winner = match.getWinner();
+        const loser = match.getLoser();
 
         if (tournament !== null) {
 
@@ -238,8 +267,22 @@ class UserManager {
                 loser.unsetTournament();
             }
         }
-        else
+        else{
             match.sendWin(match.getWinner());
+            if (winner) {
+                if (match.locally === true) {
+                    winner.local_played = (winner.local_played || 0) + 1;
+                    winner.local_won = (winner.local_won || 0) + 1;
+                    this.saveGameStatsToDB(winner.id, null, "local");
+                }
+                else if (loser) {
+                    winner.online_played = (winner.online_played || 0) + 1;
+                    winner.online_won = (winner.online_won || 0) + 1;
+                    loser.online_played = (loser.online_played || 0) + 1;
+                    this.saveGameStatsToDB(winner.id, loser.id, "online");
+                }
+            }
+        }
         this.sendDisplaySide(match);
         this.unsetMatches(match);
         this.removeMatch(match);
@@ -318,7 +361,15 @@ class UserManager {
 
         const winner_user = tournament.getWinner();
         if (winner_user === null) return;
+        
         tournament.sendFinalWin(winner_user);
+        
+        if (winner_user) {
+            winner_user.tournaments_played = (winner_user.tournaments_played || 0) + 1;
+            winner_user.tournaments_won = (winner_user.tournaments_won || 0) + 1;
+            this.saveGameStatsToDB(winner_user.id, null, "tournament");
+        }
+
         LOGGER(200, "UserManager", "updateTournaments", "User: " + tournament.players.get(winner_user).alias + " won the game!");
         winner_user.unsetTournament();
     }

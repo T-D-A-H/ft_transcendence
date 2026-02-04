@@ -14,7 +14,7 @@ import {
     changeEmailButton, changeEmailModal, closeChangeEmailButton, submitNewEmailButton, newEmailInput,
     changePasswordButton, changePasswordModal, closeChangePasswordButton, submitNewPasswordButton, oldPasswordInput, newPasswordInput, confirmPasswordInput,
     changeDisplayNameButton, changeDisplayNameModal, closeChangeDisplayNameButton, submitNewDisplayNameButton, newDisplayNameInput,
-    menuModal, topBarProfilePicture
+    menuModal, topBarProfilePicture, updateStatsUI
 } from "./ui.js";
 
 import { changeDisplayName, changeUserName, changeEmail, changePassword} from "./change.js";
@@ -51,6 +51,9 @@ menuButtons.forEach(button => {
 			if (targetId === "request_list") {
 				renderRequestLists();
 			}
+			if (targetId === "stats_list") {
+            	getProfileInfo(false);
+        	}
 	});
 });
 
@@ -223,6 +226,7 @@ exitMatchButton.onclick = async () => {
 		if (result.status !== 200)
 			return ;
 		showMenu();
+		await getProfileInfo(false);
 	}
 	catch {
 
@@ -610,6 +614,8 @@ if (changePasswordButton) {
 	};
 }
 
+
+
 (async () => {
 	const urlParams = new URLSearchParams(window.location.search);
 
@@ -637,6 +643,11 @@ export async function getProfileInfo(reset: boolean) {
 
 	if (reset === true) {
 		updateProfileUI("PONG", "ft_transcendence.pong.com");
+		updateStatsUI({
+            local_played: 0, local_won: 0,
+            online_played: 0, online_won: 0,
+            tournaments_played: 0, tournaments_won: 0
+        });
 		return;
 	}
 	try {
@@ -652,7 +663,9 @@ export async function getProfileInfo(reset: boolean) {
 		if (info.avatar) {
 			topBarProfilePicture.innerHTML = info.avatar;
 		}
-
+		if (info.stats) {
+            updateStatsUI(info.stats);
+        }
 	}
 	catch {
 

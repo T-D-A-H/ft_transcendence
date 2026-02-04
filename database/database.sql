@@ -10,8 +10,14 @@ CREATE TABLE users (
     oauth_provider TEXT DEFAULT NULL,
     oauth_id TEXT DEFAULT NULL,
     avatar TEXT DEFAULT '/uploads/default.png',
-    wins INTEGER DEFAULT 0,
-    losses INTEGER DEFAULT 0,
+    
+    local_played INTEGER DEFAULT 0,
+    local_won INTEGER DEFAULT 0,
+    online_played INTEGER DEFAULT 0,
+    online_won INTEGER DEFAULT 0,
+    tournaments_played INTEGER DEFAULT 0,
+    tournaments_won INTEGER DEFAULT 0,
+
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

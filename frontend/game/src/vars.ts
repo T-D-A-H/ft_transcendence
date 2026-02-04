@@ -7,11 +7,21 @@ export interface TournamentInfo {
     full: boolean;
 }
 
+export interface UserStats {
+    local_played: number;
+    local_won: number;
+    online_played: number;
+    online_won: number;
+    tournaments_played: number;
+    tournaments_won: number;
+}
+
 export interface ProfileInfo {
     id: string;
 	display_name: string;
     username: string;
     avatar?: string;
+    stats: UserStats;
 }
 
 

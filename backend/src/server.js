@@ -7,7 +7,7 @@ const db          			   = require("./init_db.js");
 const saltRounds			   = 12;
 
 const UserManager              = require("./Classes/UserManager.js");
-const userManager = new UserManager();
+const userManager = new UserManager(db);
 const buildGameSocketHandler = require("./game.js");
 const oauthPlugin = require("@fastify/oauth2");
 
@@ -33,7 +33,7 @@ fastify.register(oauthPlugin, {
 	scope: ['email', 'profile']
 });
 
-function setTokenCookie(reply, token, maxAge = 15 * 60 * 1000) {
+function setTokenCookie(reply, token) {
 	reply.setCookie('accessToken', token, {
 		httpOnly: true,      // No accesible desde JS
 		secure: true,        // Solo HTTPS

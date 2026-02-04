@@ -17,7 +17,9 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 		// 1. Buscar usuario en la BD
 		const user = await new Promise((resolve, reject) => {
             db.get(
-                "SELECT id, username, display_name, email, password, twofa, avatar FROM users WHERE username = ?",
+                `SELECT id, username, display_name, email, password, twofa, avatar, 
+                 local_played, local_won, online_played, online_won, tournaments_played, tournaments_won 
+                 FROM users WHERE username = ?`,
                 [cleanUsername],
                 (err, row) => err ? reject(err) : resolve(row)
             );
@@ -58,16 +60,27 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 			// Generar código 2FA (6 dígitos)
 			const code = Math.floor(100000 + Math.random() * 900000);
 
+			const userStats = {
+                local_played: user.local_played || 0,
+                local_won: user.local_won || 0,
+                online_played: user.online_played || 0,
+                online_won: user.online_won || 0,
+                tournaments_played: user.tournaments_played || 0,
+                tournaments_won: user.tournaments_won || 0
+            };
+
 			let player = userManager.getUserByID(user.id);
 			if (!player) {
-				player = new User({
-					id: user.id,
-					username: user.username,
-					display_name: user.display_name,
-					socket: null
-				});
-				userManager.addUser(player);
-			}
+                player = new User({
+                    id: user.id,
+                    username: user.username,
+                    display_name: user.display_name,
+                    socket: null,
+                    avatar: user.avatar,
+                    stats: userStats
+                });
+                userManager.addUser(player);
+            }
 			
 			userManager.set2FACode(user.id, code);
 
@@ -109,11 +122,21 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 			userManager.forceDisconnect(user.id); 
 		}
 
+		const userStats = {
+            local_played: user.local_played || 0,
+            local_won: user.local_won || 0,
+            online_played: user.online_played || 0,
+            online_won: user.online_won || 0,
+            tournaments_played: user.tournaments_played || 0,
+            tournaments_won: user.tournaments_won || 0
+        };
+
 		const newPlayer = new User({
 			id: user.id,
 			username: user.username,
 			display_name: user.display_name,
-			socket: null
+			avatar: user.avatar,
+            stats: userStats
 		});
 
 		userManager.addUser(newPlayer);

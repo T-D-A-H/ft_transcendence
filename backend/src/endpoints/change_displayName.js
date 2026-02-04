@@ -1,5 +1,3 @@
-
-
 function changeDisplayName(userManager, fastify, db ) {
 	return async function (req, reply) {
         const { newName } = req.body;

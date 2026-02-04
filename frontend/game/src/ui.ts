@@ -1,7 +1,7 @@
 
 import { drawGame } from "./draw.js";
 import {TournamentInfo, ProfileInfo} from "./vars.js";
-
+import { UserStats } from "./vars.js";
 
 //------------------------------------------------------------------------OPPONENT
 
@@ -650,11 +650,6 @@ export function mirrorCanvas(): void {
 
 //------------------------------------------------------------------------SETTINGS
 
-//------------------------------------------------------------------------
-// PROFILE EDITING (NUEVO CÓDIGO)
-//------------------------------------------------------------------------
-
-// 1. CHANGE DISPLAY NAME
 export const changeDisplayNameButton = 
     document.getElementById("change_displayname_button") as HTMLButtonElement;
 
@@ -710,21 +705,18 @@ export const confirmPasswordInput =
 export const submitNewPasswordButton = 
     document.getElementById("submit_new_password") as HTMLButtonElement;
 
-// Lógica para abrir/cerrar Display Name
 changeDisplayNameButton.onclick = () => {
-    // Ocultamos el menú principal para enfocar el modal
     hide(menuModal); 
     show(changeDisplayNameModal);
 };
 
 closeChangeDisplayNameButton.onclick = () => {
     hide(changeDisplayNameModal);
-    // Volvemos a mostrar el menú principal al cerrar
     show(menuModal);
 };
 
 
-// Lógica para abrir/cerrar Password
+
 if (changePasswordButton) {
     changePasswordButton.onclick = () => {
         hide(menuModal);
@@ -739,13 +731,30 @@ if (closeChangePasswordButton) {
     };
 }
 
-// 3. ACTUALIZACIÓN CHANGE PROFILE PIC (Ya tenías parte, lo ajustamos)
-// Asegúrate de que al cancelar la selección de avatar, vuelva al menú
 const profilePicCancelButton = document.getElementById("profilepic_cancel_button") as HTMLButtonElement;
 
 if (profilePicCancelButton) {
     profilePicCancelButton.onclick = () => {
         hide(document.getElementById("profilepic_modal") as HTMLDivElement);
-        show(menuModal); // Regresar al menú
+        show(menuModal);
     };
+}
+
+export const statLocalPlayed = document.getElementById("stat_local_played") as HTMLSpanElement;
+export const statLocalWon = document.getElementById("stat_local_won") as HTMLSpanElement;
+export const statOnlinePlayed = document.getElementById("stat_online_played") as HTMLSpanElement;
+export const statOnlineWon = document.getElementById("stat_online_won") as HTMLSpanElement;
+export const statTournPlayed = document.getElementById("stat_tournaments_played") as HTMLSpanElement;
+export const statTournWon = document.getElementById("stat_tournaments_won") as HTMLSpanElement;
+
+export function updateStatsUI(stats: UserStats) {
+    if (!stats)
+		return;
+
+    if (statLocalPlayed) statLocalPlayed.textContent = stats.local_played.toString();
+    if (statLocalWon) statLocalWon.textContent = stats.local_won.toString();
+    if (statOnlinePlayed) statOnlinePlayed.textContent = stats.online_played.toString();
+    if (statOnlineWon) statOnlineWon.textContent = stats.online_won.toString();
+    if (statTournPlayed) statTournPlayed.textContent = stats.tournaments_played.toString();
+    if (statTournWon) statTournWon.textContent = stats.tournaments_won.toString();
 }

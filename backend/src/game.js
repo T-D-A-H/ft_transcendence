@@ -234,11 +234,24 @@ function getInfoRequest(requestingUser, userManager, target) {
 	// 	}});
 	// }
 	// else if (target === userName) {
-		requestingUser.send({type: "INFO_RESPONSE", status: 200, msg: "", target: {
+	requestingUser.send({
+		type: "INFO_RESPONSE", 
+		status: 200, 
+		msg: "", 
+		target: {
 			display_name: requestingUser.getDisplayName(),
 			username: requestingUser.getUsername(),
-			avatar: requestingUser.avatar
-		}});
+			avatar: requestingUser.avatar,
+			stats: {
+				local_played: requestingUser.local_played || 0, 
+				local_won: requestingUser.local_won || 0,
+				online_played: requestingUser.online_played || 0,
+				online_won: requestingUser.online_won || 0,
+				tournaments_played: requestingUser.tournaments_played || 0,
+				tournaments_won: requestingUser.tournaments_won || 0
+			}
+		}
+	});
 	// }
 	// else {
 	// 	requestingUser.send({type: "INFO_RESPONSE", status: 400, msg: "Couldnt get username/display name", target: null});

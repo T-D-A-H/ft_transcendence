@@ -4,7 +4,7 @@ class User {
     
     static SIDE = { LEFT: -1, RIGHT: 1};
 
-    constructor({ id, username, display_name, socket, avatar }) {
+    constructor({ id, username, display_name, socket, avatar, stats }) {
         LOGGER(200, "User", "Constructor", "called for " + username);
 
         this.id = id;
@@ -20,7 +20,17 @@ class User {
         this.displaySide = User.SIDE.RIGHT;
 
         this.avatar = avatar || "&#9865;";
+
+        this.local_played = stats?.local_played || 0;
+        this.local_won = stats?.local_won || 0;
+        this.online_played = stats?.online_played || 0;
+        this.online_won = stats?.online_won || 0;
+        this.tournaments_played = stats?.tournaments_played || 0;
+        this.tournaments_won = stats?.tournaments_won || 0;
     }
+
+    incrementLocalPlayed() { this.local_played++; }
+    incrementLocalWon() { this.local_won++; }
 
     send(message) {
         if (this.socket && this.isConnected) {
