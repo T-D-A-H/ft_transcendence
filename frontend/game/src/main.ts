@@ -48,14 +48,16 @@ menuButtons.forEach(button => {
 			else
 				hide(list);
 		});
-			if (targetId === "request_list") {
-				renderRequestLists();
-			}
-			if (targetId === "stats_list") {
-            	getProfileInfo(false);
-        	}
+		if (targetId === "request_list") {
+			renderRequestLists();
+		}
+		else if (targetId === "stats_list") {
+			getProfileInfo(false);
+		}
 	});
 });
+
+
 
 alreadyHaveAnAccountButton.onclick = () => {
 	hide(registerModal);

@@ -739,7 +739,7 @@ if (profilePicCancelButton) {
         show(menuModal);
     };
 }
-
+// ! ----- STATS -----
 export const statLocalPlayed = document.getElementById("stat_local_played") as HTMLSpanElement;
 export const statLocalWon = document.getElementById("stat_local_won") as HTMLSpanElement;
 export const statOnlinePlayed = document.getElementById("stat_online_played") as HTMLSpanElement;
