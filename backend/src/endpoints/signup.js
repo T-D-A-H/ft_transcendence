@@ -53,12 +53,15 @@ function signupHandler(db, bcrypt, saltRounds, fastify) {
 
 			// Hash de la contraseña
 			const hashed = await bcrypt.hash(password, saltRounds);
+			
+			const defaultAvatar = "&#9865;"; 
 
-			// Insertar usuario con twofa por defecto en 'skip'
 			const userId = await new Promise((resolve, reject) => {
-			db.run(
-				"INSERT INTO users (username, display_name, email, password, twofa, oauth_provider, oauth_id) VALUES (?,?,?,?,?,?,?)",
-				[username, display_name, email, hashed, "skip", null, null],
+				// AÑADIMOS 'avatar' AL INSERT
+				db.run(
+					`INSERT INTO users (username, display_name, email, password, twofa, oauth_provider, oauth_id, avatar) 
+					VALUES (?,?,?,?,?,?,?,?)`,
+					[username, display_name, email, hashed, "skip", null, null, defaultAvatar], // <--- Pasamos el defaultAvatar al final
 					function(err) {
 						if (err) reject(err);
 						else resolve(this.lastID);

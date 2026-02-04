@@ -17,26 +17,33 @@ class UserManager {
 //----------------------------------------------------------------------------------------USER
 
     saveGameStatsToDB(winnerId, loserId, type) {
-        if (!this.db)
-            return;
+        if (!this.db) return;
 
-        let updateWinner = "";
-        let updateLoser = "";
+        let updateQuery = "";
 
         if (type === "online") {
-            updateWinner = "UPDATE users SET online_played = online_played + 1, online_won = online_won + 1 WHERE id = ?";
-            updateLoser = "UPDATE users SET online_played = online_played + 1 WHERE id = ?";
+            const updateWinner = "UPDATE users SET online_played = online_played + 1, online_won = online_won + 1 WHERE id = ?";
+            const updateLoser = "UPDATE users SET online_played = online_played + 1 WHERE id = ?";
+            this.db.run(updateWinner, [winnerId], (err) => { if(err) console.error(err) });
             this.db.run(updateLoser, [loserId], (err) => { if(err) console.error(err) });
+            return;
         }
-        else if (type === "local") {
-            updateWinner = "UPDATE users SET local_played = local_played + 1, local_won = local_won + 1 WHERE id = ?";
+        else if (type === "local_win") {
+            updateQuery = "UPDATE users SET local_played = local_played + 1, local_won = local_won + 1 WHERE id = ?";
         }
-        else if (type === "tournament") {
-            updateWinner = "UPDATE users SET tournaments_played = tournaments_played + 1, tournaments_won = tournaments_won + 1 WHERE id = ?";
+        else if (type === "local_played") {
+            updateQuery = "UPDATE users SET local_played = local_played + 1 WHERE id = ?";
+        }
+        else if (type === "tournament_win") {
+            updateQuery = "UPDATE users SET tournaments_played = tournaments_played + 1, tournaments_won = tournaments_won + 1 WHERE id = ?";
+        }
+        // --- NUEVO CASO ---
+        else if (type === "tournament_played") {
+            updateQuery = "UPDATE users SET tournaments_played = tournaments_played + 1 WHERE id = ?";
         }
 
-        if (updateWinner) {
-            this.db.run(updateWinner, [winnerId], (err) => { 
+        if (updateQuery) {
+            this.db.run(updateQuery, [winnerId], (err) => { 
                 if (err) console.error("Error saving stats:", err); 
             });
         }
@@ -263,6 +270,8 @@ class UserManager {
             tournament.sendWin(winner, loser);
 
             if (loser) {
+                loser.tournaments_played = (loser.tournaments_played || 0) + 1;
+                this.saveGameStatsToDB(loser.id, null, "tournament_played");
                 tournament.sendLose(loser, winner)
                 loser.unsetTournament();
             }
@@ -271,9 +280,14 @@ class UserManager {
             match.sendWin(match.getWinner());
             if (winner) {
                 if (match.locally === true) {
-                    winner.local_played = (winner.local_played || 0) + 1;
-                    winner.local_won = (winner.local_won || 0) + 1;
-                    this.saveGameStatsToDB(winner.id, null, "local");
+                   const loggedUser = match.players[0];
+                    loggedUser.local_played = (loggedUser.local_played || 0) + 1;
+                    if (match.SCORES[1] > match.SCORES[0]) {
+                        loggedUser.local_won = (loggedUser.local_won || 0) + 1;
+                        this.saveGameStatsToDB(loggedUser.id, null, "local_win");
+                    } else {
+                        this.saveGameStatsToDB(loggedUser.id, null, "local_played");
+                    }
                 }
                 else if (loser) {
                     winner.online_played = (winner.online_played || 0) + 1;
@@ -367,7 +381,7 @@ class UserManager {
         if (winner_user) {
             winner_user.tournaments_played = (winner_user.tournaments_played || 0) + 1;
             winner_user.tournaments_won = (winner_user.tournaments_won || 0) + 1;
-            this.saveGameStatsToDB(winner_user.id, null, "tournament");
+            this.saveGameStatsToDB(winner_user.id, null, "tournament_win");
         }
 
         LOGGER(200, "UserManager", "updateTournaments", "User: " + tournament.players.get(winner_user).alias + " won the game!");

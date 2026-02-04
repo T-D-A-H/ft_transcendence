@@ -85,10 +85,6 @@ async function startServer() {
 	const buildSet2FAHandler = require('./endpoints/set2FA.js');
 	fastify.post("/api/set-2fa", buildSet2FAHandler(db, fastify));
 
-	// ✅ Validar token (verificar si sesión activa)
-	const validateToken = require("./endpoints/validateToken.js");
-	fastify.get("/api/validate-token", validateToken(userManager, fastify, setTokenCookie));
-
 	// ✅ Google OAuth - ahora setea cookies
 	const googleCallback = require("./endpoints/googleCallback.js");
 	fastify.get("/auth/google/callback", googleCallback(userManager, fastify, db, setTokenCookie));

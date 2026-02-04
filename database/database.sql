@@ -9,7 +9,7 @@ CREATE TABLE users (
     twofa TEXT DEFAULT 'skip',          
     oauth_provider TEXT DEFAULT NULL,
     oauth_id TEXT DEFAULT NULL,
-    avatar TEXT DEFAULT '/uploads/default.png',
+    avatar TEXT DEFAULT '&#9865;',
     
     local_played INTEGER DEFAULT 0,
     local_won INTEGER DEFAULT 0,
