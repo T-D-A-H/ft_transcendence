@@ -21,11 +21,10 @@ services:
       dockerfile: Dockerfile
     container_name: ft_logstash
     env_file:
-      - .env
+      - ../.env
     environment:
-      - ELASTICSEARCH_USERNAME=logstash_system
-      - ELASTICSEARCH_PASSWORD=${LOGSTASH_SYSTEM_PASSWORD}
-      - LOGSTASH_WRITER_PASSWORD=${LOGSTASH_WRITER_PASSWORD}
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
     volumes:
       - ./Logstash/pipeline:/usr/share/logstash/pipeline
       - ./Logstash/config:/usr/share/logstash/config
@@ -48,7 +47,7 @@ services:
       dockerfile: Dockerfile
     container_name: ft_elasticsearch
     env_file:
-      - .env
+      - ../.env
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=${ES_JAVA_OPTS}
@@ -64,7 +63,7 @@ services:
       - ./Elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - ./Elasticsearch/certs:/usr/share/elasticsearch/config/certs:ro
     ports:
-      - "127.0.0.1:9200:9200"  # Bind to localhost for security
+      - "9200:9200"
     networks:
       - ELK
     restart: unless-stopped
@@ -76,7 +75,7 @@ services:
       dockerfile: Dockerfile
     container_name: ft_kibana
     env_file:
-      - .env
+      - ../.env
     environment:
       - ELASTICSEARCH_USERNAME=kibana_system
       - ELASTICSEARCH_PASSWORD=${KIBANA_SYSTEM_PASSWORD}
@@ -85,7 +84,7 @@ services:
       - ./Elasticsearch/certs:/usr/share/kibana/config/certs:ro
       - kibana_data:/usr/share/kibana/data
     ports:
-      - "127.0.0.1:5601:5601"  # Bind to localhost for security
+      - "5601:5601"
     depends_on:
       - elasticsearch
     networks:

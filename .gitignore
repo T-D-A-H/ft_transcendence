@@ -2,12 +2,13 @@
 /backend/node_modules
 /frontend/game/public
 .env
-<<<<<<< HEAD
 
 # ELK Stack .env & certs
 /ops/ELK/.env
 /ops/ELK/**/*.key
-/ops/ELK/Elasticsearch/certs/**/*.key
+/ops/ELK/**/*.crt
+/ops/ELK/**/*.pem
+/ops/ELK/Elasticsearch/certs/**
 /ops/ELK/Elasticsearch/certs/ca/ca.key
 /ops/ELK/Elasticsearch/certs/ca/ca.srl
 
@@ -29,4 +30,3 @@
 /ops/ELK/Logstash/logs/*.log
 =======
 /frontend/game/styles/tailwind.css
->>>>>>> aa727deff36f6eeeabfd889842fb4a93e7490b1b

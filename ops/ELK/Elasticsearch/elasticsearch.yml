@@ -1,25 +1,13 @@
-
 cluster.name: "elk-cluster"
 network.host: 0.0.0.0
 http.port: 9200
 
-# Enable X-Pack security
+# Enable security for production
 xpack.security.enabled: true
+xpack.security.transport.ssl.enabled: false
+xpack.security.http.ssl.enabled: false
 
-# TLS/SSL configuration for HTTP
-xpack.security.http.ssl.enabled: true
-xpack.security.http.ssl.key: /usr/share/elasticsearch/config/certs/elasticsearch/elasticsearch.key
-xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/certs/elasticsearch/elasticsearch.crt
-xpack.security.http.ssl.certificate_authorities: /usr/share/elasticsearch/config/certs/ca/ca.crt
-xpack.security.http.ssl.verification_mode: certificate
-
-# TLS/SSL configuration for transport
-xpack.security.transport.ssl.enabled: true
-xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/certs/elasticsearch/elasticsearch.key
-xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/certs/elasticsearch/elasticsearch.crt
-xpack.security.transport.ssl.certificate_authorities: /usr/share/elasticsearch/config/certs/ca/ca.crt
-xpack.security.transport.ssl.verification_mode: certificate
+# Enable monitoring
+xpack.monitoring.collection.enabled: true
 
 discovery.type: single-node
-
-xpack.monitoring.collection.enabled: true

@@ -1,4 +1,4 @@
-FROM docker.elastic.co/logstash/logstash:8.11.0
+FROM docker.elastic.co/logstash/logstash:7.17.16
 
 COPY pipeline/ /usr/share/logstash/pipeline/
 COPY config/ /usr/share/logstash/config/
