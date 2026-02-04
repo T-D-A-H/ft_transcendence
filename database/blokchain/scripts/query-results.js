@@ -32,6 +32,7 @@ async function main() {
 	
 	try {
 		const tournament = await contract.getTournament(i);
+		console.log("Tournament ID:", i);
 		console.log("Name:", tournament.tournamentName);
 		console.log("Start Time:", new Date(Number(tournament.startTime) * 1000).toLocaleString());
 		console.log("End Time:", new Date(Number(tournament.endTime) * 1000).toLocaleString());
