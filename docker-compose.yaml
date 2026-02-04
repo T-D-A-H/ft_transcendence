@@ -14,7 +14,6 @@ services:
       - db_data:/data
       - ./database/blokchain/artifacts:/app/blockchain/artifacts:ro
     env_file:
-      - ./backend/.env
       - ./database/blokchain/.env
     depends_on:
       - database

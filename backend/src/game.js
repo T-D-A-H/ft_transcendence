@@ -109,7 +109,7 @@ function playLocalGame(requestingUser, userManager) {
 	}
 }
 
-function createTournamentRequest(requestingUser, userManager, userAlias, tournamentSize) {
+async function createTournamentRequest(requestingUser, userManager, userAlias, tournamentSize) {
 
 	//LOGGER(200, "UserManager", "createTournamentRequest", tournamentSize);
 	const size = Number(tournamentSize);
@@ -126,7 +126,7 @@ function createTournamentRequest(requestingUser, userManager, userAlias, tournam
 	}
 	else {
 
-		userManager.createTournament(requestingUser, userAlias, size);
+		await userManager.createTournament(requestingUser, userAlias, size);
 		requestingUser.send({type: "CREATE_TOURNAMENT_RESPONSE", status: 200, msg: "Tournament created!"});
 	}
 }
@@ -258,7 +258,7 @@ function getPendingRequest(requestingUser) {
 
 
 function handleUserCommands(user, userManager) {
-	user.socket.on("message", (raw) => {
+	user.socket.on("message", async (raw) => {
 
 	    let msg;
 	    try {
@@ -283,7 +283,7 @@ function handleUserCommands(user, userManager) {
 			playLocalGame(user, userManager);
 		}
 		else if (msg.type === "CREATE_TOURNAMENT_REQUEST") {
-			createTournamentRequest(user, userManager, msg.target, msg.target2);
+			await createTournamentRequest(user, userManager, msg.target, msg.target2);
 		}
 		else if (msg.type === "SEARCH_TOURNAMENT_REQUEST") {
 			searchTournamentRequest(user, userManager);

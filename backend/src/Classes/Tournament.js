@@ -21,8 +21,13 @@ class Tournament {
 		this.players = new Map();
 		this.matches = new Map();
 		this.winners = new Map();
+		this.playerScores = new Map(); // Track player scores
 
 		this.TESTING = false;
+		
+		// Blockchain integration
+		this.blockchainId = null;
+		this.blockchainName = null;
 
 	}
 
@@ -100,6 +105,11 @@ class Tournament {
 			return false;
 		this.winners.set(userWhoWon, this.players.get(userWhoWon));
 		this.matchDoneCount++;
+		
+		// Update player score - each win adds 100 points
+		const currentScore = this.playerScores.get(userWhoWon) || 0;
+		this.playerScores.set(userWhoWon, currentScore + 100);
+		
 		return true;
 	}
 
@@ -198,6 +208,19 @@ class Tournament {
 		if (this.winners.length === 0)
 			return (null);
 		return (this.winners);
+	}
+
+	getPlayerScore(user) {
+		return this.playerScores.get(user) || 0;
+	}
+
+	initializePlayerScores() {
+		// Initialize all players with 0 score
+		for (const user of this.players.keys()) {
+			if (!this.playerScores.has(user)) {
+				this.playerScores.set(user, 0);
+			}
+		}
 	}
 
 }

@@ -1,3 +1,6 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../../database/blokchain/.env') });
+
 const Fastify     			   = require("fastify");
 const websocket   			   = require("@fastify/websocket");
 const fastify     			   = Fastify({ logger: true });
@@ -97,6 +100,14 @@ async function startServer() {
 		userManager.updateGames();
 
 	}, FRAMES);
+
+	// Initialize blockchain service
+	try {
+		await userManager.initializeBlockchain();
+		console.log("Blockchain service initialized");
+	} catch (error) {
+		console.log("Blockchain service not available:", error.message);
+	}
 
 	try {
 		await fastify.listen({ port: 3000, host: "0.0.0.0" });

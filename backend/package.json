@@ -12,7 +12,9 @@
     "@fastify/static": "^6.10.2",
     "@fastify/oauth2": "^6.0.0",
     "@fastify/cookie": "^9.0.0",
+    "fastify-jwt": "^4.2.0",
     "sqlite3": "^5.1.6",
+    "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.x",
     "ethers": "^6.9.0",
     "dotenv": "^16.3.1"
