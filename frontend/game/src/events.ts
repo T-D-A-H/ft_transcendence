@@ -188,17 +188,3 @@ function onKeyUp(e: KeyboardEvent): void {
 			sendRequest("MOVE2", { move: "STOP2" });
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
