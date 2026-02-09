@@ -1,0 +1,42 @@
+groups:
+  - name: service_alerts
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute."
+
+      - alert: HighErrorRate
+        expr: rate(prometheus_http_requests_total{code=~"5.."}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }} errors per second on {{ $labels.instance }}."
+
+  - name: performance_alerts
+    interval: 30s
+    rules:
+      - alert: HighMemoryUsage
+        expr: (prometheus_tsdb_storage_blocks_bytes / 1024 / 1024 / 1024) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus storage usage is high"
+          description: "Prometheus storage is using {{ $value }}GB, which exceeds the threshold."
+
+      - alert: SlowQueryRate
+        expr: rate(prometheus_http_request_duration_seconds_sum[5m]) > 1
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow query rate detected"
+          description: "Average query duration is {{ $value }}s on {{ $labels.instance }}."

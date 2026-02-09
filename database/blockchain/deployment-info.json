@@ -1,0 +1,21 @@
+{
+  "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "deployedAt": "2025-12-09T12:59:50.008Z",
+  "network": "localhost",
+  "fuji": {
+    "network": "fuji",
+    "contractAddress": "0x16dfa4CAD50cd84D6cB7476F31B09EAC375420D4",
+    "deployer": "0x85Ac1Ddbde014a05d439e9526ea0C3DbbEe2d98E",
+    "deploymentTime": "2026-02-09T17:05:14.451Z",
+    "blockNumber": 51666122,
+    "chainId": "43113"
+  },
+  "hardhat": {
+    "network": "hardhat",
+    "contractAddress": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "deploymentTime": "2026-02-04T13:10:49.655Z",
+    "blockNumber": 1,
+    "chainId": "31337"
+  }
+}

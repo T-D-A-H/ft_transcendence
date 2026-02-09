@@ -38,6 +38,7 @@ build: # Construir imagenes y borrar huerfanos
 up: # Ejecutar contenedores dettached
 	$(D_COMPOSE) up $(DETTACHED) $(REMOVE_ORPH)
 	$(D_EXEC) $(DETTACHED) $(FRONT_CONTAINER) sh $(FRONT_SCRIPT)
+	$(MAKE) -C ops all
 
 up-logs:  # Ejecutar contenedores con LOGS
 	$(D_COMPOSE) up $(REMOVE_ORPH)
@@ -45,8 +46,10 @@ up-logs:  # Ejecutar contenedores con LOGS
 down: #Tirar contenedores y borrar volumenes
 	rm -rf $(FRONT_TAILWINDCSS)
 	$(D_COMPOSE) down -v --remove-orphans
+	$(MAKE) -C ops clean
 
 fclean: down #Borrar builds antiguos y borrar volumenes
+	$(MAKE) -C ops fclean
 	$(D_SYSTEM) prune -a -f --volumes
 
 re: fclean all

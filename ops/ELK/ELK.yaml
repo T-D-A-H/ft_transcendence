@@ -1,0 +1,103 @@
+
+# need to create game logs
+
+# logs located at /ops/ELK/Logstash/logs will be processed to create graphs in Kibana
+# Access Kibana:        https://localhost:5601 (username: elastic, password: from .env)
+# Access Elasticsearch: https://localhost:9200 (requires authentication)
+# 
+# Kibana dataview needs to be created:
+#  https://localhost:5601/app/management/kibana/dataViews
+#
+# Logstash secure endpoints:
+#  - TCP (TLS):   port 5069
+#  - HTTP (TLS):  port 8080
+#  - Beats (TLS): port 5044
+
+services:
+  # processes and ships logs
+  logstash:
+    build:
+      context: ./Logstash
+      dockerfile: Dockerfile
+    container_name: ft_logstash
+    env_file:
+      - ../.env
+    environment:
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
+    volumes:
+      - ./Logstash/pipeline:/usr/share/logstash/pipeline
+      - ./Logstash/config:/usr/share/logstash/config
+      - ./Logstash/logs:/usr/share/logstash/logs
+      - ./Elasticsearch/certs:/usr/share/logstash/config/certs:ro
+    ports:
+      - "5069:5069"
+      - "8080:8080"
+      - "5044:5044"
+    depends_on:
+      - elasticsearch
+    networks:
+      - ELK
+    restart: unless-stopped
+
+  # indexes + stores logs
+  elasticsearch:
+    build:
+      context: ./Elasticsearch
+      dockerfile: Dockerfile
+    container_name: ft_elasticsearch
+    env_file:
+      - ../.env
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=${ES_JAVA_OPTS}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - xpack.security.enabled=${XPACK_SECURITY_ENABLED}
+      - xpack.monitoring.collection.enabled=${XPACK_MONITORING_ENABLED}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+      - ./Elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./Elasticsearch/certs:/usr/share/elasticsearch/config/certs:ro
+    ports:
+      - "9200:9200"
+    networks:
+      - ELK
+    restart: unless-stopped
+
+  # visualizes logs as graphs
+  kibana:
+    build:
+      context: ./Kibana
+      dockerfile: Dockerfile
+    container_name: ft_kibana
+    env_file:
+      - ../.env
+    environment:
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_SYSTEM_PASSWORD}
+    volumes:
+      - ./Kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - ./Elasticsearch/certs:/usr/share/kibana/config/certs:ro
+      - kibana_data:/usr/share/kibana/data
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - ELK
+    restart: unless-stopped
+
+  # volume for persisting Elasticsearch and Kibana data
+volumes:
+  es_data:
+  kibana_data:
+
+  # network for ELK stack
+networks:
+  ELK:
+    driver: bridge
+

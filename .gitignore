@@ -1,4 +1,32 @@
 /backend/.env
+/backend/node_modules
 /frontend/game/public
 .env
+
+# ELK Stack .env & certs
+/ops/ELK/.env
+/ops/ELK/**/*.key
+/ops/ELK/**/*.crt
+/ops/ELK/**/*.pem
+/ops/ELK/Elasticsearch/certs/**
+/ops/ELK/Elasticsearch/certs/ca/ca.key
+/ops/ELK/Elasticsearch/certs/ca/ca.srl
+
+# monitoring module
+/ops/monitoring/.env
+
+# Certificate private keys
+*.key
+!**/package-lock.json
+!**/yarn.lock
+
+# Elasticsearch data
+/ops/ELK/elasticsearch-data/
+
+# Kibana data
+/ops/ELK/kibana-data/
+
+# Logstash logs
+/ops/ELK/Logstash/logs/*.log
+=======
 /frontend/game/styles/tailwind.css

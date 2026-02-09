@@ -2,6 +2,8 @@ const User = require("./User.js");
 const Match = require("./Match.js");
 const LOGGER = require("../LOGGER.js");
 const Tournament = require("./Tournament.js");
+// AÑADIDO: Importamos el servicio de Blockchain
+const blockchainService = require("../BlockchainService.js");
 
 class UserManager {
 
@@ -15,6 +17,23 @@ class UserManager {
         
         this.userStats = new Map();
         this.matchHistory = new Map();
+        
+        // AÑADIDO: Flags de estado para Blockchain
+        this.blockchainEnabled = false;
+        this.blockchainInitialized = false;
+    }
+
+    // AÑADIDO: Método para inicializar la conexión con Blockchain
+    async initializeBlockchain() {
+        try {
+            await blockchainService.initialize();
+            this.blockchainEnabled = true;
+            this.blockchainInitialized = true;
+            LOGGER(200, "UserManager", "initializeBlockchain", "Blockchain service initialized");
+        } catch (error) {
+            LOGGER(400, "UserManager", "initializeBlockchain", "Failed to initialize blockchain: " + error.message);
+            this.blockchainEnabled = false;
+        }
     }
 
 //----------------------------------------------------------------------------------------USER
@@ -453,11 +472,33 @@ class UserManager {
 
 //----------------------------------------------------------------------------------------TOURNAMENT  
 
-    createTournament(user, alias, size) { 
+    // AÑADIDO: Ahora es async para soportar la llamada a Blockchain
+    async createTournament(user, alias, size) { 
         LOGGER(200, "UserManager", "createTournament", "Called by user alias: " + alias);
         const tournament_id = this.createId();
         const tournament = new Tournament(user, alias, tournament_id, size);
         
+        // --- AÑADIDO: Lógica de creación en Blockchain ---
+        if (this.blockchainEnabled) {
+            try {
+                const tournamentName = `Tournament ${tournament_id} - ${alias}`;
+                const startTime = Math.floor(Date.now() / 1000);
+                const endTime = startTime + (7 * 24 * 60 * 60); // 7 days duration
+                
+                const blockchainId = await blockchainService.createTournament(
+                    tournamentName,
+                    startTime,
+                    endTime
+                );
+                tournament.blockchainId = blockchainId;
+                tournament.blockchainName = tournamentName;
+                LOGGER(200, "UserManager", "createTournament", `Created on blockchain with ID: ${blockchainId}`);
+            } catch (error) {
+                LOGGER(400, "UserManager", "createTournament", "Failed to create on blockchain: " + error.message);
+            }
+        }
+        // -----------------------------------------------
+
         // Sumar tournament_played en DB al crear
         this.incrementTournamentPlayedDB(user.getId());
         
@@ -492,11 +533,75 @@ class UserManager {
         this.tournaments.delete(tournament_id);
     }
 
-    stopTournament(tournament) {
+    // AÑADIDO: Ahora es async para soportar guardado de scores en Blockchain
+    async stopTournament(tournament) {
+
+        const winner_user = tournament.getWinner();
+
+        // --- AÑADIDO: Lógica para guardar scores y finalizar en Blockchain ---
+        if (this.blockchainEnabled && tournament.blockchainId && winner_user !== null) {
+            try {
+                LOGGER(200, "UserManager", "stopTournament", "Saving tournament results to blockchain...");
+                console.log("\n" + "=".repeat(70));
+                console.log("BLOCKCHAIN TRANSACTION - SAVING TOURNAMENT RESULTS");
+                console.log("=".repeat(70));
+                console.log(`Tournament: ${tournament.blockchainName}`);
+                console.log(`Blockchain ID: ${tournament.blockchainId}`);
+                console.log("");
+                
+                const txHashes = [];
+                
+                // Record all player scores
+                console.log("Recording player scores:");
+                for (const [user, playerData] of tournament.players.entries()) {
+                    try {
+                        // Convert user ID to valid Fuji Testnet address (relleno con ceros)
+                        const userId = user.id.toString().replace(/[^a-f0-9]/gi, '').substring(0, 40);
+                        const playerAddress = '0x' + userId.padStart(40, '0');
+                        // Aseguramos que getPlayerScore exista, si no 0
+                        const score = (typeof tournament.getPlayerScore === 'function') ? tournament.getPlayerScore(user) : 0;
+                        
+                        const result = await blockchainService.recordScore(
+                            tournament.blockchainId,
+                            playerAddress,
+                            playerData.alias,
+                            score
+                        );
+                        txHashes.push({ type: 'score', player: playerData.alias, tx: result.transactionHash });
+                        console.log(`${playerData.alias}: ${score} points - TX: ${result.transactionHash}`);
+                        LOGGER(200, "UserManager", "stopTournament", `Recorded score for ${playerData.alias}: ${score}`);
+                    } catch (error) {
+                        console.log(`✗ ${playerData.alias}: Failed - ${error.message}`);
+                        LOGGER(400, "UserManager", "stopTournament", `Failed to record score for ${playerData.alias}: ${error.message}`);
+                    }
+                }
+                console.log("");
+
+                // Finalize tournament on blockchain
+                console.log("Finalizing tournament...");
+                const finalizeResult = await blockchainService.finalizeTournament(tournament.blockchainId);
+                txHashes.push({ type: 'finalize', tx: finalizeResult.transactionHash });
+                console.log(`Tournament finalized! TX: ${finalizeResult.transactionHash}`);
+                LOGGER(200, "UserManager", "stopTournament", `Tournament ${tournament.blockchainId} finalized`);
+                console.log("");
+                
+                // Get and log final results (verificación)
+                const results = await blockchainService.getTournamentResults(tournament.blockchainId);
+                console.log("FINAL RANKINGS (verified on blockchain):");
+                results.rankings.forEach((player, index) => {
+                    const medal = index === 0 ? "1. " : index === 1 ? "2. " : index === 2 ? "3. " : "  ";
+                    console.log(`${medal} ${index + 1}. ${player.playerName.padEnd(20)} - ${player.score} points`);
+                });
+                console.log("=".repeat(70) + "\n");
+            } catch (error) {
+                console.log(`\n✗ Failed to save to blockchain: ${error.message}\n`);
+                LOGGER(400, "UserManager", "stopTournament", "Failed to save to blockchain: " + error.message);
+            }
+        }
+        // ---------------------------------------------------------------------
 
         this.removeTournament(tournament.getId());
 
-        const winner_user = tournament.getWinner();
         if (winner_user === null) return;
         
         tournament.sendFinalWin(winner_user);
@@ -537,6 +642,11 @@ class UserManager {
 
     createNewTournamentMatches(playerMap, tournament) {
         LOGGER(200, "UserManager", "createNewTournamentMatches", "Called");
+        
+        if (tournament.matchDoneCount === 0 && typeof tournament.initializePlayerScores === 'function') {
+            tournament.initializePlayerScores();
+        }
+
         const players = Array.from(playerMap.keys());
 
         for (let i = 0; i < players.length; i += 2) {

@@ -1,204 +1,221 @@
-
 const LOGGER = require("../LOGGER.js");
 const Match = require("./Match.js");
 
 class Tournament {
 
-    constructor(creatorUser, creatorAlias = null, tournament_id, size) { LOGGER(200, "Tournament", "Constructor", "Called");
+    constructor(creatorUser, creatorAlias = null, tournament_id, size) { 
+        LOGGER(200, "Tournament", "Constructor", "Called");
 
-		this.id = tournament_id;
-		this.maxPlayers = size;
-		this.currentPlayerCount = 0;
-		this.matchDoneCount = 0;
+        this.id = tournament_id;
+        this.maxPlayers = size;
+        this.currentPlayerCount = 0;
+        this.matchDoneCount = 0;
 
-		this.creator = creatorUser;
-		this.creatorAlias = (creatorAlias === null) ? "Anonymous" : creatorAlias;
+        this.creator = creatorUser;
+        this.creatorAlias = (creatorAlias === null) ? "Anonymous" : creatorAlias;
 
-		this.isWaiting = true;
-		this.isReady = false;
-		this.WINNER = null;
-		
-		this.players = new Map();
-		this.matches = new Map();
-		this.winners = new Map();
+        this.isWaiting = true;
+        this.isReady = false;
+        this.WINNER = null;
+        
+        this.players = new Map();
+        this.matches = new Map();
+        this.winners = new Map();
 
-		this.TESTING = false;
+        // --- AÑADIDO: Soporte para Blockchain y Puntuaciones ---
+        this.playerScores = new Map(); // Mapa para rastrear puntos de cada jugador
+        this.blockchainId = null;
+        this.blockchainName = null;
+        // -----------------------------------------------------
 
-	}
+        this.TESTING = false;
+    }
 
-	setTESTING() {
-		this.TESTING = true;
-	}
-	
-	sendMsg(user, msg) {
+    setTESTING() {
+        this.TESTING = true;
+    }
+    
+    sendMsg(user, msg) {
+        if (!user || user.isConnected === false || !user.socket) return ;
+        const data = JSON.stringify(msg);
+        user.socket.send(data);
+    }
 
-		if (!user || user.isConnected === false || !user.socket) return ;
-		const data = JSON.stringify(msg);
+    sendWin(user, loserUser) {
+        let loserEntry = this.getPlayerAlias(loserUser);
+        if (!loserEntry) {
+            loserEntry = "Anonymous";
+        }
+        const loser = loserEntry.alias;
+        this.sendMsg(user, {type: "WIN", msg: "You Won the tournament game against " + loser + "."});
+    }
 
-		user.socket.send(data);
-	}
+    sendLose(user, winnerUser) {
+        let winnerEntry = this.getPlayerAlias(winnerUser);
+        if (!winnerEntry)
+            winnerEntry = "Anonymous";
+        const winner = winnerEntry.alias;
+        LOGGER(200, "Tournament", "sendLose", winner + " Won the tournament game.");
+        this.sendMsg(user, { type: "WIN", msg: winner + " Won the tournament game."});
+    }
 
-	sendWin(user, loserUser) {
+    sendFinalWin(user) {
+        LOGGER(200, "Tournament", "sendFinalWin", "You won the tournament!" );
+        this.sendMsg(user, { type: "WIN", msg: "You won the tournament!" });
+    }
 
-		let loserEntry = this.getPlayerAlias(loserUser);
+    sendMatchStart(user, user2) {
+        LOGGER(200, "Tournament", "sendMatchStart", "Playing against " + this.getPlayerAlias(user2).alias + ".");
+        this.sendMsg(user, { type: "NOTIFICATION", msg: "Playing against " + this.getPlayerAlias(user2).alias + "."})
+    }
 
-		if (!loserEntry) {
-			loserEntry = "Anonymous";
-		}
+    addUserToTournament(requestingUser, user_alias) { 
+        LOGGER(200, "Tournament", "addUserToTournament", "Added user: " + user_alias);
+        
+        if (this.players.size >= this.maxPlayers) { 
+            LOGGER(400, "Tournament", "addUserToTournament", "Tournament already full.");
+            return (false);
+        }
+        this.players.set(requestingUser, {alias: user_alias});
+        this.currentPlayerCount++;
+        return (true);
+    }
 
-		const loser = loserEntry.alias;
-		this.sendMsg(user, {type: "WIN", msg: "You Won the tournament game against " + loser + "."});
-	}
+    removeUserFromTournament(requestingUser) { 
+        LOGGER(200, "Tournament", "removeUserFromTournament", "Removed user: " + this.players.values(requestingUser));
+        this.currentPlayerCount--;
+        this.players.delete(requestingUser);
+    }
 
-	sendLose(user, winnerUser) {
-		let winnerEntry = this.getPlayerAlias(winnerUser);
-		if (!winnerEntry)
-			winnerEntry = "Anonymous";
-		const winner = winnerEntry.alias;
-		LOGGER(200, "Tournament", "sendLose", winner + " Won the tournament game.");
-		this.sendMsg(user, { type: "WIN", msg: winner + " Won the tournament game."});
-	}
+    deleteWinner(user) {
+        if (!user) return ;
+        this.winners.delete(user);
+    }
 
-	sendFinalWin(user) {
-		LOGGER(200, "Tournament", "sendFinalWin", "You won the tournament!" );
-		this.sendMsg(user, { type: "WIN", msg: "You won the tournament!" });
-	}
+    updateWinner(requestedMatch, userWhoWon) { 
+        LOGGER(200, "Tournament", "updateWinner", "Called");
 
-	sendMatchStart(user, user2) {
-		LOGGER(200, "Tournament", "sendMatchStart", "Playing against " + this.getPlayerAlias(user2).alias + ".");
-		this.sendMsg(user, { type: "NOTIFICATION", msg: "Playing against " + this.getPlayerAlias(user2).alias + "."})
-	}
+        const match = this.matches.get(requestedMatch);
+        if (!match)
+            return false;
+        
+        this.winners.set(userWhoWon, this.players.get(userWhoWon));
+        this.matchDoneCount++;
 
+        // --- AÑADIDO: Actualizar puntuación ---
+        // Cada victoria suma 100 puntos. Esto se usará para grabar en la blockchain al final.
+        const currentScore = this.playerScores.get(userWhoWon) || 0;
+        this.playerScores.set(userWhoWon, currentScore + 100);
+        // --------------------------------------
 
+        return true;
+    }
 
+    prepareNextRound() { 
+        LOGGER(200, "Tournament", "prepareNextRound", "Called");
 
-	addUserToTournament(requestingUser, user_alias) { LOGGER(200, "Tournament", "addUserToTournament", "Added user: " + user_alias);
+        const nextPlayers = new Map(this.winners);
 
-		
-		if (this.players.size >= this.maxPlayers) { LOGGER(400, "Tournament", "addUserToTournament", "Tournament already full.");
-			return (false);
-		}
-		this.players.set(requestingUser, {alias: user_alias});
-		this.currentPlayerCount++;
-		return (true);
-	}
+        this.matches.clear();
+        this.winners.clear();
+        this.matchDoneCount = 0;
+        if (nextPlayers.size === 1) {
+            const entry = nextPlayers.keys().next().value;
+            this.WINNER = entry;
+        }
+        return (nextPlayers);
+    }
 
-	removeUserFromTournament(requestingUser) { LOGGER(200, "Tournament", "removeUserFromTournament", "Removed user: " + this.players.values(requestingUser));
-		this.currentPlayerCount--;
-		this.players.delete(requestingUser);
-	}
+    isRoundFinished() {
+        return  (this.matchDoneCount === this.matches.size && this.getIsReady() === true);
+    }
 
-	deleteWinner(user) {
-		if (!user) return ;
-		this.winners.delete(user);
-	}
+    getWinner() {
+        return (this.WINNER);
+    }
 
-	updateWinner(requestedMatch, userWhoWon) { LOGGER(200, "Tournament", "updateWinner", "Called");
+    getIfTournamentFull() {
+        return (this.players.size === this.maxPlayers);
+    }
 
-		const match = this.matches.get(requestedMatch);
-		if (!match)
-			return false;
-		this.winners.set(userWhoWon, this.players.get(userWhoWon));
-		this.matchDoneCount++;
-		return true;
-	}
+    isWaitingAndFull() {
+        if (this.currentPlayerCount === this.maxPlayers && this.TESTING === true)
+            return (true);
+        if (this.isWaiting === true && this.getIfTournamentFull()) {
+            return (true);
+        }
+        return (false);
+    }
 
-	prepareNextRound() { LOGGER(200, "Tournament", "prepareNextRound", "Called");
-
-		
-		const nextPlayers = new Map(this.winners);
-
-		this.matches.clear();
-		this.winners.clear();
-		this.matchDoneCount = 0;
-		if (nextPlayers.size === 1) {
-			const entry = nextPlayers.keys().next().value;
-			this.WINNER = entry;
-		}
-		return (nextPlayers);
-	}
-
-	isRoundFinished() {
-
-		return  (this.matchDoneCount === this.matches.size && this.getIsReady() === true);
-	}
-
-	getWinner() {
-		
-	    return (this.WINNER);
-	}
-
-	getIfTournamentFull() {
-		return (this.players.size === this.maxPlayers);
-	}
-
-	isWaitingAndFull() {
-
-		if (this.currentPlayerCount === this.maxPlayers && this.TESTING === true)
-			return (true);
-		if (this.isWaiting === true && this.getIfTournamentFull()) {
-			return (true);
-		}
-		return (false);
-	}
-
-	setReady() {
-
-		this.isWaiting = false;
-		this.isReady = true;
-	}
-
-	unsetReady() {
-		this.isReady = false;
+    setReady() {
         this.isWaiting = false;
-	}
+        this.isReady = true;
+    }
 
-	getPlayers() {
-		return (this.players);
-	}
+    unsetReady() {
+        this.isReady = false;
+        this.isWaiting = false;
+    }
 
-	getIsReady() {
-		return (this.isReady);
-	}
+    getPlayers() {
+        return (this.players);
+    }
 
-	getTournamentId() {
-		return (this.id);
-	}
+    getIsReady() {
+        return (this.isReady);
+    }
 
-	getIsWaiting() {
-		return (this.isWaiting);
-	}
+    getTournamentId() {
+        return (this.id);
+    }
 
-	getTournamentSize() {
-		return (this.maxPlayers);
-	}
+    getIsWaiting() {
+        return (this.isWaiting);
+    }
 
-	getCurrentSize() {
-		return (this.currentPlayerCount);
-	}
+    getTournamentSize() {
+        return (this.maxPlayers);
+    }
 
-	getCreator() {
-		return (this.creator);
-	}
+    getCurrentSize() {
+        return (this.currentPlayerCount);
+    }
 
-	getCreatorAlias() {
-		return (this.creatorAlias);
-	}
+    getCreator() {
+        return (this.creator);
+    }
 
-	getId() {
-		return (this.id);
-	}
+    getCreatorAlias() {
+        return (this.creatorAlias);
+    }
 
-	getPlayerAlias(user) {
+    getId() {
+        return (this.id);
+    }
 
-		return (this.players.get(user));
-	}
+    getPlayerAlias(user) {
+        return (this.players.get(user));
+    }
 
-	getWinners() {
-		if (this.winners.length === 0)
-			return (null);
-		return (this.winners);
-	}
+    getWinners() {
+        if (this.winners.length === 0)
+            return (null);
+        return (this.winners);
+    }
+
+    
+    getPlayerScore(user) {
+        return this.playerScores.get(user) || 0;
+    }
+
+    initializePlayerScores() {
+        for (const user of this.players.keys()) {
+            if (!this.playerScores.has(user)) {
+                this.playerScores.set(user, 0);
+            }
+        }
+    }
+
 
 }
 
