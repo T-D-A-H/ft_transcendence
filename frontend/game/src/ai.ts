@@ -242,13 +242,11 @@ async function saveAiMatch(
       body: JSON.stringify({
         scorePlayer: playerScore,
         scoreOpponent: aiScore,
-        opponentId: null, // ✅ NULL para IA
+        opponentId: null,
       }),
     });
     
-    // ✅ AÑADIR: Disparar evento personalizado para actualizar stats
-    window.dispatchEvent(new Event("match-finished"));
-    
+
   } catch (error) {
     console.error("Error saving AI match:", error);
   }

@@ -25,7 +25,11 @@ module.exports = function buildMatchResultHandler(db, fastify) {
 
     const userId = decoded.id;
     const userWon = playerScore > oppScore;
-    const winnerId = userWon ? userId : (oppId ? oppId : userId);
+    
+
+    const winnerId = isAi 
+      ? (userWon ? userId : null)
+      : (userWon ? userId : oppId);
 
     const runQuery = (query, params) => {
         return new Promise((resolve, reject) => {
@@ -49,12 +53,6 @@ module.exports = function buildMatchResultHandler(db, fastify) {
                 updateQuery = "UPDATE users SET local_played = local_played + 1, local_won = local_won + 1 WHERE id = ?";
             } else {
                 updateQuery = "UPDATE users SET local_played = local_played + 1 WHERE id = ?";
-            }
-        } else {
-            if (userWon) {
-                updateQuery = "UPDATE users SET online_played = online_played + 1, online_won = online_won + 1 WHERE id = ?";
-            } else {
-                updateQuery = "UPDATE users SET online_played = online_played + 1 WHERE id = ?";
             }
         }
 

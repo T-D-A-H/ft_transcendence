@@ -22,7 +22,6 @@ export function initializeWebSocket() {
             ConstantEvent("MIRROR");
             ConstantEvent("SCORES");
             ConstantEvent("DRAW");
-            ConstantEvent("MATCH_SAVED");
             userSocket = ws;
             if (pingInterval)
                 clearInterval(pingInterval);

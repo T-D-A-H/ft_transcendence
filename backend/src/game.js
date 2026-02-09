@@ -289,15 +289,7 @@ function joinTournamentRequest(
       200,
       "server",
       "joinTournamentRequest",
-      "tournament found: " +
-        "\nid: " +
-        tournament.getTournamentId() +
-        "\ncreator: " +
-        tournament.getCreatorAlias() +
-        "\ncurrent_size: " +
-        tournament.getCurrentSize() +
-        "\nmax_size: " +
-        tournament.getTournamentSize()
+      "tournament found: " + tournament.getTournamentId()
     );
 
     if (
@@ -326,21 +318,6 @@ function joinTournamentRequest(
         "/" +
         tournament.getTournamentSize(),
     });
-
-    LOGGER(
-      200,
-      "server",
-      "joinTournamentRequest",
-      "JOINED TOUrnament" +
-        "\nid: " +
-        tournament.getTournamentId() +
-        "\ncreator: " +
-        tournament.getCreatorAlias() +
-        "\ncurrent_size: " +
-        tournament.getCurrentSize() +
-        "\nmax_size: " +
-        tournament.getTournamentSize()
-    );
   }
 }
 
@@ -349,8 +326,6 @@ function exitMatchRequest(requestingUser, userManager) {
   const tournament = requestingUser.getCurrentTournament();
 
   if (match === null && tournament === null) {
-    if (tournament === null)
-      LOGGER(400, "game.js", "exitMatchRequest", "no tournament");
     requestingUser.send({
       type: "EXIT_MATCH_RESPONSE",
       status: 400,
@@ -366,12 +341,6 @@ function exitMatchRequest(requestingUser, userManager) {
   match.setDisconnect();
 
   if (tournament !== null) {
-    LOGGER(
-      200,
-      "game.js",
-      "exitMatchRequest",
-      "Succesfully exited Tournament."
-    );
     userManager.tournamentDisconnect(tournament);
     tournament.removeUserFromTournament(requestingUser);
     requestingUser.send({
@@ -390,22 +359,33 @@ function exitMatchRequest(requestingUser, userManager) {
   });
 }
 
+// ----------------------------------------------------------------------------
+// ESTADISTICAS Y PERFIL (MEJORADO)
+// ----------------------------------------------------------------------------
+
 function getInfoRequest(requestingUser, userManager, target) {
   const userId = Number(requestingUser.getId());
   
+  // Cálculo robusto para la caja de detalles (Local vs Online)
   const statsSql = `
     SELECT
-      SUM(CASE WHEN (player2_id IS NULL OR is_ai_match = 1) THEN 1 ELSE 0 END) AS localGames,
-      SUM(CASE WHEN (player2_id IS NULL OR is_ai_match = 1) AND winner_id = ? THEN 1 ELSE 0 END) AS localWins,
-      SUM(CASE WHEN (player2_id IS NOT NULL AND is_ai_match = 0) THEN 1 ELSE 0 END) AS onlineGames,
-      SUM(CASE WHEN (player2_id IS NOT NULL AND is_ai_match = 0) AND winner_id = ? THEN 1 ELSE 0 END) AS onlineWins,
-      COUNT(*) AS totalGames,
-      SUM(CASE WHEN winner_id = ? THEN 1 ELSE 0 END) AS totalWins
+      -- Local Played: is_ai_match=1 OR player2_id IS NULL (Local 1v1 on same keyboard)
+      SUM(CASE WHEN (is_ai_match = 1 OR player2_id IS NULL) THEN 1 ELSE 0 END) AS localGames,
+      
+      -- Local Won: Local Game AND Winner = ME
+      SUM(CASE WHEN (is_ai_match = 1 OR player2_id IS NULL) AND winner_id = ? THEN 1 ELSE 0 END) AS localWins,
+      
+      -- Online Played: is_ai_match=0 AND player2_id NOT NULL
+      SUM(CASE WHEN (is_ai_match = 0 AND player2_id IS NOT NULL) THEN 1 ELSE 0 END) AS onlineGames,
+      
+      -- Online Won: Online Game AND Winner = ME
+      SUM(CASE WHEN (is_ai_match = 0 AND player2_id IS NOT NULL) AND winner_id = ? THEN 1 ELSE 0 END) AS onlineWins
+
     FROM matches
     WHERE player1_id = ? OR player2_id = ?
   `;
 
-  db.get(statsSql, [userId, userId, userId, userId, userId], (err, row) => {
+  db.get(statsSql, [userId, userId, userId, userId], (err, row) => {
     let stats = {
       local_played: 0,
       local_won: 0,
@@ -455,14 +435,8 @@ function getPendingRequest(requestingUser) {
   });
 }
 
-// ----------------------------------------------------------------------------
-// ESTADISTICAS AVANZADAS
-// ----------------------------------------------------------------------------
-
 function getStatsRequest(requestingUser) {
   const userId = Number(requestingUser.getId());
-  
-  LOGGER(200, "game.js", "getStatsRequest", "Request received for user " + userId);
   
   const base = {
     userId: String(userId),
@@ -492,17 +466,24 @@ function getStatsRequest(requestingUser) {
   const statsSql = `
      SELECT
        COUNT(*) AS totalGames,
+       
+       -- Total Wins: Si el winner_id es mi ID
        SUM(CASE WHEN winner_id = ? THEN 1 ELSE 0 END) AS totalWins,
-       SUM(CASE WHEN winner_id IS NOT NULL AND winner_id != ? THEN 1 ELSE 0 END) AS totalLosses,
        
-       SUM(CASE WHEN (player2_id IS NULL OR is_ai_match = 1) THEN 1 ELSE 0 END) AS localGames,
-       SUM(CASE WHEN (player2_id IS NULL OR is_ai_match = 1) AND winner_id = ? THEN 1 ELSE 0 END) AS localWins,
-       SUM(CASE WHEN (player2_id IS NULL OR is_ai_match = 1) AND winner_id IS NOT NULL AND winner_id != ? THEN 1 ELSE 0 END) AS localLosses,
+       -- Total Losses: Si el winner_id NO es mi ID (puede ser otro usuario, NULL (IA) o undefined)
+       SUM(CASE WHEN (winner_id IS NULL OR winner_id != ?) THEN 1 ELSE 0 END) AS totalLosses,
        
-       SUM(CASE WHEN (player2_id IS NOT NULL AND is_ai_match = 0) THEN 1 ELSE 0 END) AS onlineGames,
-       SUM(CASE WHEN (player2_id IS NOT NULL AND is_ai_match = 0) AND winner_id = ? THEN 1 ELSE 0 END) AS onlineWins,
-       SUM(CASE WHEN (player2_id IS NOT NULL AND is_ai_match = 0) AND winner_id IS NOT NULL AND winner_id != ? THEN 1 ELSE 0 END) AS onlineLosses,
+       -- LOCAL: IA o Local (p2 NULL)
+       SUM(CASE WHEN (is_ai_match = 1 OR player2_id IS NULL) THEN 1 ELSE 0 END) AS localGames,
+       SUM(CASE WHEN (is_ai_match = 1 OR player2_id IS NULL) AND winner_id = ? THEN 1 ELSE 0 END) AS localWins,
+       SUM(CASE WHEN (is_ai_match = 1 OR player2_id IS NULL) AND (winner_id IS NULL OR winner_id != ?) THEN 1 ELSE 0 END) AS localLosses,
        
+       -- ONLINE: NO IA y p2 existe
+       SUM(CASE WHEN (is_ai_match = 0 AND player2_id IS NOT NULL) THEN 1 ELSE 0 END) AS onlineGames,
+       SUM(CASE WHEN (is_ai_match = 0 AND player2_id IS NOT NULL) AND winner_id = ? THEN 1 ELSE 0 END) AS onlineWins,
+       SUM(CASE WHEN (is_ai_match = 0 AND player2_id IS NOT NULL) AND winner_id != ? THEN 1 ELSE 0 END) AS onlineLosses,
+       
+       -- Puntos
        SUM(CASE WHEN player1_id = ? THEN score_p1 ELSE score_p2 END) AS pointsFor,
        SUM(CASE WHEN player1_id = ? THEN score_p2 ELSE score_p1 END) AS pointsAgainst,
        
@@ -513,16 +494,10 @@ function getStatsRequest(requestingUser) {
 
   db.get(
     statsSql,
-    [
-      userId, userId, 
-      userId, userId, 
-      userId, userId, 
-      userId, userId, 
-      userId, userId  
-    ],
+    [userId, userId, userId, userId, userId, userId, userId, userId, userId, userId],
     (err, row) => {
       if (err || !row) {
-        LOGGER(500, "game.js", "getStatsRequest", "Database error: " + (err ? err.message : "No row"));
+        LOGGER(500, "game.js", "getStatsRequest", "Database error or empty: " + (err ? err.message : ""));
         requestingUser.send({
           type: "STATS_RESPONSE",
           status: 200,
@@ -550,6 +525,7 @@ function getStatsRequest(requestingUser) {
         local_won: row.localWins || 0,
         online_played: row.onlineGames || 0,
         online_won: row.onlineWins || 0,
+        
         tournaments_played: requestingUser.tournaments_played || 0, 
         tournaments_won: requestingUser.tournaments_won || 0,
 
@@ -571,28 +547,18 @@ function getStatsRequest(requestingUser) {
           let current = 0;
           
           for (const r of rows) {
-            if (Number(r.winner_id) === userId) {
+            if (r.winner_id === userId) {
               current += 1;
               best = Math.max(best, current);
-            } else if (r.winner_id !== null) {
+            } else {
               current = 0;
             }
           }
           
           stats.bestWinStreak = best;
-          
-          stats.currentWinStreak = 0;
-          for (let i = rows.length - 1; i >= 0; i--) {
-            const r = rows[i];
-            if (Number(r.winner_id) === userId) {
-              stats.currentWinStreak += 1;
-            } else if (r.winner_id !== null) {
-              break;
-            }
-          }
+          stats.currentWinStreak = current;
         }
         
-        LOGGER(200, "game.js", "getStatsRequest", "Sending stats - Total: " + stats.totalGames + " Wins: " + stats.totalWins + " Streak: " + stats.currentWinStreak + "/" + stats.bestWinStreak);
         requestingUser.send({
           type: "STATS_RESPONSE",
           status: 200,
@@ -608,8 +574,6 @@ function getMatchHistoryRequest(requestingUser, limit) {
   const userId = Number(requestingUser.getId());
   const parsedLimit = Number(limit);
   const limitValue = Number.isFinite(parsedLimit) ? parsedLimit : 20;
-  
-  LOGGER(200, "game.js", "getMatchHistoryRequest", "Request received for user " + userId + " limit " + limitValue);
 
   const historySql = `
      SELECT
@@ -627,7 +591,6 @@ function getMatchHistoryRequest(requestingUser, limit) {
        
        CASE 
          WHEN m.winner_id = ? THEN 'win'
-         WHEN m.winner_id IS NULL THEN 'loss'
          ELSE 'loss' 
        END AS result,
        
@@ -679,7 +642,6 @@ function getMatchHistoryRequest(requestingUser, limit) {
         tournamentId: null,
       }));
       
-      LOGGER(200, "game.js", "getMatchHistoryRequest", "Sending " + history.length + " matches");
       requestingUser.send({
         type: "MATCH_HISTORY_RESPONSE",
         status: 200,
@@ -727,7 +689,6 @@ function handleUserCommands(user, userManager) {
     } else if (msg.type === "GET_PENDING_REQUEST") {
       getPendingRequest(user);
     } else if (msg.type === "STATS_REQUEST") {
-      LOGGER(200, "game.js", "handleUserCommands", "STATS_REQUEST received from " + user.getUsername());
       getStatsRequest(user);
     } else if (msg.type === "MATCH_HISTORY_REQUEST") {
       getMatchHistoryRequest(user, msg.target);
