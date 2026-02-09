@@ -54,10 +54,7 @@ services:
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - xpack.security.enabled=${XPACK_SECURITY_ENABLED}
       - xpack.monitoring.collection.enabled=${XPACK_MONITORING_ENABLED}
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+      - bootstrap.memory_lock=false 
     volumes:
       - es_data:/usr/share/elasticsearch/data
       - ./Elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
