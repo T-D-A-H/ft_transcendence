@@ -1,6 +1,6 @@
 
 # run devops modules
-all: elk monitoring
+all: elk-init monitoring
 
 # Check and setup .env file if needed
 check-env:
@@ -12,14 +12,21 @@ check-env:
 		echo ".env file exists at /ops/.env"; \
 	fi
 
-# Initialize and run ELK stack with template data (recommended first time)
+# Initialize and run ELK stack with template data
 elk-init: check-env
 	@echo "Initializing ELK stack with templates..."
-	@powershell -ExecutionPolicy Bypass -File ELK/init-elk.ps1
+	@chmod +x ELK/init-elk.sh && bash ELK/init-elk.sh
 
 # Run ELK stack (Elasticsearch, Logstash, Kibana)
 elk: check-env
 	cd ELK && docker compose --env-file ../.env -f ELK.yaml up -d
+	@echo "Waiting for services to be ready, then creating index pattern..."
+	@sleep 5
+	@$(MAKE) elk-index
+
+# Create/recreate Kibana index pattern
+elk-index:
+	@chmod +x ELK/create-index-pattern.sh && bash ELK/create-index-pattern.sh
 
 # Run monitoring stack (Prometheus, Grafana)
 monitoring: check-env
@@ -38,4 +45,4 @@ clean-elk:
 clean-monitoring:
 	cd monitoring && docker compose --env-file ../.env -f monitoring.yaml down -v
 
-.PHONY: all elk elk-init monitoring clean fclean clean-elk clean-monitoring check-env
+.PHONY: all elk elk-init elk-index monitoring clean fclean clean-elk clean-monitoring check-env

@@ -1,40 +1,69 @@
 #!/bin/bash
-# Script to set up Elasticsearch built-in user passwords after first start
+# Script to set up Elasticsearch built-in user passwords
+# Run this if Elasticsearch is already running but passwords need to be reset
 
 set -e
 
-echo "Waiting for Elasticsearch to be ready..."
-until curl -s --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt -u "elastic:changeme" https://localhost:9200 > /dev/null 2>&1; do
-  sleep 5
-  echo "Still waiting for Elasticsearch..."
+# Load environment variables from .env file
+ENV_FILE="$(dirname "$0")/../.env"
+if [ -f "$ENV_FILE" ]; then
+    echo "Loading environment variables from .env..."
+    while IFS= read -r line || [ -n "$line" ]; do
+        # Remove carriage return (Windows line endings)
+        line=$(echo "$line" | tr -d '\r')
+        # Skip comments and empty lines
+        if [[ ! "$line" =~ ^# && -n "$line" ]]; then
+            export "$line"
+        fi
+    done < "$ENV_FILE"
+else
+    echo "ERROR: .env file not found at $ENV_FILE"
+    exit 1
+fi
+
+# Check if Elasticsearch container is running
+if ! docker ps --filter "name=ft_elasticsearch" --filter "status=running" --format "{{.Names}}" | grep -q ft_elasticsearch; then
+    echo "ERROR: Elasticsearch container is not running"
+    echo "Start it with: cd ops/ELK && docker compose --env-file ../.env -f ELK.yaml up -d elasticsearch"
+    exit 1
+fi
+
+# Wait for Elasticsearch to be ready
+echo "Waiting for Elasticsearch"
+MAX_ATTEMPTS=30
+attempt=0
+elasticsearch_ready=false
+
+while [ $attempt -lt $MAX_ATTEMPTS ]; do
+    if curl -s -u "elastic:$ELASTIC_PASSWORD" http://localhost:9200/_cluster/health >/dev/null 2>&1; then
+        elasticsearch_ready=true
+        echo "Elasticsearch ready"
+        break
+    fi
+    
+    attempt=$((attempt + 1))
+    echo "Attempt $attempt/$MAX_ATTEMPTS"
+    sleep 2
 done
 
-echo "Elasticsearch is ready. Setting up built-in user passwords..."
+if [ "$elasticsearch_ready" = false ]; then
+    echo "ERROR: Elasticsearch is not responding"
+    echo "Check logs with: docker logs ft_elasticsearch"
+    exit 1
+fi
 
-# Reset passwords for built-in users (change 'changeme' to your desired password)
-docker exec ft_elasticsearch /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic -i <<EOF
-changeme
-changeme
-EOF
+# Set up built-in user passwords
+echo "Setting up built-in user passwords"
 
-docker exec ft_elasticsearch /usr/share/elasticsearch/bin/elasticsearch-reset-password -u kibana_system -i <<EOF
-changeme
-changeme
-EOF
+# Use Elasticsearch API to set passwords
+echo "Setting kibana_system password"
+curl -s -X POST "http://localhost:9200/_security/user/kibana_system/_password" \
+    -u "elastic:$ELASTIC_PASSWORD" \
+    -H "Content-Type: application/json" \
+    -d "{\"password\":\"$KIBANA_SYSTEM_PASSWORD\"}" >/dev/null
 
-docker exec ft_elasticsearch /usr/share/elasticsearch/bin/elasticsearch-reset-password -u logstash_system -i <<EOF
-changeme
-changeme
-EOF
-
-echo ""
-echo "Built-in user passwords configured!"
-echo ""
-echo "Default passwords (CHANGE THESE IN PRODUCTION):"
-echo "  elastic:         changeme"
-echo "  kibana_system:   changeme"
-echo "  logstash_system: changeme"
-echo ""
-echo "You also need to create a 'logstash_writer' user with appropriate roles."
-echo "Access Kibana at: https://localhost:5601"
-echo "Login with: elastic / changeme"
+echo "Setting logstash_system password"
+curl -s -X POST "http://localhost:9200/_security/user/logstash_system/_password" \
+    -u "elastic:$ELASTIC_PASSWORD" \
+    -H "Content-Type: application/json" \
+    -d "{\"password\":\"$LOGSTASH_SYSTEM_PASSWORD\"}" >/dev/null

@@ -34,8 +34,6 @@ services:
       - "5069:5069"
       - "8080:8080"
       - "5044:5044"
-    depends_on:
-      - elasticsearch
     networks:
       - ELK
     restart: unless-stopped
@@ -51,8 +49,7 @@ services:
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=${ES_JAVA_OPTS}
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-      - xpack.security.enabled=${XPACK_SECURITY_ENABLED}
+      - xpack.security.enabled=false
       - xpack.monitoring.collection.enabled=${XPACK_MONITORING_ENABLED}
       - bootstrap.memory_lock=false 
     volumes:
@@ -73,17 +70,12 @@ services:
     container_name: ft_kibana
     env_file:
       - ../.env
-    environment:
-      - ELASTICSEARCH_USERNAME=kibana_system
-      - ELASTICSEARCH_PASSWORD=${KIBANA_SYSTEM_PASSWORD}
     volumes:
       - ./Kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
       - ./Elasticsearch/certs:/usr/share/kibana/config/certs:ro
       - kibana_data:/usr/share/kibana/data
     ports:
       - "5601:5601"
-    depends_on:
-      - elasticsearch
     networks:
       - ELK
     restart: unless-stopped

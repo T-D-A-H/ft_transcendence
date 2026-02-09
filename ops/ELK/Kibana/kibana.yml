@@ -5,10 +5,6 @@ server.port: 5601
 # Connect to Elasticsearch via HTTP
 elasticsearch.hosts: ["http://elasticsearch:9200"]
 
-# Elasticsearch authentication
-elasticsearch.username: "kibana_system"
-elasticsearch.password: "${KIBANA_SYSTEM_PASSWORD}"
-
 # Kibana TLS/SSL settings (disabled for development)
 server.ssl.enabled: false
 
@@ -16,9 +12,5 @@ server.ssl.enabled: false
 xpack.security.encryptionKey: "${KIBANA_ENCRYPTION_KEY}"
 xpack.encryptedSavedObjects.encryptionKey: "${KIBANA_ENCRYPTION_KEY}"
 xpack.reporting.encryptionKey: "${KIBANA_ENCRYPTION_KEY}"
-
-# Security settings
-xpack.security.session.idleTimeout: "8h"
-xpack.security.session.lifespan: "30d"
 
 path.data: /usr/share/kibana/data
