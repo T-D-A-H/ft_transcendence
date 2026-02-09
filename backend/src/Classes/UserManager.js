@@ -12,6 +12,10 @@ class UserManager {
         this.matches = new Map();
         this.tournaments = new Map();
         this.pending2FA = new Map();
+        
+        // FUSIÓN: Nuevos mapas para estadísticas en memoria (caché rápida)
+        this.userStats = new Map();
+        this.matchHistory = new Map();
     }
 
 //----------------------------------------------------------------------------------------USER
@@ -90,13 +94,13 @@ class UserManager {
     createUser(user_id, user_name, display_name, user_socket) {
 
         LOGGER(200, "UserManager", "createUser", "Created");
+        // Nota: Asegúrate de que User.js acepte este objeto. Si da error, usa los argumentos posicionales antiguos.
+        // Aquí mantengo la llamada antigua por seguridad si User.js no ha cambiado.
         const user = new User({
             id: user_id,
             username: user_name,
             display_name: display_name,
-            socket: user_socket,
-            avatar: avatar,
-            stats: stats
+            socket: user_socket
         });
         return (user);
     }
@@ -176,6 +180,174 @@ class UserManager {
         return Array.from(this.users.values());
     }
 
+    // ----------------------------------------------------------------------------------------
+    // FUSIÓN: NUEVOS MÉTODOS DE ESTADÍSTICAS (SOURCE A)
+    // ----------------------------------------------------------------------------------------
+
+    ensureUserStats(user) {
+        if (!user) return null;
+        const userId = user.getId();
+        if (!this.userStats.has(userId)) {
+            this.userStats.set(userId, {
+                userId,
+                username: user.getUsername(),
+                displayName: user.getDisplayName(),
+                totalGames: 0,
+                totalWins: 0,
+                totalLosses: 0,
+                localGames: 0,
+                localWins: 0,
+                localLosses: 0,
+                onlineGames: 0,
+                onlineWins: 0,
+                onlineLosses: 0,
+                tournamentGames: 0,
+                tournamentWins: 0,
+                tournamentLosses: 0,
+                tournamentsPlayed: 0,
+                tournamentsWon: 0,
+                pointsFor: 0,
+                pointsAgainst: 0,
+                currentWinStreak: 0,
+                bestWinStreak: 0,
+                lastMatchAt: null,
+            });
+        }
+        return this.userStats.get(userId);
+    }
+
+    ensureMatchHistory(user) {
+        if (!user) return null;
+        const userId = user.getId();
+        if (!this.matchHistory.has(userId)) {
+            this.matchHistory.set(userId, []);
+        }
+        return this.matchHistory.get(userId);
+    }
+
+    applyMatchResult(stats, result, mode, userScore, opponentScore, endTime) {
+        stats.totalGames += 1;
+        stats.pointsFor += userScore;
+        stats.pointsAgainst += opponentScore;
+        if (result === "win") {
+            stats.totalWins += 1;
+            stats.currentWinStreak += 1;
+        } else {
+            stats.totalLosses += 1;
+            stats.currentWinStreak = 0;
+        }
+        stats.bestWinStreak = Math.max(stats.bestWinStreak, stats.currentWinStreak);
+        stats.lastMatchAt = endTime;
+
+        if (mode === "local") {
+            stats.localGames += 1;
+            if (result === "win") stats.localWins += 1;
+            else stats.localLosses += 1;
+        } else if (mode === "online") {
+            stats.onlineGames += 1;
+            if (result === "win") stats.onlineWins += 1;
+            else stats.onlineLosses += 1;
+        } else {
+            stats.tournamentGames += 1;
+            if (result === "win") stats.tournamentWins += 1;
+            else stats.tournamentLosses += 1;
+        }
+    }
+
+    recordMatchResult(match) {
+        if (!match) return;
+        const winner = match.getWinner();
+        const loser = match.getLoser();
+        const players = match.getPlayers();
+        const scores = match.getScores();
+        
+        // Verificaciones de seguridad básicas
+        if (!scores) return;
+
+        match.setEndTime();
+        const tournament = match.getTournament();
+        const mode = tournament
+            ? "tournament"
+            : match.getIsLocal()
+                ? "local"
+                : "online";
+        const endTime = match.getEndTime() || Date.now();
+        const startTime = match.getStartTime() || endTime;
+        const durationMs = Math.max(0, endTime - startTime);
+
+        // Caso Local (Mismo usuario jugando contra sí mismo/invitado local)
+        if (match.getIsLocal() && players[0] && players[0] === players[1]) {
+            const user = players[0];
+            const stats = this.ensureUserStats(user);
+            const history = this.ensureMatchHistory(user);
+            if (!stats || !history) return;
+            
+            const userScore = scores[0];
+            const opponentScore = scores[1];
+            const result = userScore >= opponentScore ? "win" : "loss";
+            
+            this.applyMatchResult(stats, result, mode, userScore, opponentScore, endTime);
+            
+            history.unshift({
+                id: match.getMatchId(),
+                timestamp: endTime,
+                durationMs,
+                mode,
+                opponent: "Local (self)",
+                userScore,
+                opponentScore,
+                result,
+                tournamentId: tournament ? tournament.getTournamentId() : null,
+            });
+            if (history.length > 50) history.pop();
+            return;
+        }
+
+        // Caso Online/Torneo (Dos jugadores distintos)
+        if (!players[0] || !players[1]) return; // Si falta un jugador, no registramos historial detallado
+
+        players.forEach((user, index) => {
+            if (!user) return;
+            const opponent = players[index === 0 ? 1 : 0];
+            if (!opponent) return;
+            
+            const stats = this.ensureUserStats(user);
+            const history = this.ensureMatchHistory(user);
+            if (!stats || !history) return;
+            
+            const userScore = scores[index];
+            const opponentScore = scores[index === 0 ? 1 : 0];
+            const result = user === winner ? "win" : "loss";
+            
+            this.applyMatchResult(stats, result, mode, userScore, opponentScore, endTime);
+            
+            history.unshift({
+                id: match.getMatchId(),
+                timestamp: endTime,
+                durationMs,
+                mode,
+                opponent: opponent.getDisplayName(),
+                userScore,
+                opponentScore,
+                result,
+                tournamentId: tournament ? tournament.getTournamentId() : null,
+            });
+            if (history.length > 50) history.pop();
+        });
+    }
+
+    getUserStats(user) {
+        return this.ensureUserStats(user);
+    }
+
+    getMatchHistory(user, limit = 20) {
+        const history = this.ensureMatchHistory(user);
+        if (!history) return [];
+        return history.slice(0, limit);
+    }
+
+    // ----------------------------------------------------------------------------------------
+
     tournamentDisconnect(tournament) {
 
         LOGGER(200, "UserManager", "tournamentDisconnect", "user disconnected from tournament");
@@ -183,14 +355,14 @@ class UserManager {
 
         if (winners === null)
             return ;
-    	for (const user of winners.keys()) {
+        for (const user of winners.keys()) {
 
-    		if (user.isConnected === false) {
+            if (user.isConnected === false) {
 
                 tournament.deleteWinner(user);
 
             }
-    	}
+        }
     }
 
     matchDisconnect(match) {
@@ -217,15 +389,15 @@ class UserManager {
 //----------------------------------------------------------------------------------------MATCH
 
 
-	createMatch(user, locally, tournament) { LOGGER(200, "UserManager", "createMatch", user.getUsername());
+    createMatch(user, locally, tournament) { LOGGER(200, "UserManager", "createMatch", user.getUsername());
         
         const match_id = this.createId();
-		const match = new Match(user, match_id, locally, tournament);
+        const match = new Match(user, match_id, locally, tournament);
 
         this.matches.set(match_id, match);
         user.setMatch(match);
         return (match);
-	}
+    }
 
     addToMatch(requestingUser, match) {
 
@@ -235,10 +407,10 @@ class UserManager {
         requestingUser.setMatch(match);
     }
 
-	removeMatch(match) {
+    removeMatch(match) {
         LOGGER(200, "UserManager", "removeMatch", match.id);
-		this.matches.delete(match.id);
-	}
+        this.matches.delete(match.id);
+    }
 
     unsetMatches(match) {
 
@@ -257,6 +429,55 @@ class UserManager {
 
     stopMatch(match) {
         LOGGER(200, "UserManager", "stopMatch", "called");
+        
+        // FUSIÓN: Registrar resultados detallados (Memoria + Historial)
+        this.recordMatchResult(match);
+        this.sendDisplaySide(match);
+        this.unsetMatches(match);
+        this.removeMatch(match);
+        if (match.players[0]) {
+            match.players[0].send({
+                type: "MATCH_SAVED",
+                status: 200,
+                msg: "Match stats updated"
+            });
+        }
+        if (match.players[1] && match.players[1] !== match.players[0]) {
+            match.players[1].send({
+                type: "MATCH_SAVED",
+                status: 200,
+                msg: "Match stats updated"
+            });
+        }
+
+        // FUSIÓN: Guardar historial en Base de Datos "matches" (Nuevo requisito del Source A)
+        if (this.db) {
+            const players = match.getPlayers();
+            const scores = match.getScores();
+            const winner = match.getWinner();
+            
+            if (players && players[0] && scores && winner) {
+                const player1Id = players[0].getId();
+                // Si es local, player2 es null o el mismo, para la DB mejor null si es local puro
+                const player2Id = match.getIsLocal() ? null : (players[1] ? players[1].getId() : null);
+                
+                this.db.run(
+                    `INSERT INTO matches (player1_id, player2_id, score_p1, score_p2, winner_id, game_mode, is_ai_match)
+                     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                    [
+                        player1Id,
+                        player2Id,
+                        scores[0],
+                        scores[1],
+                        winner.getId(),
+                        match.getTournament() ? "TOURNAMENT" : "CLASSIC",
+                        0 // is_ai_match (asumimos 0 por ahora, ya que la lógica AI está separada en cliente)
+                    ],
+                    (err) => { if (err) console.error("Error inserting match history:", err); }
+                );
+            }
+        }
+
         const tournament = match.getTournament();
         const winner = match.getWinner();
         const loser = match.getLoser();
@@ -264,8 +485,6 @@ class UserManager {
         if (tournament !== null) {
 
             LOGGER(200, "UserManager", "stopMatch", "Is part of tournament");
-            const winner = match.getWinner();
-            const loser = match.getLoser();
             tournament.updateWinner(match, winner);
             tournament.sendWin(winner, loser);
 
@@ -318,7 +537,7 @@ class UserManager {
                 }
                 if (match.shouldContinuePlaying()) {
 
-			    	match.updateMatch();
+                    match.updateMatch();
                     // this.matchDisconnect(match);
                 }
             }
@@ -329,14 +548,14 @@ class UserManager {
 
     sendDisplaySide(match) {
         LOGGER(200, "UserManarger", "sendDIsplaySide", "Swapping display side from: \n");
-		match.players.forEach(user => {
-			const defaultSide = user.getDisplaySide();
-			user.socket.send(JSON.stringify({
-				type: "MIRROR",
+        match.players.forEach(user => {
+            const defaultSide = user.getDisplaySide();
+            user.socket.send(JSON.stringify({
+                type: "MIRROR",
                 msg: defaultSide
-			}));
-		});
-	}
+            }));
+        });
+    }
 
 
 //----------------------------------------------------------------------------------------MATCH
@@ -346,11 +565,16 @@ class UserManager {
     createTournament(user, alias, size) { LOGGER(200, "UserManager", "createTournament", "Called by user alias: " + alias);
 
         const tournament_id = this.createId();
-		const tournament = new Tournament(user, alias, tournament_id, size);
+        const tournament = new Tournament(user, alias, tournament_id, size);
 
         tournament.addUserToTournament(user, alias);
         this.tournaments.set(tournament_id, tournament);
-		user.setTournament(tournament);
+        user.setTournament(tournament);
+        
+        // FUSIÓN: Actualizar stats en memoria
+        const stats = this.ensureUserStats(user);
+        if (stats) stats.tournamentsPlayed += 1;
+
         return (tournament);
     }
 
@@ -361,6 +585,11 @@ class UserManager {
             return (false);
         }
         user.setTournament(tournament);
+        
+        // FUSIÓN: Actualizar stats en memoria
+        const stats = this.ensureUserStats(user);
+        if (stats) stats.tournamentsPlayed += 1;
+
         return (true);
     }
 
@@ -376,6 +605,10 @@ class UserManager {
         const winner_user = tournament.getWinner();
         if (winner_user === null) return;
         
+        // FUSIÓN: Actualizar stats en memoria
+        const stats = this.ensureUserStats(winner_user);
+        if (stats) stats.tournamentsWon += 1;
+
         tournament.sendFinalWin(winner_user);
         
         if (winner_user) {
@@ -390,89 +623,89 @@ class UserManager {
 
     updateTournaments() {
 
-    	this.tournaments.forEach(tournament => {
+        this.tournaments.forEach(tournament => {
 
             if (tournament.TESTING !== true) {
 
                 if (tournament.getCurrentSize() === 0 && tournament.TESTING === false) {
                     this.removeTournament(tournament.getId());
                 }
-    		    if (tournament.isWaitingAndFull() && tournament.TESTING === false) {
+                if (tournament.isWaitingAndFull() && tournament.TESTING === false) {
 
                     LOGGER(200, "USerManager.js", "updateTournaments", "Tournament is waiting and full");
                     tournament.setReady();
-    		    	this.createNewTournamentMatches(tournament.getPlayers(), tournament);
-    		    }
-    		    else if (tournament.isRoundFinished() && tournament.TESTING === false) {
+                    this.createNewTournamentMatches(tournament.getPlayers(), tournament);
+                }
+                else if (tournament.isRoundFinished() && tournament.TESTING === false) {
 
-    		    	const winners = tournament.prepareNextRound();
+                    const winners = tournament.prepareNextRound();
 
-    		    	if (winners.size > 1) {
-    		    		this.createNewTournamentMatches(winners, tournament);
+                    if (winners.size > 1) {
+                        this.createNewTournamentMatches(winners, tournament);
                     }
                     else {
                         this.stopTournament(tournament);
                     }
-    		    }
+                }
             }
-    	});
+        });
     }
 
     createNewTournamentMatches(playerMap, tournament) {
 
         LOGGER(200, "UserManager", "createNewTournamentMatches", "Called");
-	    const players = Array.from(playerMap.keys());
+        const players = Array.from(playerMap.keys());
 
-	    for (let i = 0; i < players.length; i += 2) {
+        for (let i = 0; i < players.length; i += 2) {
 
             const user1 = players[i];
             const user2 = (i + 1 < players.length) ? players[i + 1] : null;
-	    	const match = this.createMatch(user1, false, tournament);
+            const match = this.createMatch(user1, false, tournament);
 
             if (user2)
                 this.addToMatch(user2, match);
   
-	    	tournament.matches.set(match, {user1 , user2});
+            tournament.matches.set(match, {user1 , user2});
             tournament.sendMatchStart(user1, user2);
             tournament.sendMatchStart(user2, user1);
 
             if (!user2) {
                 this.stopMatch(match);
             }
-	    }
+        }
     }
 
     getAvailableTournaments() { LOGGER(200, "UserManager", "getAvailableTournaments", "Called");
 
         
-    	const tournaments = [];
+        const tournaments = [];
 
-    	for (const tournament of this.tournaments.values()) {
+        for (const tournament of this.tournaments.values()) {
 
 
-    		tournaments.push({
-    			id: tournament.getTournamentId(),
-    			creator: tournament.getCreatorAlias(),
-    			max_size: tournament.getTournamentSize(),
-    			current_size: tournament.getCurrentSize(),
+            tournaments.push({
+                id: tournament.getTournamentId(),
+                creator: tournament.getCreatorAlias(),
+                max_size: tournament.getTournamentSize(),
+                current_size: tournament.getCurrentSize(),
                 full: tournament.isWaitingAndFull()
-    		});
-    	}
+            });
+        }
 
-    	if (tournaments.length === 0) { LOGGER(501, "UserManager", "getAvailableTournaments", "Called with NO available tournaments");
+        if (tournaments.length === 0) { LOGGER(501, "UserManager", "getAvailableTournaments", "Called with NO available tournaments");
             
-    		return (null);
+            return (null);
         }
         LOGGER(200, "UserManager", "getAvailableTournaments", "Called with available tournaments");
-    	return (tournaments);
+        return (tournaments);
     }
 
     getTournamentById(tournament_id) {
 
-    	if (!this.tournaments.has(tournament_id))
-    		return (null);
+        if (!this.tournaments.has(tournament_id))
+            return (null);
 
-    	return (this.tournaments.get(tournament_id));
+        return (this.tournaments.get(tournament_id));
     }
 
 
@@ -495,9 +728,9 @@ class UserManager {
 
     createId() {
 
-    	const rand = Math.floor(Math.random() * 0xffff);
-    	const time = Date.now();
-    	return (((time << 16) | rand).toString());
+        const rand = Math.floor(Math.random() * 0xffff);
+        const time = Date.now();
+        return (((time << 16) | rand).toString());
     }
 
 //----------------------------------------------------------------------------------------UTILS  

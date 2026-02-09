@@ -754,7 +754,7 @@ export const confirmPasswordInput =
 export const submitNewPasswordButton =
     document.getElementById("submit_new_password") as HTMLButtonElement;
 
-// Event Listeners for new settings modals
+
 if (changeDisplayNameButton) {
     changeDisplayNameButton.onclick = () => {
         hide(menuModal);
@@ -800,7 +800,7 @@ export function updateStatsUI(stats: UserStats) {
     if (statTournPlayed) statTournPlayed.textContent = (stats.tournaments_played || 0).toString();
     if (statTournWon) statTournWon.textContent = (stats.tournaments_won || 0).toString();
 }
-// Inicialización final de Board Theme (Ahora que 'canvas' está definido arriba)
+
 applyBoardThemeById(boardThemes[boardThemeIndex]?.id || "default", false);
 updateBoardThemePreview();
 export { drawGame };

@@ -8,38 +8,24 @@ export interface TournamentInfo {
 
 export type MatchMode = "local" | "online" | "tournament";
 
-// FUSIÓN: Contiene los datos del sistema antiguo (snake_case) 
-// y los del nuevo dashboard (camelCase + streaks)
 export interface UserStats {
-  // Identificación
   userId: string;
   username: string;
   displayName: string;
-
-  // Totales (Dashboard General)
   totalGames: number;
   totalWins: number;
   totalLosses: number;
-  
-  // Rachas y Puntos (Dashboard General)
   currentWinStreak: number;
   bestWinStreak: number;
   pointsFor: number;
   pointsAgainst: number;
   lastMatchAt: number | null;
-
-  // Desglose Legacy (Source B - snake_case)
-  // Mantengo estos para que funcionen con los IDs 'stat_local_played', etc.
   local_played: number;
   local_won: number;
   online_played: number;
   online_won: number;
   tournaments_played: number;
   tournaments_won: number;
-
-  // Desglose Moderno (Source A - camelCase)
-  // Opcionales por si el backend solo envía un formato, 
-  // pero útiles si el dashboard nuevo espera estos nombres.
   localGames?: number;
   localWins?: number;
   localLosses?: number;
@@ -71,7 +57,6 @@ export interface ProfileInfo {
   stats: UserStats;
 }
 
-// FUSIÓN: Añadidos UserStats y MatchHistoryItem[] al target
 export interface StatusMsgTarget {
   status: number;
   msg: string;
@@ -196,7 +181,6 @@ export interface PendingRequest {
   target: ProfileInfo[] | null;
 }
 
-// NUEVO: Respuesta para estadísticas detalladas
 export interface StatsResponse {
   type: "STATS_RESPONSE";
   status: number;
@@ -204,7 +188,6 @@ export interface StatsResponse {
   target: UserStats | null;
 }
 
-// NUEVO: Respuesta para historial de partidas
 export interface MatchHistoryResponse {
   type: "MATCH_HISTORY_RESPONSE";
   status: number;
@@ -212,7 +195,21 @@ export interface MatchHistoryResponse {
   target: MatchHistoryItem[];
 }
 
+// ✅ NUEVOS TIPOS AÑADIDOS
+export interface PongMessage {
+  type: "PONG";
+}
+
+export interface MatchSavedMessage {
+  type: "MATCH_SAVED";
+  status: number;
+  msg: string;
+}
+
+// ✅ ACTUALIZADO: Añadidos PongMessage y MatchSavedMessage
 export type ServerMessage =
+  | PongMessage
+  | MatchSavedMessage
   | SendInviteResponse
   | ReplyInviteResponse
   | IncomingInviteRequest

@@ -204,38 +204,75 @@ function renderEmptyState(): void {
 }
 
 export async function loadDashboard(): Promise<void> {
+  
   if (!userSocket) {
+    console.warn("❌ No WebSocket, showing empty state");
     renderEmptyState();
     showNotification("You must sign in to view statistics.");
     return;
   }
 
-  // Fetch Stats and History in parallel
+
   const [statsResult, historyResult] = await Promise.all([
     oneTimeEvent("STATS_REQUEST", "STATS_RESPONSE"),
     oneTimeEvent("MATCH_HISTORY_REQUEST", "MATCH_HISTORY_RESPONSE", "20"),
   ]);
 
+
   const stats = statsResult?.target as UserStats | null;
   const history = (historyResult?.target as unknown as MatchHistoryItem[]) || [];
 
   if (!statsResult || statsResult.status !== 200 || !stats) {
+    console.warn("❌ Invalid stats response");
     renderEmptyState();
     showNotification("Could not load your statistics.");
     return;
   }
-
   renderSummary(stats);
-  renderModeBreakdown(stats); // New breakdown box
+  renderModeBreakdown(stats);
   renderWinLossChart(stats);
   renderHistory(history);
 }
 
+let needsRefresh = false;
+
+
 export function initStatsDashboard(): void {
-  if (!refreshButton) return;
-  refreshButton.onclick = () => {
-    // Add a small rotation effect to icon if desired, or just load
-    const icon = refreshButton.querySelector("span"); // if there was an icon inside
-    loadDashboard();
-  };
+  if (refreshButton) {
+    refreshButton.onclick = () => {
+      loadDashboard();
+      needsRefresh = false;
+    };
+  }
+
+  window.addEventListener("match-finished", () => {
+    needsRefresh = true;
+    
+    const statsList = document.getElementById("stats_list");
+    if (statsList && !statsList.classList.contains("hidden")) {
+      loadDashboard();
+      needsRefresh = false;
+    }
+  });
+  
+  const statsList = document.getElementById("stats_list");
+  if (statsList) {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          const isVisible = !statsList.classList.contains("hidden");
+    
+          if (isVisible && needsRefresh) {
+            loadDashboard();
+            needsRefresh = false;
+          }
+        }
+      });
+    });
+    
+    observer.observe(statsList, { 
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  }
 }

@@ -32,7 +32,7 @@ import {
   startMatchButton,
   playLocallyButton,
   exitMatchButton,
-  playAgainstAIButton, // Fusión: Añadido este import
+  playAgainstAIButton,
 } from "./ui.js";
 import {
   playRequestModal,
@@ -124,7 +124,6 @@ import { userSocket, restoreSession } from "./websocket.js";
 
 import { oneTimeEvent, setMatchMode, initKeyHandling } from "./events.js";
 
-// Fusión: Imports del primer archivo para AI y Stats
 import { startAiMode, stopAiMode, isAiModeActive } from "./ai.js";
 import { initStatsDashboard, loadDashboard } from "./stats.js";
 
@@ -132,24 +131,25 @@ googleLoginButton.onclick = () => {
   window.location.href = "/auth/google";
 };
 
-// Fusión: Inicializar Dashboard
 initStatsDashboard();
 
 menuButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const targetId = button.dataset.target;
     if (!targetId) return;
+    
     menuButtons.forEach((btn) => btn.classList.remove("active-border"));
     button.classList.add("active-border");
+    
     const allLists = document.querySelectorAll<HTMLElement>(".pong-list");
     allLists.forEach((list) => {
       if (list.id === targetId) show(list);
       else hide(list);
     });
+    
     if (targetId === "request_list") {
       renderRequestLists();
     } else if (targetId === "stats_list") {
-      // Fusión: Llamar a ambos para asegurar que se actualiza todo (Header + Dashboard + Modos)
       getProfileInfo(false);
       loadDashboard();
     }
@@ -315,7 +315,6 @@ startMatchButton.onclick = async () => {
 };
 
 exitMatchButton.onclick = async () => {
-  // Fusión: Lógica para salir del modo AI si está activo
   if (isAiModeActive()) {
     stopAiMode();
     return;
@@ -364,7 +363,6 @@ playLocallyButton.onclick = async () => {
   }
 };
 
-// Fusión: Botón Play AI
 if (playAgainstAIButton) {
   playAgainstAIButton.onclick = () => {
     startAiMode();

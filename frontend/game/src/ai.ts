@@ -234,8 +234,6 @@ async function saveAiMatch(
   playerScore: number,
   aiScore: number,
 ): Promise<void> {
-  // Nota: Esto asume que hay un endpoint REST.
-  // Si todo es WebSocket, esta lógica debería cambiarse para emitir un evento socket.
   try {
     await fetch("/api/match-result", {
       method: "POST",
@@ -244,11 +242,15 @@ async function saveAiMatch(
       body: JSON.stringify({
         scorePlayer: playerScore,
         scoreOpponent: aiScore,
-        opponentId: null,
+        opponentId: null, // ✅ NULL para IA
       }),
     });
-  } catch {
-    // ignore errors
+    
+    // ✅ AÑADIR: Disparar evento personalizado para actualizar stats
+    window.dispatchEvent(new Event("match-finished"));
+    
+  } catch (error) {
+    console.error("Error saving AI match:", error);
   }
 }
 
@@ -259,7 +261,11 @@ function finishAiMatch(winner: "player" | "ai"): void {
   showNotification(
     winner === "player" ? "You won against AI!" : "AI won the match.",
   );
-  saveAiMatch(playerScore, aiScore);
+  
+  saveAiMatch(playerScore, aiScore).then(() => {
+      window.dispatchEvent(new Event("match-finished"));
+  });
+  
   setSCORES(0, 0);
 }
 
@@ -349,3 +355,4 @@ export function stopAiMode(): void {
   document.removeEventListener("keyup", onAiKeyUp);
   showMenu();
 }
+

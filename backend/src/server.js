@@ -93,17 +93,25 @@ async function startServer() {
 	const changeDisplayName = require("./endpoints/change_displayName.js");
 	fastify.post("/api/change-display-name", changeDisplayName(userManager, fastify, db));
 
+	// ✅ Cambiar username
 	const changeUserName = require("./endpoints/change_userName.js");
 	fastify.post("/api/change-username", changeUserName(userManager, fastify, db));
 
+	// ✅ Cambiar email
 	const changeEmail = require("./endpoints/change_Email.js");
 	fastify.post("/api/change-email", changeEmail(fastify, db));
 
+	// ✅ Cambiar pass
 	const changePass = require("./endpoints/change_Pass.js");
 	fastify.post("/api/change-pass", changePass(fastify, db,bcrypt, saltRounds));
 
+	// ✅ Cambiar avatar
 	const changeAvatar = require("./endpoints/change_avatar.js");
 	fastify.post("/api/change-avatar", changeAvatar(userManager, fastify, db));
+
+	// ✅ Guardar partida (cualquier tipo)
+	const buildMatchResultHandler = require("./endpoints/matchResult.js");
+	fastify.post("/api/match-result", buildMatchResultHandler(db, fastify));
 
 	setInterval(() => {
 
