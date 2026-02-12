@@ -1,5 +1,5 @@
-const User = require("../Classes/User.js");
-const LOGGER = require("../LOGGER.js");
+const User = require("../../Classes/User.js");
+const LOGGER = require("../../LOGGER.js");
 
 function googleCallback(userManager, fastify, db, setTokenCookie) {
     return async function (req, reply) {

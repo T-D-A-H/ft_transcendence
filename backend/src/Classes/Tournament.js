@@ -1,210 +1,206 @@
+
 const LOGGER = require("../LOGGER.js");
 const Match = require("./Match.js");
+const UserManager = require("./UserManager.js");
 
 class Tournament {
 
-    constructor(creatorUser, creatorAlias = null, tournament_id, size) { 
-        LOGGER(200, "Tournament", "Constructor", "Called");
+    constructor(creatorUserId, creatorAlias = null, tournament_id, size, visibility) { LOGGER(200, "Tournament.js", "Constructor", "Called with id: " + tournament_id);
 
-        this.id = tournament_id;
-        this.maxPlayers = size;
-        this.currentPlayerCount = 0;
-        this.matchDoneCount = 0;
+		this.id = tournament_id;
+		this.maxPlayers = size;
+		this.currentPlayerCount = 0;
+		this.matchDoneCount = 0;
+		this.visibility = visibility;
 
-        this.creator = creatorUser;
-        this.creatorAlias = (creatorAlias === null) ? "Anonymous" : creatorAlias;
-
-        this.isWaiting = true;
-        this.isReady = false;
-        this.WINNER = null;
-        
-        this.players = new Map();
-        this.matches = new Map();
-        this.winners = new Map();
-
-        // --- AÑADIDO: Soporte para Blockchain y Puntuaciones ---
-        this.playerScores = new Map(); // Mapa para rastrear puntos de cada jugador
+		this.creatorId = creatorUserId;
+		this.creatorAlias = creatorAlias;
+        this.playerScores = new Map();
         this.blockchainId = null;
         this.blockchainName = null;
-        // -----------------------------------------------------
+		
+		this.isWaiting = true;
+		this.isReady = false;
+		this.WINNER = null;
+		
+		this.players = new Map();
+		this.matches = new Map();
+		this.winners = new Map();
+	}
 
-        this.TESTING = false;
-    }
+	isPublicTournament() {
+		return (this.visibility);
+	}
 
-    setTESTING() {
-        this.TESTING = true;
-    }
-    
-    sendMsg(user, msg) {
-        if (!user || user.isConnected === false || !user.socket) return ;
-        const data = JSON.stringify(msg);
-        user.socket.send(data);
-    }
+	broadcast(UserManager, type, msg, info, excludedUserIds = []) {
 
-    sendWin(user, loserUser) {
-        let loserEntry = this.getPlayerAlias(loserUser);
-        if (!loserEntry) {
-            loserEntry = "Anonymous";
-        }
-        const loser = loserEntry.alias;
-        this.sendMsg(user, {type: "WIN", msg: "You Won the tournament game against " + loser + "."});
-    }
+	    for (const [userId] of this.players) {
 
-    sendLose(user, winnerUser) {
-        let winnerEntry = this.getPlayerAlias(winnerUser);
-        if (!winnerEntry)
-            winnerEntry = "Anonymous";
-        const winner = winnerEntry.alias;
-        LOGGER(200, "Tournament", "sendLose", winner + " Won the tournament game.");
-        this.sendMsg(user, { type: "WIN", msg: winner + " Won the tournament game."});
-    }
+	        if (excludedUserIds !== null && !excludedUserIds.includes(userId))
+	            UserManager.getUserByID(userId).notify(type, msg, info);
+	    }
+	}
 
-    sendFinalWin(user) {
-        LOGGER(200, "Tournament", "sendFinalWin", "You won the tournament!" );
-        this.sendMsg(user, { type: "WIN", msg: "You won the tournament!" });
-    }
+	addUser(requestingUserId, user_alias) { LOGGER(200, "Tournament.js", "addUser", "Added user: " + user_alias);
 
-    sendMatchStart(user, user2) {
-        LOGGER(200, "Tournament", "sendMatchStart", "Playing against " + this.getPlayerAlias(user2).alias + ".");
-        this.sendMsg(user, { type: "NOTIFICATION", msg: "Playing against " + this.getPlayerAlias(user2).alias + "."})
-    }
+		
+		if (this.players.size >= this.maxPlayers) { LOGGER(400, "Tournament.js", "addUser", "Tournament already full.");
+			return (false);
+		}
+		this.players.set(requestingUserId, {alias: user_alias});
+		this.currentPlayerCount++;
+		return (true);
+	}
 
-    addUserToTournament(requestingUser, user_alias) { 
-        LOGGER(200, "Tournament", "addUserToTournament", "Added user: " + user_alias);
-        
-        if (this.players.size >= this.maxPlayers) { 
-            LOGGER(400, "Tournament", "addUserToTournament", "Tournament already full.");
-            return (false);
-        }
-        this.players.set(requestingUser, {alias: user_alias});
-        this.currentPlayerCount++;
-        return (true);
-    }
+	removePlayer(requestingUserId) { LOGGER(200, "Tournament.js", "removePlayer", "Removed user: " + this.players.values(requestingUser));
+		this.currentPlayerCount--;
+		this.players.delete(requestingUserId);
+	}
 
-    removeUserFromTournament(requestingUser) { 
-        LOGGER(200, "Tournament", "removeUserFromTournament", "Removed user: " + this.players.values(requestingUser));
-        this.currentPlayerCount--;
-        this.players.delete(requestingUser);
-    }
+	deleteWinner(userId) {
+		if (!user) return ;
+		this.winners.delete(userId);
+	}
 
-    deleteWinner(user) {
-        if (!user) return ;
-        this.winners.delete(user);
-    }
+	updateWinner(requestedMatchId, userWhoWonId) { LOGGER(200, "Tournament.js", "updateWinner", "Called");
 
-    updateWinner(requestedMatch, userWhoWon) { 
-        LOGGER(200, "Tournament", "updateWinner", "Called");
-
-        const match = this.matches.get(requestedMatch);
-        if (!match)
-            return false;
-        
-        this.winners.set(userWhoWon, this.players.get(userWhoWon));
-        this.matchDoneCount++;
-
+		const match = this.matches.get(requestedMatchId);
+		if (!match)
+			return false;
+		this.winners.set(userWhoWonId, this.players.get(userWhoWonId));
+		this.matchDoneCount++;
         // --- AÑADIDO: Actualizar puntuación ---
         // Cada victoria suma 100 puntos. Esto se usará para grabar en la blockchain al final.
         const currentScore = this.playerScores.get(userWhoWon) || 0;
         this.playerScores.set(userWhoWon, currentScore + 100);
         // --------------------------------------
+		return true;
+	}
 
-        return true;
-    }
+	prepareNextRound() { LOGGER(200, "Tournament.js", "prepareNextRound", "Called");
 
-    prepareNextRound() { 
-        LOGGER(200, "Tournament", "prepareNextRound", "Called");
+		
+		const nextPlayers = new Map(this.winners);
 
-        const nextPlayers = new Map(this.winners);
+		this.matches.clear();
+		this.winners.clear();
+		this.matchDoneCount = 0;
+		if (nextPlayers.size === 1) {
+			const entry = nextPlayers.keys().next().value;
+			this.WINNER = entry;
+		}
+		return (nextPlayers);
+	}
 
-        this.matches.clear();
-        this.winners.clear();
-        this.matchDoneCount = 0;
-        if (nextPlayers.size === 1) {
-            const entry = nextPlayers.keys().next().value;
-            this.WINNER = entry;
-        }
-        return (nextPlayers);
-    }
+	isRoundFinished() {
 
-    isRoundFinished() {
-        return  (this.matchDoneCount === this.matches.size && this.getIsReady() === true);
-    }
+		return  (this.matchDoneCount === this.matches.size && this.getIsReady() === true);
+	}
 
-    getWinner() {
-        return (this.WINNER);
-    }
+	getWinner() {
+		
+	    return (this.WINNER);
+	}
 
-    getIfTournamentFull() {
-        return (this.players.size === this.maxPlayers);
-    }
+	getIfTournamentFull() {
+		return (this.players.size === this.maxPlayers);
+	}
 
-    isWaitingAndFull() {
-        if (this.currentPlayerCount === this.maxPlayers && this.TESTING === true)
-            return (true);
-        if (this.isWaiting === true && this.getIfTournamentFull()) {
-            return (true);
-        }
-        return (false);
-    }
+	isWaitingAndFull() {
 
-    setReady() {
+		if (this.isWaiting === true && this.getIfTournamentFull()) {
+			return (true);
+		}
+		return (false);
+	}
+
+	setReady() {
+
+		this.isWaiting = false;
+		this.isReady = true;
+	}
+
+	unsetReady() {
+		this.isReady = false;
         this.isWaiting = false;
-        this.isReady = true;
-    }
+	}
 
-    unsetReady() {
-        this.isReady = false;
-        this.isWaiting = false;
-    }
+	getPlayers() {
+		return (this.players);
+	}
 
-    getPlayers() {
-        return (this.players);
-    }
+	getIsReady() {
+		return (this.isReady);
+	}
 
-    getIsReady() {
-        return (this.isReady);
-    }
+	getTournamentId() {
+		return (this.id);
+	}
 
-    getTournamentId() {
-        return (this.id);
-    }
+	getIsWaiting() {
+		return (this.isWaiting);
+	}
 
-    getIsWaiting() {
-        return (this.isWaiting);
-    }
+	getTournamentSize() {
+		return (this.maxPlayers);
+	}
 
-    getTournamentSize() {
-        return (this.maxPlayers);
-    }
+	getCurrentSize() {
+		return (this.currentPlayerCount);
+	}
 
-    getCurrentSize() {
-        return (this.currentPlayerCount);
-    }
+	getCreator() {
+		return (this.creatorId);
+	}
 
-    getCreator() {
-        return (this.creator);
-    }
+	getCreatorAlias() {
+		return (this.creatorAlias);
+	}
 
-    getCreatorAlias() {
-        return (this.creatorAlias);
-    }
+	getId() {
+		return (this.id);
+	}
 
-    getId() {
-        return (this.id);
-    }
+	getPlayer(userId) {
 
-    getPlayerAlias(user) {
-        return (this.players.get(user));
-    }
+		return (this.players.get(userId));
+	}
 
-    getWinners() {
-        if (this.winners.length === 0)
-            return (null);
-        return (this.winners);
-    }
+	getPlayerAlias(userId) {
 
-    
-    getPlayerScore(user) {
+		const entry = this.players.get(userId);
+		if (!entry) {
+			return null;
+		}
+		return entry.alias;
+	}
+
+	getWinners() {
+		if (this.winners.length === 0)
+			return (null);
+		return (this.winners);
+	}
+
+	getActiveMatches() {
+
+		const active_matches = [];
+
+		for (const [match_id] of this.matches) {
+
+			active_matches.push({
+				id: match_id,
+			});
+		}
+		return (active_matches);
+	}
+
+	getMatchById(match_id) {
+
+		if (!this.matches.has(match_id))
+			return (null);
+		return (this.matches.get(match_id));
+	}
+        getPlayerScore(user) {
         return this.playerScores.get(user) || 0;
     }
 
@@ -215,7 +211,6 @@ class Tournament {
             }
         }
     }
-
 
 }
 

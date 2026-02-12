@@ -1,5 +1,5 @@
 
-const LOGGER 	 = require("../LOGGER.js");
+const LOGGER 	 = require("../../LOGGER.js");
 
 function buildSet2FAHandler(db, fastify) {
 

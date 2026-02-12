@@ -46,79 +46,107 @@ function setTokenCookie(reply, token) {
 	});
 }
 
+async function authFromCookie(request, reply) {
+
+	const token = request.cookies?.accessToken;
+	if (!token) {
+		return reply.code(401).send({ error: "No token" });
+	}
+
+	let decoded;
+	try {
+		decoded = fastify.jwt.verify(token);
+	} catch (err) {
+		return reply.code(401).send({ error: "Invalid token" });
+	}
+
+	const player = userManager.getUserByID(decoded.id);
+	if (!player) {
+		return reply.code(401).send({ error: "User not found" });
+	}
+
+	request.user = player;
+}
+
 async function startServer() {
 	
 	await fastify.register(websocket);
 
 	// ✅ Registro de usuarios
-	const signupHandler  = require("./endpoints/signup.js");
+	const signupHandler  = require("./endpoints/auth/signup.js");
 	fastify.post("/api/sign-up", signupHandler(db, bcrypt, saltRounds, fastify));
 
 	// ✅  Login de usuarios
-	const loginHandler = require("./endpoints/login.js");;
+	const loginHandler = require("./endpoints/auth/login.js");;
 	fastify.post("/api/login", loginHandler(db, bcrypt, userManager, fastify, setTokenCookie));
 
 	// ✅ Logout del usuario
-	const buildLogoutHandler = require('./endpoints/logout.js');
+	const buildLogoutHandler = require('./endpoints/auth/logout.js');
 	fastify.post("/api/logout", buildLogoutHandler(userManager, fastify));
 
-	// ✅ WebSocket del juego - extraer token de cookies
-	const initGameSocket = buildGameSocketHandler(userManager);
-	fastify.get("/proxy-game", { websocket: true }, async (connection, req) => {
-		const socket = connection.socket;
-		const token = req.cookies?.accessToken;
-
-		if (!token) {
-			socket.close(1008, "No token provided");
-			return;
-		}
-		try {
-			const decoded = fastify.jwt.verify(token);
-			await initGameSocket(socket, decoded.id);
-		} catch (err) {
-			socket.close(1008, "Invalid token");
-		}
-	});
-
 	// ✅ Verificación de código 2FA
-	const verify2FAhandle = require("./endpoints/verify2FA.js");
+	const verify2FAhandle = require("./endpoints/auth/verify2FA.js");
 	fastify.post("/api/verify-2fa", verify2FAhandle(userManager, fastify, setTokenCookie));
 
 	// ✅ SET 2FA de usuarios
-	const buildSet2FAHandler = require('./endpoints/set2FA.js');
+	const buildSet2FAHandler = require('./endpoints/auth/set2FA.js');
 	fastify.post("/api/set-2fa", buildSet2FAHandler(db, fastify));
 
 	// ✅ Google OAuth - ahora setea cookies
-	const googleCallback = require("./endpoints/googleCallback.js");
+	const googleCallback = require("./endpoints/auth/googleCallback.js");
 	fastify.get("/auth/google/callback", googleCallback(userManager, fastify, db, setTokenCookie));
 
 	// ✅ Cambiar Display Name
-	const changeDisplayName = require("./endpoints/change_displayName.js");
+	const changeDisplayName = require("./endpoints/user/change_displayName.js");
 	fastify.post("/api/change-display-name", changeDisplayName(userManager, fastify, db));
 
 	// ✅ Cambiar username
-	const changeUserName = require("./endpoints/change_userName.js");
+	const changeUserName = require("./endpoints/user/change_userName.js");
 	fastify.post("/api/change-username", changeUserName(userManager, fastify, db));
 
 	// ✅ Cambiar email
-	const changeEmail = require("./endpoints/change_Email.js");
+	const changeEmail = require("./endpoints/user/change_Email.js");
 	fastify.post("/api/change-email", changeEmail(fastify, db));
 
 	// ✅ Cambiar pass
-	const changePass = require("./endpoints/change_Pass.js");
+	const changePass = require("./endpoints/user/change_Pass.js");
 	fastify.post("/api/change-pass", changePass(fastify, db,bcrypt, saltRounds));
 
 	// ✅ Cambiar avatar
-	const changeAvatar = require("./endpoints/change_avatar.js");
+	const changeAvatar = require("./endpoints/user/change_avatar.js");
 	fastify.post("/api/change-avatar", changeAvatar(userManager, fastify, db));
 
 	// ✅ Guardar partida (cualquier tipo)
-	const buildMatchResultHandler = require("./endpoints/matchResult.js");
+	const buildMatchResultHandler = require("./endpoints/user/matchResult.js");
 	fastify.post("/api/match-result", buildMatchResultHandler(db, fastify));
+
+
+
+	// API para websocket
+	const websocketHandler = require("./endpoints/user/websocket.js");
+	fastify.register(websocketHandler, {prefix: '/api/games', userManager, authFromCookie});
+
+	// API para torneos
+	const tournamentsHandler = require("./endpoints/user/tournaments.js");
+	fastify.register(tournamentsHandler, {prefix: '/api/tournaments', userManager, authFromCookie});
+
+	// API para partidas
+	const matchesHandler = require("./endpoints/user/matches.js");
+	fastify.register(matchesHandler, {prefix: '/api/matches', userManager, authFromCookie});
+
+	// API para info de perfiles
+	const infoHandler = require("./endpoints/user/info.js");
+	fastify.register(infoHandler, {prefix: '/api/users', userManager, authFromCookie});
+
+
+	// API para friends
+	const friendsHandler = require("./endpoints/user/friends.js");
+	fastify.register(friendsHandler, {prefix: '/api/friends', userManager, authFromCookie});
 
 	setInterval(() => {
 
-		userManager.updateGames();
+		userManager.updateMatches();
+		userManager.updateTournaments();
 
 	}, FRAMES);
 

@@ -1,5 +1,4 @@
-
-function createTestUsers(userManager, count)
+module.exports = function createTestUsers(userManager, count)
 {
 
 	let size = 2;
@@ -41,15 +40,7 @@ function createTestUsers(userManager, count)
 		userManager.loginUser(user_id);
 		users.push(user);
 		
-		if (size % 3 === 0) {
-			const tournament = userManager.createTournament(user, display_name, size);
-			tournament.setTESTING();
-			tournament.currentPlayerCount = size;
-			tournament.setReady();
-		}
 		size += 2;
 	}
 	return users;
 }
-
-module.exports = {createTestUsers};

@@ -1,7 +1,8 @@
-import { httpEvent, oneTimeEvent } from "./events.js";
-import { showNotification, greenish, redish, blackish } from "./ui.js";
+import { httpEvent } from "./events.js";
+import { greenish, redish, blackish } from "./ui.js";
 import { userSocket } from "./websocket.js";
 import type { MatchHistoryItem, UserStats } from "./vars.js";
+import { showNotification } from "./main.js";
 
 // --- DOM Selectors (Matches new HTML) ---
 
@@ -214,8 +215,8 @@ export async function loadDashboard(): Promise<void> {
 
 
   const [statsResult, historyResult] = await Promise.all([
-    oneTimeEvent("STATS_REQUEST", "STATS_RESPONSE"),
-    oneTimeEvent("MATCH_HISTORY_REQUEST", "MATCH_HISTORY_RESPONSE", "20"),
+    httpEvent("STATS_REQUEST", "STATS_RESPONSE"),
+    httpEvent("MATCH_HISTORY_REQUEST", "MATCH_HISTORY_RESPONSE"),
   ]);
 
 

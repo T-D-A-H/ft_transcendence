@@ -1,20 +1,18 @@
 import {
   canvas,
   drawGame,
-  getDisplaySide,
-  getSCORES,
   hide,
   mirrorCanvas,
-  setDisplaySide,
-  setSCORES,
   show,
   showCanvas,
   showMenu,
   updateOpponentUI,
   exitMatchButton,
   startMatchButton,
-  showNotification,
 } from "./ui.js";
+
+import {showNotification} from "./main.js";
+import {getDisplaySide, getSCORES, setSCORES, setDisplaySide} from "./vars.js";
 
 let aiDifficulty = 3; // Difficulty level from 1 (easiest) to 5 (hardest)
 const aiErrorLevels = [0.35, 0.25, 0.18, 0.1, 0.04];
@@ -322,7 +320,7 @@ export function startAiMode(): void {
   aiLastFrame = 0;
   aiNextDecisionAt = 0;
   setSCORES(0, 0);
-  updateOpponentUI("AI");
+  updateOpponentUI("AI", "");
 
   resetAiBall(1);
 

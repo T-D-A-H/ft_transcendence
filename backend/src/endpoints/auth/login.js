@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
-const User 		 = require("../Classes/User.js");
-const LOGGER 	 = require("../LOGGER.js");
+const User 		 = require("../../Classes/User.js");
+const LOGGER 	 = require("../../LOGGER.js");
 
 
 function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {

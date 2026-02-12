@@ -13,7 +13,7 @@ export function initializeWebSocket() {
 
     return new Promise<WebSocket>((resolve, reject) => {
     
-        const ws = new WebSocket(`wss://localhost:4000/proxy-game`);
+        const ws = new WebSocket(`wss://localhost:4000/api/games/`);
         setUserSocket(ws);
         ws.onopen = () => {
             show(logoutButton);

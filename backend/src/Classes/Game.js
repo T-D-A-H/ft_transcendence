@@ -42,7 +42,7 @@ class Game {
 
     constructor() {
 
-        LOGGER(200, "Game", "Constructor", "called.");
+        LOGGER(200, "Game.js", "Constructor", "called.");
         this.SCORES = [0, 0];
 	    this.ball = {
             SPEED: Game.Ball.SPEED,
@@ -77,7 +77,7 @@ class Game {
         this.ball.XDir = Game.Ball.DIR[player_index];
         this.ball.YDir = 0;
         this.ball.SPEED = Game.Ball.SPEED;
-        LOGGER(200, "Game", "restartGame", "SCORES: " + this.SCORES[0] + ", " + this.SCORES[1]);
+        LOGGER(200, "Game.js", "restartGame", "SCORES: " + this.SCORES[0] + ", " + this.SCORES[1]);
     }
 
     updatePlayerPaddle(newYDir) {
@@ -131,7 +131,12 @@ class Game {
         }
         else if (this.ballBouncedOnWall()) {
 
-            this.ball.YDir = -this.ball.YDir;
+	        if (this.ball.Y + Game.Ball.OFFSET >= Game.Screen.HEIGHT)
+	        	this.ball.Y = Game.Screen.HEIGHT - Game.Ball.OFFSET - 1;
+	        else
+	        	this.ball.Y = Game.Ball.OFFSET + 1;
+
+	        this.ball.YDir = -this.ball.YDir;
         }
         this.ball.X  += this.ball.XDir * this.ball.SPEED;
         this.ball.Y  += this.ball.YDir;

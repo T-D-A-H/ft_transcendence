@@ -1,15 +1,8 @@
 TODO
 
-.SERVER
- - TORNEO: si haces exit y solo quedan 2 deberia ensenyar mensaje de you won the game o equivalente
+frontend
 
-
-.DATABASE
- - Al crear cuenta con datos: x, x, x, x TIRA ERROR por unique constraint failed pero crea la cuenta
-
-
-.GUI
- - cuando no hay torneos sale mensaje de no available tournaments en vez de ensenar el modal y sin torneos ahi
-
- - boton de login with google no matchea el estilo 
-
+- CAMBIAR UPDATEPROFILE CUANDO CAMBIAS DISPLAY NAME, SE DUPLICA,
+- CHANGE AVATAR
+- en PARTIDA LOCAL FONT THE NUMEROS NO FUNCION
+- local: no se mandan mOvimientos de ambos lados

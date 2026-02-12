@@ -29,13 +29,24 @@ class User {
         this.tournaments_won = stats?.tournaments_won || 0;
     }
 
-    incrementLocalPlayed() { this.local_played++; }
-    incrementLocalWon() { this.local_won++; }
-
     send(message) {
+
         if (this.socket && this.isConnected) {
             this.socket.send(JSON.stringify(message));
         }
+    }
+
+    notify(type, msg, info) {
+
+    	const payload = {type: type};
+    
+        if (msg !== null) {
+            payload.msg = msg;
+        }
+    	if (info !== null) {
+    		payload.info = info;
+    	}
+    	this.send(payload);
     }
 
     disconnect() {
@@ -58,64 +69,44 @@ class User {
     }
     
     setMatch(match) {
-
         this.currentMatch = match;
     }
 
-    unsetMatch() {
-        this.currentMatch = null;
+    setIsPlaying(playing) {
+        this.isPlaying = playing;
     }
 
-    setIsPlaying() {
-        this.isPlaying = true;
+    _makePendingKey(type, id, userId) {
+	    return `${type}:${id}:${userId}`;
     }
 
-    unsetIsPlaying() {
-        this.isPlaying = false;
-    }
-
-
-
-	addPendingRequest(target_user, target_username) {
-		if (!this.pendingMatchRequests.has(target_username)) {
-			this.pendingMatchRequests.set(target_username, target_user);
-		}
-	}
-
-
-	removePendingRequest(target_username) {
-		this.pendingMatchRequests.delete(target_username);
-	}
-
-
-	hasPendingRequest(target_username) {
-		return this.pendingMatchRequests.has(target_username);
-	}
-
-	
-    listPendingRequests() {
-    
-    	const requestslist = [];
-    
-    	const values = Array.from(this.pendingMatchRequests.values());
-    
-    	for (let i = values.length - 1; i >= 0; --i) {
+	addPendingRequest(type, id, targetUserId) {
         
-    		const user = values[i];
-        
-    		requestslist.push({
-    			id: user.getId(),
-    			display_name: user.getDisplayName(),
-    			username: user.getUsername()
+    	const key = this._makePendingKey(type, id, targetUserId);
+
+    	if (!this.pendingRequests.has(key)) {
+    		this.pendingRequests.set(key, {
+    			type: type,
+    			id: id,
+    			user: targetUserId
     		});
     	}
-    
-    	if (requestslist.length === 0) {
-    		return (null);
-    	}
-    	return (requestslist);
     }
 
+    removePendingRequest(type, id, targetUserId) {
+    	const key = this._makePendingKey(type, id, targetUserId);
+    	this.pendingRequests.delete(key);
+    }
+
+    hasPendingRequest(type, id, targetUserId) {
+    	const key = this._makePendingKey(type, id, targetUserId);
+    	return this.pendingRequests.has(key);
+    }
+
+
+    getPendingRequests() {
+        return (this.pendingRequests);
+    }
 
     setTournament(currentTournament) {
         this.currentTournament = currentTournament;
@@ -144,6 +135,10 @@ class User {
         }
     }
 
+    isInGame() {
+        return (this.currentMatch !== null && this.currentTournament !== null)
+    }
+
     getId() {return this.id;}
     getUsername() {return this.username;}
     getDisplayName() {return this.display_name;}
@@ -152,6 +147,8 @@ class User {
     getCurrentMatch() {return this.currentMatch;}
     getIsPlaying() {return this.isPlaying;}
     getCurrentTournament() {return this.currentTournament;}
+    incrementLocalPlayed() { this.local_played++; }
+    incrementLocalWon() { this.local_won++; }
     updateDisplayName(newName) {this.display_name = newName;}
     updateUserName(newName) {this.username = newName;}
 }

@@ -1,4 +1,4 @@
-const LOGGER 	 = require("../LOGGER.js");
+const LOGGER 	 = require("../../LOGGER.js");
 
 function verify2FAhandle(userManager, fastify, setTokenCookie) {
 
