@@ -1,4 +1,4 @@
-import { oneTimeEvent } from "./events.js";
+import { httpEvent, oneTimeEvent } from "./events.js";
 import { showNotification, greenish, redish, blackish } from "./ui.js";
 import { userSocket } from "./websocket.js";
 import type { MatchHistoryItem, UserStats } from "./vars.js";

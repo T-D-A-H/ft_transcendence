@@ -1,16 +1,18 @@
-import {texture, canvas, pongFont, whitish, blackish, getSCORES } from "./ui.js";
+import { texture, canvas, pongFont, whitish, blackish, FONT} from "./ui.js";
+import { getSCORES } from "./vars.js";
 
 
-export async function drawScores(SCORES: number[]) {
+export function drawScores(SCORES: number[]) {
 
-	await pongFont;
+	
 	texture.fillStyle = blackish;
 	texture.textAlign = "center";
 	texture.textBaseline = "top";
-	texture.font = "48px BlockFont";
+	texture.font = "48px " + FONT;
 
 	texture.fillText(SCORES[0].toString(), canvas.width / 4, 20);
 	texture.fillText(SCORES[1].toString(), (canvas.width / 4) * 3, 20);
+
 }
 
 
@@ -51,4 +53,3 @@ export function drawGame(leftX: number = 10, leftY: number = 170, rightX: number
 
 	drawScores(getSCORES());
 }
-

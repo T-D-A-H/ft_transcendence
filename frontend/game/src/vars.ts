@@ -1,3 +1,150 @@
+
+export const POST: string = "POST";
+
+export const GET: string = "GET";
+
+export const BASE_URL: string = "api";
+
+export const MATCH_URL: string = "matches";
+
+export const TOURNAMENT_URL: string = "tournaments";
+
+export const USER_URL: string = "users";
+
+export const INVITE_URL: string = "invite";
+
+export const RESPOND_URL: string = "respond";
+
+export const START_URL: string = "start";
+
+export const EXIT_URL: string = "exit";
+
+export const JOIN_URL: string = "join";
+
+export const REQUESTS_URL: string = "requests";
+
+export const INFO_URL: string = "info";
+
+export let currentMatchId: string;
+
+
+export function setCurrentMatchId(id: string): void {
+    currentMatchId = id;
+}
+
+export function getCurrentMatchId(): string {
+    return currentMatchId;
+}
+
+export let currentTournamentId: string;
+
+
+export function setCurrentTournamentId(id: string): void {
+    currentTournamentId = id;
+}
+
+export function getCurrentTournamentId(): string {
+    return currentTournamentId;
+}
+
+export let currentOpponentId: string;
+
+
+export function setCurrentOpponentId(id: string): void {
+    currentOpponentId = id;
+}
+
+export function getCurrentOpponentId(): string {
+    return currentOpponentId;
+}
+
+
+export let SCORES: number[] = [0, 0];
+
+
+export function setSCORES(scoreA: number, scoreB: number) {
+
+	SCORES[0] = scoreA;
+    SCORES[1] = scoreB;
+}
+
+export function getSCORES() {
+
+	return (SCORES);
+}
+
+export let INVITE_FROM: string | null;
+
+export function setInviteFrom(target: string | null) {
+	INVITE_FROM = target;
+}
+
+export function getInviteFrom(): string | null{
+	return (INVITE_FROM);
+}
+
+let displaySide: string = "right";
+
+
+export function getDisplaySide(): string {
+	return (displaySide);
+}
+
+export function setDisplaySide(side: string): void {
+
+	displaySide = side;
+}
+
+type MatchMode = "single" | "dual";
+
+export let matchMode: MatchMode = "single";
+
+export function setMatchMode(mode: string): void {
+    matchMode = mode as MatchMode;
+}
+
+export function getMatchMode(): string {
+    return (matchMode);
+}
+
+export let NOTIFICATION_TIME: number = 2500;
+
+
+export enum GameType {
+    NONE,
+    TWO_PLAYER,
+    AI,
+    MATCH,
+    TOURNAMENT
+}
+
+export let currentGameType: GameType = GameType.NONE;
+
+export function setGameType(type: GameType): void {
+    currentGameType = type;
+}
+
+export function getGameType(): GameType {
+    return (currentGameType);
+}
+
+export enum GameStatus {
+    NOT_IN_GAME,
+    READY_TO_START,
+    IN_GAME
+}
+
+export let currentGameStatus: GameStatus = GameStatus.NOT_IN_GAME;
+
+export function setGameStatus(mode: GameStatus): void {
+    currentGameStatus = mode;
+}
+
+export function getGameStatus(): GameStatus {
+    return (currentGameStatus);
+}
+
+
 export interface TournamentInfo {
   id: number;
   creator: string;
@@ -6,7 +153,7 @@ export interface TournamentInfo {
   full: boolean;
 }
 
-export type MatchMode = "local" | "online" | "tournament";
+// export type MatchMode = "local" | "online" | "tournament";
 
 export interface UserStats {
   userId: string;
@@ -70,117 +217,6 @@ export interface StatusMsgTarget {
     | null;
 }
 
-export interface SendInviteResponse {
-  type: "SEND_INVITE_RESPONSE";
-  status: number;
-  msg: string;
-  target: string;
-}
-
-export interface ReplyInviteResponse {
-  type: "REPLY_INVITE_RESPONSE";
-  status: number;
-  msg: string;
-  target: string;
-}
-
-export interface PlayLocallyResponse {
-  type: "PLAY_LOCALLY_RESPONSE";
-  status: number;
-  msg: string;
-  target: string;
-}
-
-export interface StartMatchResponse {
-  type: "START_MATCH_RESPONSE";
-  status: number;
-  msg: string;
-  target: string;
-}
-
-export interface ExitMatchResponse {
-  type: "EXIT_MATCH_RESPONSE";
-  status: number;
-  msg: string;
-  target: string;
-}
-
-export interface InfoResponse {
-  type: "INFO_RESPONSE";
-  status: number;
-  msg: string;
-  target: ProfileInfo;
-}
-
-export interface IncomingInviteRequest {
-  type: "INCOMING_INVITE_REQUEST";
-  msg: string;
-  target: string;
-}
-
-export interface DrawMessage {
-  type: "DRAW";
-  LeftXY: [number, number];
-  RightXY: [number, number];
-  BallXY: [number, number];
-}
-
-export interface ScoresMessage {
-  type: "SCORES";
-  scores: [number, number];
-}
-
-export interface IncomingNotification {
-  type: "NOTIFICATION";
-  status: number;
-  msg: string;
-}
-
-export interface IncomingMatchReady {
-  type: "MATCH_READY";
-  status: number;
-  msg: string;
-  target: string;
-}
-
-export interface WinMessage {
-  type: "WIN";
-  msg: string;
-}
-
-export interface MirrorCanvasMessage {
-  type: "MIRROR";
-  msg: string;
-}
-
-export interface CreateTournamentRequest {
-  type: "CREATE_TOURNAMENT_RESPONSE";
-  status: number;
-  msg: string;
-  target?: null;
-}
-
-export interface SearchTournamentRequest {
-  type: "SEARCH_TOURNAMENT_RESPONSE";
-  status: number;
-  msg: string;
-  target: TournamentInfo[] | null;
-}
-
-export interface JoinTournamentRequest {
-  type: "JOIN_TOURNAMENT_RESPONSE";
-  status: number;
-  msg: string;
-  target?: null;
-}
-
-export interface PendingRequest {
-  type: "GET_PENDING_RESPONSE";
-  status: number;
-  msg: string;
-  target: ProfileInfo[] | null;
-}
-
 export interface StatsResponse {
   type: "STATS_RESPONSE";
   status: number;
@@ -210,22 +246,5 @@ export interface MatchSavedMessage {
 export type ServerMessage =
   | PongMessage
   | MatchSavedMessage
-  | SendInviteResponse
-  | ReplyInviteResponse
-  | IncomingInviteRequest
-  | StartMatchResponse
-  | PlayLocallyResponse
-  | ScoresMessage
-  | DrawMessage
-  | IncomingNotification
-  | WinMessage
-  | MirrorCanvasMessage
-  | CreateTournamentRequest
-  | SearchTournamentRequest
-  | JoinTournamentRequest
-  | ExitMatchResponse
-  | InfoResponse
-  | PendingRequest
-  | IncomingMatchReady
   | StatsResponse
   | MatchHistoryResponse;

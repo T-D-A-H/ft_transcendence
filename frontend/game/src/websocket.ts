@@ -1,10 +1,12 @@
 
-import {ConstantEvent, receiveMessages, oneTimeEvent} from "./events.js";
-import { logoutButton, show, updateProfileUI, topBarProfilePicture} from "./ui.js";
+import { logoutButton, show, hide} from "./ui.js";
 import { ProfileInfo } from "./vars.js";
-import { setUserSocket } from "./auth.js";
+import { getProfileInfo } from "./main.js";
+import { receiveMessages, registerEvents} from "./events.js";
+
 
 export let userSocket: WebSocket | null = null;
+
 let pingInterval: any = null;
 
 export function initializeWebSocket() {
@@ -14,14 +16,9 @@ export function initializeWebSocket() {
         const ws = new WebSocket(`wss://localhost:4000/proxy-game`);
         setUserSocket(ws);
         ws.onopen = () => {
+            show(logoutButton);
             receiveMessages(ws);
-            ConstantEvent("NOTIFICATION");
-            ConstantEvent("MATCH_READY");
-            ConstantEvent("INCOMING_INVITE_REQUEST");
-            ConstantEvent("WIN");
-            ConstantEvent("MIRROR");
-            ConstantEvent("SCORES");
-            ConstantEvent("DRAW");
+            registerEvents();
             userSocket = ws;
             if (pingInterval)
                 clearInterval(pingInterval);
@@ -37,6 +34,7 @@ export function initializeWebSocket() {
 
             console.error("WebSocket error:", err);
             setUserSocket(null);
+            hide(logoutButton);
             try { ws.close(); } catch(e) {}
             reject(err);
         };
@@ -45,7 +43,7 @@ export function initializeWebSocket() {
             console.log("WebSocket disconnected");
             if (pingInterval)
                 clearInterval(pingInterval);
-            nullWebsocket();
+            setUserSocket(null);
             if (event.reason === "New login detected") {
                 
                 alert("Tu sesión se ha cerrado porque has entrado desde otro dispositivo o pestaña.");
@@ -67,29 +65,30 @@ export async function restoreSession(): Promise<boolean> {
     try {
         await initializeWebSocket();
 
-        const result = await oneTimeEvent("INFO_REQUEST", "INFO_RESPONSE");
-        
-        if (!result || result.status !== 200 || !result.target) {
-            throw new Error("Could not fetch user profile");
-        }
-        const info = result.target as ProfileInfo;
-        show(logoutButton);
-        updateProfileUI(info.display_name, info.username);
-        if (info.avatar && topBarProfilePicture) {
-            topBarProfilePicture.innerHTML = info.avatar;
-        }
+        await getProfileInfo(false);
         
         return true;
     }
     catch (err) {
-        nullWebsocket();
+        setUserSocket(null);
         return false;
     }
 }
 
-export function nullWebsocket(): void {
-    userSocket = null;
-    setUserSocket(null);
+export function setUserSocket(socket: WebSocket | null) {
+
+	userSocket = socket;
+}
+
+export function getUserSocket(): WebSocket | null {
+    
+    return userSocket;
+}
+
+export function closeUserSocket(): void {
+
+    const socket: WebSocket = userSocket as WebSocket;
+    socket.close();
 }
 
 

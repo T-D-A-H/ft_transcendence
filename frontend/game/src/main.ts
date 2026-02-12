@@ -1,80 +1,3 @@
-import { loadAnimation, showLoader, hideLoader } from "./ui.js";
-import {
-  loginModal,
-  closeLoginButton,
-  logoutButton,
-  usernameInput,
-  passwordInput,
-  submitLoginButton,
-  dontHaveAnAccountButton,
-} from "./ui.js";
-import {
-  registerModal,
-  closeRegisterButton,
-  submitRegisterButton,
-  regUsernameInput,
-  regDisplaynameInput,
-  regEmailInput,
-  regPasswordInput,
-  alreadyHaveAnAccountButton,
-} from "./ui.js";
-import {
-  twoFAModal,
-  twoFAOptionModal,
-  twoFAEmailButton,
-  twoFASubmitButton,
-  twoFASkipButton,
-  twoFAAuthButton,
-  twoFAInput,
-  twoFACancelButton,
-} from "./ui.js";
-import {
-  startMatchButton,
-  playLocallyButton,
-  exitMatchButton,
-  playAgainstAIButton,
-} from "./ui.js";
-import {
-  playRequestModal,
-  playAgainstUserButton,
-  playRequestUsernameInput,
-  playRequestCloseButton,
-  playRequestSendButton,
-} from "./ui.js";
-import { menuButtons, getInviteFrom } from "./ui.js";
-import {
-  openCreateTournamentButton,
-  closeCreateTournamentButton,
-  submitTournamentCreationButton,
-  createTournamentModal,
-  aliasTournamentInput,
-  tournamentSizeInput,
-} from "./ui.js";
-import {
-  openSearchTournamentButton,
-  closeSearchTournamentButton,
-  searchTournamentsModal,
-  renderTournamentList,
-} from "./ui.js";
-import {
-  show,
-  hide,
-  showMenu,
-  showNotification,
-  renderPendingRequests,
-  mirrorCanvas,
-  getDisplaySide,
-  setDisplaySide,
-} from "./ui.js";
-import {
-  openMenuButton,
-  notificationAcceptButton,
-  topBarDisplayName,
-  makeVisible,
-  updateOpponentUI,
-  updateProfileUI,
-  googleLoginButton,
-} from "./ui.js";
 import {
   changeUsernameButton,
   changeUsernameModal,
@@ -111,21 +34,57 @@ import {
 } from "./change.js";
 
 import { ProfileInfo, TournamentInfo } from "./vars.js";
-
-import {
-  registerUser,
-  loginUser,
-  logoutUser,
-  configure2FA,
-  verify2FA,
-} from "./auth.js";
-
-import { userSocket, restoreSession } from "./websocket.js";
-
-import { oneTimeEvent, setMatchMode, initKeyHandling } from "./events.js";
-
 import { startAiMode, stopAiMode, isAiModeActive } from "./ai.js";
 import { initStatsDashboard, loadDashboard } from "./stats.js";
+import { friendsListInviteUL, getGameVisibility} from "./ui.js";
+import { loginModal, closeLoginButton, logoutButton,usernameInput, passwordInput, submitLoginButton, dontHaveAnAccountButton} from "./ui.js";
+import { registerModal, closeRegisterButton, submitRegisterButton, regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput, alreadyHaveAnAccountButton} from "./ui.js";
+import { twoFAOptionCancelButton, twoFAModal, twoFAOptionModal, twoFAEmailButton, twoFASubmitButton, twoFASkipButton, twoFAAuthButton, twoFAInput, twoFACancelButton} from "./ui.js";
+import { startMatchButton, exitMatchButton, currentGameButton, currentGameModal, currentGameCancel} from "./ui.js";
+import { playRequestSendButton, playRequestUsernameInput, requestListMatchesUL, requestsListFriendsUL, requestListTournamentsUL} from "./ui.js";
+import { menuButtons, createGameModal, updateCurrentGame, requestsTypeButtons, requestsTypeOptions, requestGameModal,requestFriendsButton} from "./ui.js";
+import { submitTournamentCreationButton, tournamentSizeInput} from "./ui.js";
+import { findGameButton, findGameCancelButton, findGameModal, findGameListUL, getSelectedMode} from "./ui.js";
+import { invitePlayersModal, invitePlayersCancelButton, invitePlayersCurrentGameButton, invitePlayersMatchButton, invitePlayersTournamentButton } from "./ui.js";
+import { renderGamesList, createGameButton, createGameCancelButton, gameCreateSubmitButton, requestsCancelButton} from "./ui.js";
+import { show, hide, showMenu, notificationBox, notificationBoxText, renderPendingRequests, requestPlayButton} from "./ui.js";
+import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisible, updateOpponentUI, updateProfileUI,  googleLoginButton } from "./ui.js";
+import { GameStatus, setGameStatus, getGameStatus, GameType, setGameType, getGameType } from "./vars.js";
+
+import { BASE_URL, MATCH_URL, TOURNAMENT_URL, USER_URL, POST, GET, INVITE_URL, RESPOND_URL, START_URL, EXIT_URL, JOIN_URL, REQUESTS_URL, INFO_URL } from "./vars.js";
+import { setCurrentMatchId, getCurrentMatchId, setCurrentTournamentId, getDisplaySide, setDisplaySide, getCurrentTournamentId, setCurrentOpponentId } from "./vars.js";
+import { getCurrentOpponentId, setInviteFrom, getInviteFrom, setMatchMode, NOTIFICATION_TIME  } from "./vars.js";
+
+import { registerUser, loginUser, logoutUser, configure2FA, verify2FA } from "./auth.js";
+
+import { userSocket, initializeWebSocket, restoreSession } from "./websocket.js";
+
+import {httpEvent, initKeyHandling} from "./events.js";
+
+
+
+(async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+
+  const error = urlParams.get("error_google");
+
+  if (error === "email_exists_different_provider") {
+    showNotification("Email already registered with password (not Google).");
+    window.history.replaceState({}, document.title, "/");
+  }
+
+  if (error === "user_login") {
+    showNotification("Login Error: User already connected or internal error.");
+    window.history.replaceState({}, document.title, "/");
+  }
+
+  const restored = await restoreSession();
+
+  if (!restored) {
+    console.log("No hay sesión activa");
+  }
+})();
+
 
 googleLoginButton.onclick = () => {
   window.location.href = "/auth/google";
@@ -133,28 +92,13 @@ googleLoginButton.onclick = () => {
 
 initStatsDashboard();
 
-menuButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    const targetId = button.dataset.target;
-    if (!targetId) return;
-    
-    menuButtons.forEach((btn) => btn.classList.remove("active-border"));
-    button.classList.add("active-border");
-    
-    const allLists = document.querySelectorAll<HTMLElement>(".pong-list");
-    allLists.forEach((list) => {
-      if (list.id === targetId) show(list);
-      else hide(list);
-    });
-    
-    if (targetId === "request_list") {
-      renderRequestLists();
-    } else if (targetId === "stats_list") {
-      getProfileInfo(false);
-      loadDashboard();
-    }
-  });
-});
+alreadyHaveAnAccountButton.onclick = () => {
+	hide(registerModal);
+	show(loginModal);
+	showNotification("You must sign in in order to continue!");
+};
+
+twoFACancelButton.onclick = () => hide(twoFAOptionModal);
 
 alreadyHaveAnAccountButton.onclick = () => {
   hide(registerModal);
@@ -163,41 +107,22 @@ alreadyHaveAnAccountButton.onclick = () => {
 };
 
 submitRegisterButton.onclick = async () => {
-  submitRegisterButton.disabled = true;
 
-  const result = await registerUser(
-    regUsernameInput,
-    regDisplaynameInput,
-    regEmailInput,
-    regPasswordInput,
-  );
+	const result = await registerUser(regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput);
 
-  submitRegisterButton.disabled = false;
+	if (result.status === 0 && result.setupToken) {
+		hide(registerModal);
+		show(twoFAOptionModal);
+		twoFAEmailButton.onclick = () => {
+			configure2FA(result.setupToken!, "2FAmail", twoFAOptionModal, loginModal, registerModal);
+		}
+		twoFASkipButton.onclick = twoFAOptionCancelButton.onclick = () => {
 
-  if (result.status === 0 && result.setupToken) {
-    hide(registerModal);
-    show(twoFAOptionModal);
-    twoFAEmailButton.onclick = () => {
-      configure2FA(
-        result.setupToken!,
-        "2FAmail",
-        twoFAOptionModal,
-        loginModal,
-        registerModal,
-      );
-    };
-    twoFASkipButton.onclick = twoFACancelButton.onclick = () => {
-      configure2FA(
-        result.setupToken!,
-        "skip",
-        twoFAOptionModal,
-        loginModal,
-        registerModal,
-      );
-    };
-  } else {
-    showNotification(result.error || "Error creating account");
-  }
+			configure2FA(result.setupToken!, "skip", twoFAOptionModal, loginModal, registerModal);
+		};
+	} else {
+		showNotification("1 Account with that username/email already exists.");
+	}
 };
 
 closeRegisterButton.onclick = () => hide(registerModal);
@@ -240,308 +165,459 @@ closeLoginButton.onclick = () => hide(loginModal);
 
 logoutButton.onclick = () => logoutUser(logoutButton);
 
-playAgainstUserButton.onclick = () => {
-  if (!userSocket) {
-    show(loginModal);
-    showNotification("You must sign in in order to continue!!!");
-    return;
-  }
-  show(playRequestModal);
+currentGameButton.onclick = () => show(currentGameModal);
+
+currentGameCancel.onclick = () => hide(currentGameModal);
+
+
+menuButtons.forEach(button => {
+
+	button.addEventListener('click', () => {
+
+		const targetId = button.dataset.target;
+		if (!targetId)
+			return;
+		menuButtons.forEach(btn => btn.classList.remove('active-border'));
+		button.classList.add('active-border');
+		const allLists = document.querySelectorAll<HTMLElement>('.pong-list');
+		allLists.forEach(list => {
+
+			if (list.id === targetId) {
+				show(list);
+			}
+			else
+				hide(list);
+		});
+    if (targetId === "stats_list") {
+      getProfileInfo(false);
+      loadDashboard();
+    }
+
+	});
+});
+
+
+requestsTypeButtons.forEach((button): void => {
+
+	button.onclick = (): void => {
+		const targetId = button.dataset.target;
+		if (!targetId)
+			return ;
+
+		requestsTypeButtons.forEach(btn => btn.classList.remove('invert-colors'));
+		button.classList.add('invert-colors');
+
+		requestsTypeOptions.forEach(div => {
+			if (div.id === targetId)
+				show(div);
+			else
+				hide(div);
+		});
+
+		if (targetId === "requests_friends")
+			renderRequestLists(requestsListFriendsUL, "friends");
+		else if (targetId === "requests_games")
+			renderRequestLists(requestListMatchesUL, "matches");
+		else if (targetId === "requests_tournaments")
+			renderRequestLists(requestListTournamentsUL, "tournaments");
+	};
+});
+
+requestPlayButton.onclick = async () => {
+
+	if (!userSocket) {
+		show(loginModal);
+		return ;
+	}
+	requestsTypeButtons.forEach(btn => btn.classList.remove("invert-colors"));
+	requestsTypeButtons[2].classList.add("invert-colors");
+	requestsTypeOptions.forEach(div => {
+		if (div.id === "requests_tournaments") show(div);
+		else hide(div);
+	});
+	renderRequestLists(requestListTournamentsUL, "tournaments");
 };
 
-playRequestSendButton.onclick = async () => {
-  const target_username = playRequestUsernameInput.value.trim();
-  if (target_username.length === 0) {
-    alert("Username field empty");
-    return;
-  }
+requestFriendsButton.onclick = async () => {
 
-  try {
-    const result = await oneTimeEvent(
-      "SEND_INVITE_REQUEST",
-      "SEND_INVITE_RESPONSE",
-      target_username,
-    );
-
-    if (!result || !result.target) {
-      showNotification("No response from server");
-      return;
-    }
-    if (result.target !== target_username) {
-      showNotification("Username response doesnt match invitation target");
-      return;
-    }
-    if (result.status !== 200) {
-      showNotification(result.msg);
-      return;
-    }
-    hide(playRequestModal);
-  } catch {
-    showNotification("Failed to send invite");
-  }
+	if (!userSocket) {
+		show(loginModal);
+		return ;
+	}
+	requestsTypeButtons.forEach(btn => btn.classList.remove("invert-colors"));
+	requestsTypeButtons[0].classList.add("invert-colors");
+	requestsTypeOptions.forEach(div => {
+		if (div.id === "requests_friends") show(div);
+		else hide(div);
+	});
+	renderRequestLists(requestsListFriendsUL, "friends");
 };
 
-playRequestCloseButton.onclick = () => hide(playRequestModal);
+requestsCancelButton.onclick = () => {
+	hide(requestGameModal);
+}
+
+invitePlayersCurrentGameButton.onclick = async () => {
+	hide(currentGameModal);
+	show(invitePlayersModal);
+	searchOnlineFriends("tournaments", friendsListInviteUL);// CAMBIAR A RENDER FRIENDS---------------------------------------------
+};
+
+// CAMBIAR A RENDER FRIENDS---------------------------------------------
+invitePlayersMatchButton.onclick = async () => {
+	hide(createGameModal);
+	show(invitePlayersModal);
+	searchOnlineFriends("friends", friendsListInviteUL);
+	
+};
+// CAMBIAR A RENDER FRIENDS---------------------------------------------
+invitePlayersTournamentButton.onclick = async () => {
+	hide(createGameModal);
+	show(invitePlayersModal);
+	searchOnlineFriends("friends", friendsListInviteUL);
+};
+
+invitePlayersCancelButton.onclick = () => hide(invitePlayersModal);
+
+
+createGameButton.onclick = () => {
+	if (!userSocket) {
+		show(loginModal);
+		return ;
+	}
+	show(createGameModal);
+};
+
+createGameCancelButton.onclick = () => hide(createGameModal);
+
+gameCreateSubmitButton.onclick = async () => {
+
+	if (getSelectedMode() === "online")
+		startOnlineGame();
+	else if (getSelectedMode() === "tournament")
+		createTournament();
+	else
+		startLocalGame(getSelectedMode());
+};
+
+
+findGameButton.onclick = async () => {
+	if (!userSocket) {
+		show(loginModal);
+		return ;
+	}
+	await searchAvailableGames("tournaments", findGameListUL); // SHOULD CHANGE TO ANY
+	show(findGameModal);
+};
+	
+findGameCancelButton.onclick = () => hide(findGameModal);
+
+async function startLocalGame(match_type: string) {
+
+
+    try {
+		
+        const response = await httpEvent(POST, `/${BASE_URL}/${MATCH_URL}/`, { type: match_type, visibility: false});
+
+        if (response.status !== 200) {
+            return showNotification(response.msg);
+        }
+		setCurrentMatchId(response.match_id);
+
+    }
+    catch (err: any) {
+    	console.log(err?.msg ?? "Request failed");
+    }
+}
+
+async function startOnlineGame() {
+
+    const targetUsername = playRequestUsernameInput.value.trim();
+    if (targetUsername.length === 0 && getGameVisibility() === false) {
+        return showNotification("Username field empty");
+    }
+    try {
+		
+        const response = await httpEvent(POST, `/${BASE_URL}/${MATCH_URL}/`, { type: "online",  visibility: getGameVisibility() });
+
+        if (response.status !== 200) {
+            return showNotification(response.msg);
+        }
+		setCurrentMatchId(response.match_id);
+        try {
+			
+            const response2 = await httpEvent(POST, `/${BASE_URL}/${MATCH_URL}/${getCurrentMatchId()}/${INVITE_URL}`, { username: targetUsername});
+  
+            showNotification(response2.msg);
+            if (response2.status !== 200) {
+                return ;
+            }
+        }
+        catch (err: any) {
+        	console.error(err?.msg ?? "Request failed");
+        } 
+    }
+    catch (err: any) {
+    	console.error(err?.msg ?? "Request failed");
+    }
+};
+
+async function createTournament() {
+
+    const size = tournamentSizeInput.value;
+
+    if (size.length === 0)
+        return ;
+
+    try {
+		
+        const response = await httpEvent(POST, `/${BASE_URL}/${TOURNAMENT_URL}/`, { size: size, visibility: getGameVisibility() });
+
+        showNotification(response.msg);
+        if (response.status !== 200)
+            return ;
+		setCurrentTournamentId(response.tournament_id);
+
+    } catch (err: any) {
+    	console.error(err?.msg ?? "Request failed");
+    }
+};
+
+export async function searchOnlineFriends(URL_TYPE: string, ul_list: HTMLUListElement) {
+
+	const response = await httpEvent(GET, `/${BASE_URL}/${URL_TYPE}/`);
+	if (response.status !== 200)
+		return showNotification(response.msg);
+
+	renderGamesList(ul_list, response.target, async (id) => {
+		try {
+			
+			const res = await httpEvent(POST, `/${BASE_URL}/${URL_TYPE}/${id}/${JOIN_URL}`);
+
+			showNotification(res.msg);
+			if (res.status === 200)
+				hide(createGameModal);
+            
+		} catch (err: any) {
+
+			showNotification(err?.msg ?? "Request failed");
+		}
+	});
+}
+
+export async function searchAvailableGames(URL_TYPE: string, ul_list: HTMLUListElement) {
+
+	const response = await httpEvent(GET, `/${BASE_URL}/${URL_TYPE}/`);
+	if (response.status !== 200)
+		return showNotification(response.msg);
+	renderGamesList(ul_list, response.target, async (id) => {
+		try {
+			
+			const res = await httpEvent(POST, `/${BASE_URL}/${URL_TYPE}/${id}/${JOIN_URL}`);
+
+			showNotification(res.msg);
+			if (res.status === 200)
+				hide(createGameModal);
+            
+		} catch (err: any) {
+
+			showNotification(err?.msg ?? "Request failed");
+		}
+	});
+}
+
+
 
 startMatchButton.onclick = async () => {
-  hide(startMatchButton);
-  show(openMenuButton);
-  makeVisible(topBarDisplayName);
-  showNotification("Waiting for player...");
 
-  try {
-    const result = await oneTimeEvent(
-      "START_MATCH_REQUEST",
-      "START_MATCH_RESPONSE",
-    );
+    hide(startMatchButton);
+	if (getGameType() !== GameType.TWO_PLAYER && getGameType() !== GameType.AI)
+    	showNotification("Waiting for player...");
 
-    if (!result) {
-      showNotification("No response from server");
-      return;
+    try {
+
+		let URL = `/${BASE_URL}/${MATCH_URL}/${getCurrentMatchId()}/${START_URL}`;
+		if (getGameType() === GameType.TOURNAMENT)
+			URL = `/${BASE_URL}/${TOURNAMENT_URL}/${getCurrentTournamentId()}/${MATCH_URL}/${getCurrentMatchId()}/${START_URL}`;
+
+        const response = await httpEvent(POST, URL);
+
+        if (response.status !== 200 && response.status !== 202){
+            return showNotification(response.msg);
+        }
+		hide(currentGameModal);
+        setGameStatus(GameStatus.IN_GAME);
+        initKeyHandling();
     }
-    showNotification(result.msg);
-    if (result.status !== 200 && result.status !== 202) return;
-    if ((result.target as string) !== getDisplaySide()) {
-      setDisplaySide(result.target as string);
-      mirrorCanvas();
+    catch (err: any) {
+
+    	console.log(err?.msg ?? "Request failed");
     }
-    show(exitMatchButton);
-    if (result.status === 200) setMatchMode("single");
-    else if (result.status === 202) setMatchMode("dual");
-    initKeyHandling();
-  } catch {
-    showNotification("Failed to start match");
-  }
 };
 
 exitMatchButton.onclick = async () => {
-  if (isAiModeActive()) {
-    stopAiMode();
-    return;
-  }
 
-  hide(exitMatchButton);
-  try {
-    const result = await oneTimeEvent(
-      "EXIT_MATCH_REQUEST",
-      "EXIT_MATCH_RESPONSE",
-    );
+    hide(exitMatchButton);
+    try {
 
-    if (!result) {
-      showNotification("No response from server");
-      return;
+		let URL = `/${BASE_URL}/${MATCH_URL}/${getCurrentMatchId()}/${EXIT_URL}`;
+		if (getGameType() === GameType.TOURNAMENT)
+			URL = `/${BASE_URL}/${TOURNAMENT_URL}/${getCurrentTournamentId()}/${MATCH_URL}/${getCurrentMatchId()}/${EXIT_URL}`;
+
+        const response = await httpEvent(POST, URL);
+
+        showNotification(response.msg);
+        if (response.status !== 200)
+            return ;
+        showMenu();
     }
-    showNotification(result.msg);
-    if (result.status !== 200) return;
-    showMenu();
-    await getProfileInfo(false);
-  } catch {
-    showNotification("Failed to exit match");
-  }
+    catch (err: any) {
+    	console.log(err?.msg ?? "Request failed");
+    }
 };
 
-playLocallyButton.onclick = async () => {
-  if (!userSocket) {
-    show(loginModal);
-    showNotification("You must sign in in order to continue!!!");
-    return;
-  }
-  try {
-    const result = await oneTimeEvent(
-      "PLAY_LOCALLY_REQUEST",
-      "PLAY_LOCALLY_RESPONSE",
-    );
 
-    if (!result) {
-      showNotification("No response from server");
-      return;
+async function respondToInviteRequest(TYPE_URL: string, targetId: string, accept: boolean) {
+
+    try {
+
+        const response = await httpEvent(POST, `/${BASE_URL}/${TYPE_URL}/${targetId}/${RESPOND_URL}`, { accept });
+
+		showNotification(response.msg);
+        if (response.status !== 200)
+            return ;
+
+    } catch (err: any) {
+    	console.error(err?.msg ?? "Request failed");
     }
-    showNotification(result.msg);
-    if (result.status !== 200) return;
-  } catch {
-    showNotification("Failed to start local match");
-  }
-};
-
-if (playAgainstAIButton) {
-  playAgainstAIButton.onclick = () => {
-    startAiMode();
-  };
 }
 
-openCreateTournamentButton.onclick = () => {
-  if (!userSocket) {
-    show(loginModal);
-    showNotification("You must sign in in order to continue!!!");
-    return;
-  }
-  show(createTournamentModal);
-};
+async function renderRequestLists(UL: HTMLUListElement, REQUEST_TYPE: string) {
 
-submitTournamentCreationButton.onclick = async () => {
-  const alias = aliasTournamentInput.value.trim();
-  const size = tournamentSizeInput.value;
+    try {
+		show(requestGameModal);
+        const response = await httpEvent(GET, `/${BASE_URL}/${USER_URL}/${REQUESTS_URL}/${REQUEST_TYPE}`);
 
-  if (alias.length === 0 || size.length === 0) return;
-
-  try {
-    const result = await oneTimeEvent(
-      "CREATE_TOURNAMENT_REQUEST",
-      "CREATE_TOURNAMENT_RESPONSE",
-      alias,
-      size,
-    );
-
-    if (!result) {
-      showNotification("No response from server");
-      return;
-    }
-
-    if (result.status !== 200) {
-      hide(createTournamentModal);
-      showNotification(result.msg);
-      return;
-    }
-    showNotification(result.msg);
-    hide(createTournamentModal);
-  } catch {
-    showNotification("Failed to create tournament");
-  }
-};
-
-closeCreateTournamentButton.onclick = () => hide(createTournamentModal);
-
-openSearchTournamentButton.onclick = async () => {
-  if (!userSocket) {
-    show(loginModal);
-    showNotification("You must sign in in order to continue!!!");
-    return;
-  }
-  try {
-    const result = await oneTimeEvent(
-      "SEARCH_TOURNAMENT_REQUEST",
-      "SEARCH_TOURNAMENT_RESPONSE",
-    );
-
-    if (!result) {
-      showNotification("No response from server");
-      return;
-    }
-    if (result.status !== 200) {
-      showNotification(result.msg);
-      hide(searchTournamentsModal);
-      return;
-    }
-    const joinButtons = renderTournamentList(
-      result.target as TournamentInfo[],
-    );
-    show(searchTournamentsModal);
-    for (const btn of joinButtons) {
-      const id = btn.dataset.id!;
-      const alias = "lolxd";
-
-      btn.onclick = async () => {
-        try {
-          const joinResult = await oneTimeEvent(
-            "JOIN_TOURNAMENT_REQUEST",
-            "JOIN_TOURNAMENT_RESPONSE",
-            id,
-            alias,
-          );
-
-          if (!joinResult) {
-            showNotification("No response from server");
-            return;
-          }
-          showNotification(joinResult.msg);
-          if (joinResult.status !== 200) {
-            hide(searchTournamentsModal);
-            return;
-          }
-          hide(searchTournamentsModal);
-        } catch {
-          showNotification("Failed to join tournament");
+        if (response.status !== 200) {
+            showNotification(response.msg);
+            return ;
         }
-      };
+
+		const joinButtons = renderPendingRequests(UL, response.target);
+		for (let i = 0; i < joinButtons.length; i++) {
+			const btn = joinButtons[i];
+			const req = response.target[i];
+		
+			btn.onclick = async () => {
+				try {
+					const accept = btn.textContent!.trim() === "ACCEPT";
+					await respondToInviteRequest(req.type, req.id, accept);
+				} catch (err: any) {
+					console.error(err?.msg ?? "Request failed");
+				}
+			}
+		}
+    } catch (err: any) {
+        console.error(err?.msg ?? "Request failed");
     }
-  } catch {
-    showNotification("Failed to search tournaments");
-  }
-};
-
-closeSearchTournamentButton.onclick = () => hide(searchTournamentsModal);
-
-notificationAcceptButton.onclick = async () => {
-  try {
-    hide(notificationAcceptButton);
-    const result = await oneTimeEvent(
-      "REPLY_INVITE_REQUEST",
-      "REPLY_INVITE_RESPONSE",
-      getInviteFrom(),
-      "yes",
-    );
-
-    if (!result) {
-      showNotification("No response from server");
-      return;
-    }
-
-    showNotification(result.msg);
-  } catch {
-    showNotification("Failed to reply to invite");
-  }
-};
-
-async function renderRequestLists() {
-  try {
-    const result = await oneTimeEvent(
-      "GET_PENDING_REQUEST",
-      "GET_PENDING_RESPONSE",
-    );
-    if (!result || result.status !== 200) {
-      showNotification(result?.msg || "Failed to fetch requests");
-      return;
-    }
-    const joinButtons = renderPendingRequests(result.target as ProfileInfo[]);
-    for (const btn of joinButtons) {
-      btn.onclick = async () => {
-        const username = btn.dataset.username!;
-        try {
-          if (btn.textContent === "ACCEPT") {
-            const res = await oneTimeEvent(
-              "REPLY_INVITE_REQUEST",
-              "REPLY_INVITE_RESPONSE",
-              username,
-            );
-            if (!res) {
-              showNotification("No response from server");
-              return;
-            }
-            showNotification(res.msg);
-            // if (res.status === 200)
-            //  showCanvas();
-          } else if (btn.textContent === "X") {
-            const res = await oneTimeEvent(
-              "REPLY_INVITE_REQUEST",
-              "REPLY_INVITE_RESPONSE",
-              username,
-              "decline",
-            );
-            if (!res) {
-              showNotification("No response from server");
-              return;
-            }
-            showNotification(res.msg);
-          }
-        } catch {
-          showNotification("Failed to reply to invite");
-        }
-      };
-    }
-  } catch {
-    showNotification("Error fetching pending requests");
-  }
 }
+
+export async function getProfileInfo(reset: boolean) {
+
+	if (reset === true) {
+		updateProfileUI("PONG", "ft_transcendence.pong.com");
+    updateStatsUI({
+      local_played: 0,
+      local_won: 0,
+      online_played: 0,
+      online_won: 0,
+      tournaments_played: 0,
+      tournaments_won: 0,
+      userId: "",
+      username: "",
+      displayName: "",
+      totalGames: 0,
+      totalWins: 0,
+      totalLosses: 0,
+      currentWinStreak: 0,
+      bestWinStreak: 0,
+      pointsFor: 0,
+      pointsAgainst: 0,
+      lastMatchAt: null,
+    });
+		return;
+	}
+	try {
+		
+		const response = await httpEvent(GET, `/${BASE_URL}/${USER_URL}/me/${INFO_URL}`);
+		if (response.status !== 200)
+			return ;
+        show(logoutButton);
+
+		const info = response.target;
+		updateProfileUI(info.display_name, info.username);
+    if (info.avatar) {
+      topBarProfilePicture.innerHTML = info.avatar;
+    }
+    if (info.stats) {
+      updateStatsUI(info.stats);
+    }
+
+	} catch (err: any) {
+
+        console.error(err?.msg ?? "Request failed");
+    }
+	
+}
+
+function hideNotification(): void {
+	notificationBox.classList.remove("opacity-100");
+	notificationBox.classList.add("opacity-0");
+	hide(notificationAcceptButton);
+  hide(notificationBox);
+}
+
+export function showNotification(text: string | any, type?: string, id?: string): void {
+
+	if (text === undefined || !notificationBox || !notificationBoxText) return ;
+
+	
+	let TIME = NOTIFICATION_TIME;
+
+	notificationBoxText.textContent = text;
+	show(notificationBox);
+	notificationBox.classList.remove("opacity-0", "pointer-events-none");
+	notificationBox.classList.add("opacity-100");
+	if (type !== undefined && id !== undefined) {
+
+		show(notificationAcceptButton);
+		TIME = 5000;
+		notificationAcceptButton.onclick = async () => {
+
+			try {
+
+				await respondToInviteRequest(type, id, true);
+				hideNotification();
+
+			}
+			catch (err: any) {
+
+				console.error(err?.msg ?? "Request failed");
+			}
+		};
+	}
+	setTimeout(() => {
+
+		hideNotification();
+
+	}, TIME);
+}
+
+// if (playAgainstAIButton) {
+//   playAgainstAIButton.onclick = () => {
+//     startAiMode();
+//   };
+// }
 
 // ==========================================
 // SETTINGS MENU LOGIC
@@ -731,69 +807,4 @@ if (changePasswordButton) {
       }
     }
   };
-}
-
-(async () => {
-  const urlParams = new URLSearchParams(window.location.search);
-
-  const error = urlParams.get("error_google");
-
-  if (error === "email_exists_different_provider") {
-    showNotification("Email already registered with password (not Google).");
-    window.history.replaceState({}, document.title, "/");
-  }
-
-  if (error === "user_login") {
-    showNotification("Login Error: User already connected or internal error.");
-    window.history.replaceState({}, document.title, "/");
-  }
-
-  const restored = await restoreSession();
-
-  if (!restored) {
-    console.log("No hay sesión activa");
-  }
-})();
-
-export async function getProfileInfo(reset: boolean) {
-  if (reset === true) {
-    updateProfileUI("PONG", "ft_transcendence.pong.com");
-    updateStatsUI({
-      local_played: 0,
-      local_won: 0,
-      online_played: 0,
-      online_won: 0,
-      tournaments_played: 0,
-      tournaments_won: 0,
-      userId: "",
-      username: "",
-      displayName: "",
-      totalGames: 0,
-      totalWins: 0,
-      totalLosses: 0,
-      currentWinStreak: 0,
-      bestWinStreak: 0,
-      pointsFor: 0,
-      pointsAgainst: 0,
-      lastMatchAt: null,
-    });
-    return;
-  }
-  try {
-    const result = await oneTimeEvent("INFO_REQUEST", "INFO_RESPONSE");
-
-    if (!result || result.status !== 200 || !result.target) return;
-    show(logoutButton);
-
-    const info = result.target as ProfileInfo;
-    updateProfileUI(info.display_name, info.username);
-    if (info.avatar) {
-      topBarProfilePicture.innerHTML = info.avatar;
-    }
-    if (info.stats) {
-      updateStatsUI(info.stats);
-    }
-  } catch {
-    showNotification("Failed to fetch personal data from server");
-  }
 }

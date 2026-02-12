@@ -1,53 +1,71 @@
-import {setDisplaySide, showNotification, showMenu, updateOpponentUI, setInviteFrom, setSCORES, showCanvas, mirrorCanvas, getDisplaySide} from "./ui.js"
-import type {ServerMessage, StatusMsgTarget} from "./vars.js"
-import {drawGame, clearBackground} from "./draw.js"
-import { userSocket } from "./websocket.js"
+import { showMenu, updateOpponentUI,  showCanvas, mirrorCanvas, updateTournamentUI, savedDisplayName, updateProfileUI, updateCurrentGame } from "./ui.js"
+import { setCurrentMatchId,  setCurrentTournamentId, setSCORES, setDisplaySide, getDisplaySide, getMatchMode } from "./vars.js";
+import {GameStatus, setGameStatus, getGameStatus, setMatchMode, GameType, setGameType, getGameType} from "./vars.js";
+import { drawGame, clearBackground } from "./draw.js"
+import { userSocket } from "./websocket.js";
+import { showNotification } from "./main.js";
+import {MatchData} from "./ui.js";
 
 
-const handlers: Record<string, ((data: ServerMessage) => void)[]> = {};
+export async function httpEvent(method: string, endpoint: string, body?: Record<string, any>) {
 
-export function registerHandler<T extends ServerMessage>(type: T["type"], fn: (data: T) => void, Constant: boolean) {
+	const options: RequestInit = {
+		method: method,
+		credentials: 'include'
+	};
+
+	if (body !== undefined) {
+		options.headers = { 'Content-Type': 'application/json' };
+		options.body = JSON.stringify(body);
+	}
+
+	const res = await fetch(endpoint, options);
+	const data = await res.json();
+
+	if (!res.ok)
+		throw data;
+
+	return (data);
+}
+
+export interface Events {
+
+	type: string;
+	msg?: string;
+	info?: Record<string, any>;
+}
+
+const handlers: Record<string, ((data: Events) => void)[]> = {};
+
+export function registerHandler(type: string, fn: (data: Events) => void) {
 
 	if (!handlers[type])
 		handlers[type] = [];
-
-	if (Constant) {
-
-		handlers[type].push(fn as (data: ServerMessage) => void);
-	}
-	else {
-
-		const wrapped = (data: ServerMessage) => {
-
-			fn(data as T);
-			handlers[type] = handlers[type].filter(h => h !== wrapped);
-		};
-		handlers[type].push(wrapped);
-	}
+	handlers[type].push(fn);
 }
-
 
 export function receiveMessages(userSocket: WebSocket) {
 
 	userSocket.addEventListener("message", (event: MessageEvent) => {
 
-		let data: ServerMessage;
+		let data: Events;
 		try {
 
-			data = JSON.parse(event.data); 
-			
-		} catch { 
+			data = JSON.parse(event.data);
 
-			return; 
+		} catch {
+
+			console.warn("Invalid JSON from server");
+			return;
 		}
+
 		const fns = handlers[data.type];
 		if (fns)
-			fns.slice().forEach(fn => fn(data));
+			fns.forEach(fn => fn(data));
 	});
 }
 
-
-function sendRequest(type: string, payload?: Record<string, any>, payload2?: Record<string, any>) {
+function sendMoves(type: string, payload?: Record<string, any>, payload2?: Record<string, any>) {
 
 	if (!userSocket) {
 		alert("websocket not ready");
@@ -61,77 +79,77 @@ function sendRequest(type: string, payload?: Record<string, any>, payload2?: Rec
 	userSocket.send(JSON.stringify(msg));
 }
 
+export async function registerEvents() {
 
-export function oneTimeEvent(request: string, response: ServerMessage["type"], target?: string, target2?: string): Promise<StatusMsgTarget | null> {
-    return new Promise((resolve) => {
-        registerHandler(response, (data) => {
-            if (data.type === "SEND_INVITE_RESPONSE"       || 
-                data.type === "REPLY_INVITE_RESPONSE"      || 
-                data.type === "START_MATCH_RESPONSE"       || 
-                data.type === "EXIT_MATCH_RESPONSE"        ||
-                data.type === "PLAY_LOCALLY_RESPONSE"      ||
-                data.type === "CREATE_TOURNAMENT_RESPONSE" ||
-                data.type === "SEARCH_TOURNAMENT_RESPONSE" ||
-                data.type === "JOIN_TOURNAMENT_RESPONSE"   ||
-                data.type === "INFO_RESPONSE"              ||
-                data.type === "GET_PENDING_RESPONSE"       ||
-                data.type === "STATS_RESPONSE"             ||
-                data.type === "MATCH_HISTORY_RESPONSE") { 
-                resolve({status: data.status, msg: data.msg, target: data.target});
-                return;
-            }
-        }, false);
-        sendRequest(request, {target, target2});
-    });
-}
+	registerHandler("REQUEST", (data) => {
 
-export function ConstantEvent(response: ServerMessage["type"]) {
-    
-    registerHandler(response, (data) => {
-        
-        if (data.type === "MATCH_READY") {
-            showNotification(data.msg);
-            updateOpponentUI(data.target);
-            showCanvas();
-        }
-        if (data.type === "NOTIFICATION") {
-            showNotification(data.msg);
-        }
-        else if (data.type === "INCOMING_INVITE_REQUEST") {
-            setInviteFrom(data.target.trim());
-            showNotification(data.msg, true);
-        }
-        else if (data.type === "SCORES") {
-            setSCORES(data.scores[0], data.scores[1]);
-        }
-        else if (data.type === "WIN") {
-            setSCORES(0, 0);
-            clearBackground();
-            showNotification(data.msg);
-            showMenu();
-            window.dispatchEvent(new Event("match-finished"));
-        }
-        else if (data.type === "MATCH_SAVED") {
-            window.dispatchEvent(new Event("match-finished"));
-        }
-        else if (data.type === "MIRROR") {
-            if (data.msg !== getDisplaySide()) {
-                setDisplaySide(data.msg);
-                mirrorCanvas();
-            }
-        }
-        else if (data.type === "DRAW") {
-            drawGame(data.LeftXY[0], data.LeftXY[1], data.RightXY[0], data.RightXY[1], data.BallXY[0], data.BallXY[1]);
-        }
-    }, true);
-}
+		showNotification(data.msg, data.info?.type, data.info?.id);
+	});
+	registerHandler("GAME_READY", (data) => {
 
-type MatchMode = "single" | "dual";
+		setMatchMode("single");
+		setGameStatus(GameStatus.READY_TO_START);
+		setCurrentMatchId(data.info?.match_id);
+		if (data.info?.type === "tournament") {
 
-export let matchMode: MatchMode = "single";
+			setGameType(GameType.TOURNAMENT);
+			setCurrentTournamentId(data.info?.tournament_id);
+			updateTournamentUI(data.info?.self_displayname, data.info?.opponent_display_name);
+		}
+		else if (data.info?.type === "match") {
 
-export function setMatchMode(mode: string): void {
-	matchMode = mode as MatchMode;
+			setGameType(GameType.MATCH);
+			updateOpponentUI(data.info?.display_name, data.info?.id);
+		}
+		else if (data.info?.type === "ai") {
+			setGameType(GameType.AI);
+			updateOpponentUI("AI BOT", "");
+		}
+		else if (data.info?.type === "2player") {
+			
+			setGameType(GameType.TWO_PLAYER);
+			updateOpponentUI(data.info?.display_name + "(1)", data.info?.id);
+			setMatchMode("dual");
+		}
+
+		showCanvas();
+	});
+	
+	registerHandler("UPDATE", (data) => {
+
+		if ((data.msg === "match" || data.msg === "tournament") && data.info) {
+			updateCurrentGame(data.info as MatchData);
+		}
+
+	});
+	registerHandler("MIRROR", (data) => {
+
+		if (getGameType() !== GameType.AI && getGameType() !== GameType.TWO_PLAYER)
+			mirrorCanvas();
+	});
+	registerHandler("NOTIFICATION", (data) => {
+
+		showNotification(data.msg);
+
+	});
+	registerHandler("SCORES", (data) => {
+
+		setSCORES(data.info?.scores[0], data.info?.scores[1]);
+	});
+	registerHandler("WIN", (data) => {
+		if (getGameType() === GameType.TOURNAMENT)
+			updateProfileUI(savedDisplayName);
+		setGameType(GameType.NONE)
+		setGameStatus(GameStatus.NOT_IN_GAME);
+		showNotification(data.msg);
+		setSCORES(0, 0);
+		clearBackground();
+		showMenu();
+	});
+	registerHandler("DRAW", (data) => {
+
+		drawGame(data.info?.LeftXY[0], data.info?.LeftXY[1], data.info?.RightXY[0], data.info?.RightXY[1], data.info?.BallXY[0], data.info?.BallXY[1]);				
+	});
 }
 
 export function initKeyHandling(): void {
@@ -142,38 +160,38 @@ export function initKeyHandling(): void {
 
 function onKeyDown(e: KeyboardEvent): void {
 
-	if (matchMode === "single") {
+	if (getMatchMode() === "single") {
 
 		if (e.key === "w")
-			sendRequest("MOVE", { move: "UP" });
+			sendMoves("MOVE", { move: "UP" });
 		else if (e.key === "s")
-			sendRequest("MOVE", { move: "DOWN" });
+			sendMoves("MOVE", { move: "DOWN" });
 	}
 	else {
 
 		if (e.key === "w")
-			sendRequest("MOVE2", { move: "UP1" });
+			sendMoves("MOVE2", { move: "UP1" });
 		else if (e.key === "s")
-			sendRequest("MOVE2", { move: "DOWN1" });
+			sendMoves("MOVE2", { move: "DOWN1" });
 		else if (e.key === "ArrowUp")
-			sendRequest("MOVE2", { move: "UP2" });
+			sendMoves("MOVE2", { move: "UP2" });
 		else if (e.key === "ArrowDown")
-			sendRequest("MOVE2", { move: "DOWN2" });
+			sendMoves("MOVE2", { move: "DOWN2" });
 	}
 }
 
 function onKeyUp(e: KeyboardEvent): void {
 
-	if (matchMode === "single") {
+	if (getMatchMode() === "single") {
 
 		if (e.key === "w" || e.key === "s")
-			sendRequest("MOVE", { move: "STOP" });
+			sendMoves("MOVE", { move: "STOP" });
 	}
 	else {
 
 		if (e.key === "w" || e.key === "s")
-			sendRequest("MOVE2", { move: "STOP1" });
+			sendMoves("MOVE2", { move: "STOP1" });
 		else if (e.key === "ArrowUp" || e.key === "ArrowDown")
-			sendRequest("MOVE2", { move: "STOP2" });
+			sendMoves("MOVE2", { move: "STOP2" });
 	}
 }

@@ -1,5 +1,5 @@
 import { show, hide, updateProfileUI} from "./ui.js";
-import { nullWebsocket} from "./websocket.js";
+import { getUserSocket, closeUserSocket, setUserSocket} from "./websocket.js";
 
 export async function registerUser(usernameInput: HTMLInputElement, displaynameInput: HTMLInputElement, emailInput: HTMLInputElement, passwordInput: HTMLInputElement): 
 Promise<{ status: number; userId?: string; setupToken?: string; error?: string }> {
@@ -123,11 +123,12 @@ Promise<{ status: number | string; token?: string; tempToken?: string; method?: 
 
 export async function logoutUser(logoutButton?: HTMLButtonElement) {
 
-    if (userSocket) {
-        userSocket.close(); 
+    if (getUserSocket()) {
+		closeUserSocket();
+         
     }
 
-    nullWebsocket();
+    setUserSocket(null);
 
     try {
         const res = await fetch("/api/logout", {
@@ -200,11 +201,6 @@ export async function verify2FA(code: string, twoFAModal: HTMLElement, loginModa
 	}
 }
 
-let userSocket: WebSocket | null = null;
-
-export function setUserSocket(socket: WebSocket | null) {
-	userSocket = socket;
-}
 
 // Validar si el usuario tiene sesión activa
 export async function validateSession(): Promise<boolean> {
