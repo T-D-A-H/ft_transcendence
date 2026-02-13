@@ -315,7 +315,7 @@ class UserManager {
 
 	    const request_list = requestingUser.getPendingRequests();
 
-	    if (request_list.size === 0) {
+	    if (request_list.length === 0) {
 
             return { status: 400, msg: "You have no pending requests."};
 	    }

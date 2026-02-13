@@ -1,5 +1,6 @@
 const LOGGER = require("../LOGGER.js");
 const Game   = require("./Game.js");
+const User   = require("./User.js");
 
 class Match {
 
@@ -49,7 +50,7 @@ class Match {
 
 	addUserToMatch(user) {
 
-		LOGGER(200, "Match.js", "addUserToMatch", "For " + user.getUsername() + " match_id: " + this.id);
+		LOGGER(200, "Match.js", "addUserToMatch", "match_id: " + this.id);
 		if (this.players[0] === null) this.players[0] = user;
 		else if (this.players[1] === null) this.players[1] = user;
 		this.size++;
@@ -228,7 +229,7 @@ class Match {
     }
 
 	getScores() {
-		return this.SCORES;
+		return (this.SCORES);
 	}
 
 	getMatchType() {

@@ -120,6 +120,7 @@ async function startServer() {
 	const buildMatchResultHandler = require("./endpoints/user/matchResult.js");
 	fastify.post("/api/match-result", buildMatchResultHandler(db, fastify));
 
+
 	// API para websocket
 	const websocketHandler = require("./endpoints/user/websocket.js");
 	fastify.register(websocketHandler, {prefix: '/api/games', userManager, authFromCookie});

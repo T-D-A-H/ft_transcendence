@@ -358,14 +358,14 @@ async function websocketHandler(fastify, options) {
 
 				updateSingularGameMoves(user, match, msg.move);
 			}
-            else if (msg.type === "STATS_REQUEST") {
+      else if (msg.type === "STATS_REQUEST") {
 
-                getStatsRequest(user);
-            }
-            else if (msg.type === "MATCH_HISTORY_REQUEST") {
+          getStatsRequest(user);
+      }
+      else if (msg.type === "MATCH_HISTORY_REQUEST") {
 
-                getMatchHistoryRequest(user, msg.target); 
-            }
+          getMatchHistoryRequest(user, msg.target); 
+      }
 		});
 	});
 };
