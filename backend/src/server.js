@@ -11,7 +11,6 @@ const saltRounds			   = 12;
 
 const UserManager              = require("./Classes/UserManager.js");
 const userManager = new UserManager(db);
-const buildGameSocketHandler = require("./game.js");
 const oauthPlugin = require("@fastify/oauth2");
 
 const FRAMES = 1000/60;

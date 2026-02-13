@@ -4,6 +4,7 @@ import { TournamentInfo, ProfileInfo, UserStats } from "./vars.js";
 import { changeAvatar } from "./change.js";
 import {GameStatus, setGameStatus, getGameStatus, GameType, setGameType, getGameType, setCurrentTournamentId, setCurrentMatchId} from "./vars.js";
 import { showNotification } from "./main.js";
+import { getWinRate } from "./stats.js";
 
 //------------------------------------------------------------------------TOP-PROFILE-OPPONENT
 
@@ -998,6 +999,13 @@ export const statOnlineWon = document.getElementById("stat_online_won") as HTMLS
 export const statTournPlayed = document.getElementById("stat_tournaments_played") as HTMLSpanElement;
 export const statTournWon = document.getElementById("stat_tournaments_won") as HTMLSpanElement;
 
+export const totalGamesEl = document.getElementById("stats_total_games") as HTMLSpanElement;
+export const winRateEl = document.getElementById("stats_win_rate") as HTMLSpanElement;
+export const streakEl = document.getElementById("stats_streak") as HTMLSpanElement;
+export const bestStreakEl = document.getElementById("stats_best_streak") as HTMLSpanElement;
+
+import {renderWinLossChart, renderModeBreakdown, renderSummary} from "./stats.js";
+
 export function updateStatsUI(stats: UserStats) {
     if (!stats) return;
 
@@ -1007,6 +1015,12 @@ export function updateStatsUI(stats: UserStats) {
     if (statOnlineWon) statOnlineWon.textContent = (stats.online_won || 0).toString();
     if (statTournPlayed) statTournPlayed.textContent = (stats.tournaments_played || 0).toString();
     if (statTournWon) statTournWon.textContent = (stats.tournaments_won || 0).toString();
+
+	if (totalGamesEl) totalGamesEl.textContent = (stats.totalGames || 0).toString();
+	if (winRateEl) winRateEl.textContent = (getWinRate(stats) || 0).toString();
+	if (streakEl) streakEl.textContent = (stats.currentWinStreak || 0).toString();
+	if (bestStreakEl) bestStreakEl.textContent = (stats.bestWinStreak || 0).toString();
+  	renderWinLossChart(stats);
 }
 
 applyBoardThemeById(boardThemes[boardThemeIndex]?.id || "default", false);

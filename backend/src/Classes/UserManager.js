@@ -14,7 +14,6 @@ class UserManager {
         this.tournaments = new Map();
         this.pending2FA = new Map();
         
-        this.userStats = new Map();
         this.matchHistory = new Map();
         
         // AÑADIDO: Flags de estado para Blockchain
@@ -335,41 +334,99 @@ class UserManager {
 	    }
         return { status: 200, msg: "Pending request list updated.", target: list};
     }
-
+    
+    // -- BETTER STATS INFO -- //
     userInfo(targetUser) {
+        // Leemos directamente del objeto User actualizado
+        const s = targetUser.stats; 
 
         return { 
             status: 200, 
             msg: "Succesfully fetched user info.", 
             target: {
                 display_name: targetUser.getDisplayName(),
-	    	    username: targetUser.getUsername(),
+                username: targetUser.getUsername(),
                 user_id: targetUser.getId(),
-                avatar: targetUser.getAvatar()
-                // stats: {
-                //     local_played: targetUser.getLo || 0, 
-                //     local_won: requestingUser.local_won || 0,
-                //     online_played: requestingUser.online_played || 0,
-                //     online_won: requestingUser.online_won || 0,
-                //     tournaments_played: requestingUser.tournaments_played || 0,
-                //     tournaments_won: requestingUser.tournaments_won || 0
-                // }
+                avatar: targetUser.getAvatar(),
+                stats: {
+                    local_played: s.local_played,
+                    local_won: s.local_won,
+                    online_played: s.online_played,
+                    online_won: s.online_won,
+                    tournaments_played: s.tournaments_played,
+                    tournaments_won: s.tournaments_won,
+                    ai_played: s.ai_played,
+                    ai_won: s.ai_won,
+                    totalGames: s.matches, 
+                    totalWins: s.total_wins, 
+                    currentWinStreak: s.current_streak,
+                    bestWinStreak: s.best_streak,
+                    winRate: s.win_rate
+                }
             }
         };
     }
 
-    userStats(targetUser) {
-
+/*     userStats(targetUser) {
+        const s = targetUser.stats;
         return { 
             status: 200, 
             msg: "Succesfully fetched user stats.", 
             target: {
-                matches_total: 123,
-    		    matches_win: 33,
-                tournament_total: 67,
-                tournament_win: 32
+                matches_total: s.matches,
+                matches_win: s.total_wins,
+                tournament_total: s.tournaments_played,
+                tournament_win: s.tournaments_won
             }
         };
+    } */
+
+    async getMatchHistoryFromDB(userId) {
+        return new Promise((resolve, reject) => {
+            if (!this.db) return resolve([]);
+            
+            const query = `
+                SELECT m.id, m.score_p1, m.score_p2, m.winner_id, m.game_mode, m.played_at, m.player1_id,
+                       u1.display_name as p1_name, u2.display_name as p2_name
+                FROM matches m
+                LEFT JOIN users u1 ON m.player1_id = u1.id
+                LEFT JOIN users u2 ON m.player2_id = u2.id
+                WHERE m.player1_id = ? OR m.player2_id = ?
+                ORDER BY m.played_at DESC LIMIT 20
+            `;
+            
+            this.db.all(query, [userId, userId], (err, rows) => {
+                if (err) return reject(err);
+                
+                const history = rows.map(row => {
+                    const isP1 = (row.player1_id === userId);
+                    let result = "loss";
+                    
+                    if (row.winner_id === userId) result = "win";
+                    else if (row.game_mode === "local" && isP1 && row.score_p1 > row.score_p2) result = "win";
+
+                    let opponent = "Unknown";
+                    if (isP1) {
+                         if (row.p2_name) opponent = row.p2_name;
+                         else if (row.game_mode === "local") opponent = "Guest";
+                         else if (row.game_mode.includes("ai")) opponent = "AI";
+                    } else {
+                        opponent = row.p1_name || "Unknown";
+                    }
+
+                    return {
+                        id: row.id,
+                        result: result,
+                        opponent: opponent,
+                        userScore: isP1 ? row.score_p1 : row.score_p2,
+                        opponentScore: isP1 ? row.score_p2 : row.score_p1,
+                        mode: row.game_mode,
+                        timestamp: new Date(row.played_at).getTime()
+                    };
+                });
+                resolve(history);
+            });
+        });
     }
 
 //----------------------------------------------------------------------------------------API CALLS
@@ -389,40 +446,43 @@ class UserManager {
 
 //----------------------------------------------------------------------------------------USER
 
-    saveGameStatsToDB(winnerId, loserId, type) {
-        if (!this.db) return;
-
-        let updateQuery = "";
-
-        if (type === "online") {
-            const updateWinner = "UPDATE users SET online_played = online_played + 1, online_won = online_won + 1 WHERE id = ?";
-            const updateLoser = "UPDATE users SET online_played = online_played + 1 WHERE id = ?";
-            this.db.run(updateWinner, [winnerId], (err) => { if(err) console.error(err) });
-            this.db.run(updateLoser, [loserId], (err) => { if(err) console.error(err) });
+    saveGameStatsToDB(userId, resultType, isWin) {
+        if (!this.db)
             return;
+
+        let query = "";
+        LOGGER(200, "UserManager.js", "saveGameStatsToDB", 1);
+        
+        const streakLogic = isWin 
+            ? ", current_streak = current_streak + 1, best_streak = MAX(best_streak, current_streak + 1)" 
+            : ", current_streak = 0";
+
+        if (resultType === "online") {
+            query = `UPDATE stats SET online_played = online_played + 1, matches = matches + 1 ${isWin ? ", online_won = online_won + 1" : ""} ${streakLogic} WHERE user_id = ?`;
         }
-        else if (type === "local_win") {
-            updateQuery = "UPDATE users SET local_played = local_played + 1, local_won = local_won + 1 WHERE id = ?";
+        else if (resultType === "local") {
+            // Normalmente en local no contamos rachas globales, pero depende de tu juego. Asumimos que sí.
+             query = `UPDATE stats SET local_played = local_played + 1, matches = matches + 1 ${isWin ? ", local_won = local_won + 1" : ""} WHERE user_id = ?`;
         }
-        else if (type === "local_played") {
-            updateQuery = "UPDATE users SET local_played = local_played + 1 WHERE id = ?";
+        else if (resultType === "tournament") {
+             query = `UPDATE stats SET tournaments_played = tournaments_played + 1, matches = matches + 1 ${isWin ? ", tournaments_won = tournaments_won + 1" : ""} ${streakLogic} WHERE user_id = ?`;
         }
-        else if (type === "tournament_win") {
-            updateQuery = "UPDATE users SET tournaments_played = tournaments_played + 1, tournaments_won = tournaments_won + 1 WHERE id = ?";
+        else if (resultType === "ai") {
+            query = `UPDATE stats SET ai_played = ai_played + 1, matches = matches + 1 ${isWin ? ", ai_won = ai_won + 1" : ""} WHERE user_id = ?`;
         }
-        else if (type === "tournament_played") {
-            updateQuery = "UPDATE users SET tournaments_played = tournaments_played + 1 WHERE id = ?";
-        }
-        if (updateQuery) {
-            this.db.run(updateQuery, [winnerId], (err) => { 
-                if (err) console.error("Error saving stats:", err); 
+
+        if (query) {
+            this.db.run(query, [userId], (err) => { 
+                if (err) console.error("Error saving stats for user " + userId, err); 
             });
         }
     }
     
     incrementTournamentPlayedDB(userId) {
         if (!this.db) return;
-        this.db.run("UPDATE users SET tournaments_played = tournaments_played + 1 WHERE id = ?", [userId], (err) => {
+        const query = "UPDATE stats SET tournaments_played = tournaments_played + 1 WHERE user_id = ?";
+        
+        this.db.run(query, [userId], (err) => {
             if (err) console.error("Error updating tournaments_played:", err);
         });
     }
@@ -621,77 +681,114 @@ class UserManager {
 		this.matches.delete(match.id);
 	}
 
-    stopMatch(match) { LOGGER(200, "UserManager.js", "stopMatch", "called");
+    stopMatch(match) { 
+        LOGGER(200, "UserManager.js", "stopMatch", "called");
 
-        this.recordMatchResult(match);
         const tournament  = match.getTournament();
         const winnerUser  = match.getWinner();
         const loserUser   = match.getLoser();
-        const winnerAlias = winnerUser.getDisplayName();
-        const loserAlias  = loserUser.getDisplayName();
-        const players = match.getPlayers();
-        const scores = match.getScores();
+        const players     = match.getPlayers();
+        const scores      = match.getScores();
 
-        // 2. Guardar HISTORIAL en Base de Datos (SIEMPRE)
+        // 1. Guardar HISTORIAL de partida en la tabla 'matches' (Base de Datos)
         if (this.db && players && players[0] && scores && winnerUser) {
-            const player1Id = players[1].getId();
-            const player2Id = match.getIsLocal() ? null : (players[0] ? players[0].getId() : null);
-
-            
-            let winnerIdForDB = winnerUser.getId();
-            if (match.getIsLocal() && scores[0] > scores[1]) {
-                winnerIdForDB = null;
-            }
+            const p1_id = players[0] ? players[0].getId() : null;
+            const p2_id = (match.getMatchType() === "2player" || match.getMatchType().startsWith("ai")) ? null : (players[1] ? players[1].getId() : null);
+            const w_id  = winnerUser ? winnerUser.getId() : null;
 
             this.db.run(
-                `INSERT INTO matches (player1_id, player2_id, score_p1, score_p2, winner_id, game_mode, is_ai_match)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    player1Id, player2Id, scores[1], scores[0], winnerIdForDB,
-                    tournament ? "TOURNAMENT" : "CLASSIC",
-                    0 // is_ai_match=0 (Las partidas gestionadas aquí son entre humanos)
-                ],
+                `INSERT INTO matches (player1_id, player2_id, score_p1, score_p2, winner_id, game_mode, played_at)
+                 VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+                [p1_id, p2_id, scores[0], scores[1], w_id, match.getMatchType()],
                 (err) => { if (err) console.error("Error inserting match history:", err); }
             );
         }
-        if (tournament !== null) {
 
+        // --- CASO 1: PARTIDA ONLINE O TORNEO (2 Jugadores Reales) ---
+        if (winnerUser && loserUser && match.getMatchType() !== "2player" && !match.getMatchType().startsWith("ai")) {
+            const type = tournament ? "tournament" : "online";
+            // WINNER
+            if (type === "online") {
+                winnerUser.stats.online_played++;
+                winnerUser.stats.online_won++;
+                winnerUser.stats.matches++;
+                winnerUser.stats.total_wins++;
+            }
+            winnerUser.stats.current_streak++;
+            if (winnerUser.stats.current_streak > winnerUser.stats.best_streak) {
+                winnerUser.stats.best_streak = winnerUser.stats.current_streak;
+            }
+            this.saveGameStatsToDB(winnerUser.getId(), type, true);
+
+            // LOSER
+            if (type === "online") {
+                loserUser.stats.online_played++;
+            }
+            loserUser.stats.current_streak = 0;
+            this.saveGameStatsToDB(loserUser.getId(), type, false);
+            
+            winnerUser.notify("WIN", `You won against ${loserUser.getDisplayName()}`);
+            loserUser.notify("WIN", `You lost against ${winnerUser.getDisplayName()}`);
+        }
+
+        // --- CASO 2: PARTIDA LOCAL (1 Jugador Real vs Invitado) ---
+        else if (match.getMatchType() === "2player") {
+            const user = players[0]; 
+            if (user) {
+                user.stats.local_played++;
+                user.stats.matches++;
+                
+                if (scores[1] > scores[0]) {
+                    user.stats.local_won++;
+                    user.stats.total_wins++;
+                    this.saveGameStatsToDB(user.getId(), "local", true);
+                    user.notify("WIN", "You won the local match!");
+                } else {
+                    this.saveGameStatsToDB(user.getId(), "local", false);
+                    user.notify("WIN", "You lost the local match!");
+                }
+            }
+        }
+
+        // --- CASO 3: IA (1 Jugador Real vs Bot) ---
+        else if (match.getMatchType().startsWith("ai")) {
+            const user = players[0];
+            if (user) {
+                user.stats.ai_played++;
+                user.stats.matches++;
+                if (scores[1] > scores[0]) {
+                    user.stats.ai_won++;
+                    user.stats.total_wins++;
+                    this.saveGameStatsToDB(user.getId(), "ai", true);
+                    user.notify("WIN", "You beat the AI!");
+                } else {
+                    this.saveGameStatsToDB(user.getId(), "ai", false);
+                    user.notify("WIN", "The AI defeated you.");
+                }
+            }
+        }
+
+        // --- TORNEO ---
+        if (tournament !== null) {
             tournament.updateWinner(match.getId(), winnerUser.getId());
-            tournament.broadcast(this, "NOTIFICATION", `${winnerAlias} won tournament game against ${loserAlias}`, null, [winnerUser.getId(), loserUser.getId()]);
+            tournament.broadcast(this, "NOTIFICATION", `${winnerUser.getDisplayName()} won round against ${loserUser.getDisplayName()}`, null, [winnerUser.getId(), loserUser.getId()]);
 
             if (loserUser) {
-                loserUser.tournaments_played = (loserUser.tournaments_played || 0) + 1;
-                this.saveGameStatsToDB(loserUser.id, null, "tournament_played");
-                tournament.sendLose(loserUser, winner)
+                loserUser.stats.matches++;
+                loserUser.stats.tournaments_played++;
+                this.saveGameStatsToDB(loserUser.getId(), "tournament", false);
+                tournament.sendLose(loserUser, winnerUser);
                 loserUser.unsetTournament();
             }
         }
-        winnerUser.notify("WIN", `You won the game against ${loserAlias}`);
-		loserUser.notify("WIN", `You lost the game against ${winnerAlias}`);
-        if (winnerUser && loserUser) {
-            if (match.getMatchType() === "2player") {
-                const loggedUser = match.players[0];
-                loggedUser.local_played = (loggedUser.local_played || 0) + 1;
-                if (match.SCORES[1] >= match.SCORES[0]) {
-                    loggedUser.local_won = (loggedUser.local_won || 0) + 1;
-                    this.saveGameStatsToDB(loggedUser.id, null, "local_win");
-                }
-                else {
-                    this.saveGameStatsToDB(loggedUser.id, null, "local_played");
-                }
+
+        players.forEach(p => {
+            if (p) {
+                p.setMatch(null);
+                p.setIsPlaying(false);
             }
-            else {
-                this.saveGameStatsToDB(winnerUser.id, loserUser.id, "online");
-            }
-        }
-        if (match.players[0] !== null) {
-            match.players[0].setMatch(null);
-            match.players[0].setIsPlaying(false);
-        }
-        if (match.players[1] !== null) {
-            match.players[1].setMatch(null);
-            match.players[1].setIsPlaying(false);
-        }
+        });
+        
         this.sendMirror(match);
         this.removeMatch(match);
     }
@@ -753,7 +850,7 @@ class UserManager {
             }
         }
         this.incrementTournamentPlayedDB(user.getId());
-        const stats = this.ensureUserStats(user);
+/*         const stats = this.ensureUserStats(user); */
         if (stats) stats.tournamentsPlayed += 1;
         // -----------------------------------------------
         this.tournaments.set(tournament_id, tournament);
@@ -768,7 +865,7 @@ class UserManager {
         // Sumar tournament_played en DB al unirse
         this.incrementTournamentPlayedDB(user.getId());
         user.setTournament(tournament);
-        const stats = this.ensureUserStats(user);
+/*         const stats = this.ensureUserStats(user); */
         if (stats) stats.tournamentsPlayed += 1;
         return (true);
     }
@@ -910,131 +1007,7 @@ class UserManager {
     }
 
 //----------------------------------------------------------------------------------------TOURNAMENT
-//----------------------------------------------------------------------------------------STATS
 
-    ensureUserStats(user) {
-        if (!user) return null;
-        const userId = user.getId();
-        if (!this.userStats.has(userId)) {
-            this.userStats.set(userId, {
-                userId,
-                username: user.getUsername(),
-                displayName: user.getDisplayName(),
-                totalGames: 0, totalWins: 0, totalLosses: 0,
-                localGames: 0, localWins: 0, localLosses: 0,
-                onlineGames: 0, onlineWins: 0, onlineLosses: 0,
-                tournamentGames: 0, tournamentWins: 0, tournamentLosses: 0,
-                tournamentsPlayed: 0, tournamentsWon: 0,
-                pointsFor: 0, pointsAgainst: 0,
-                currentWinStreak: 0, bestWinStreak: 0, lastMatchAt: null,
-            });
-        }
-        return this.userStats.get(userId);
-    }
-
-    ensureMatchHistory(user) {
-        if (!user) return null;
-        const userId = user.getId();
-        if (!this.matchHistory.has(userId)) {
-            this.matchHistory.set(userId, []);
-        }
-        return this.matchHistory.get(userId);
-    }
-
-    applyMatchResult(stats, result, mode, userScore, opponentScore, endTime) {
-        stats.totalGames += 1;
-        stats.pointsFor += userScore;
-        stats.pointsAgainst += opponentScore;
-        if (result === "win") {
-            stats.totalWins += 1;
-            stats.currentWinStreak += 1;
-        } else {
-            stats.totalLosses += 1;
-            stats.currentWinStreak = 0;
-        }
-        stats.bestWinStreak = Math.max(stats.bestWinStreak, stats.currentWinStreak);
-        stats.lastMatchAt = endTime;
-
-        if (mode === "local") {
-            stats.localGames += 1;
-            if (result === "win") stats.localWins += 1; else stats.localLosses += 1;
-        } else if (mode === "online") {
-            stats.onlineGames += 1;
-            if (result === "win") stats.onlineWins += 1; else stats.onlineLosses += 1;
-        } else { 
-            stats.tournamentGames += 1;
-            if (result === "win") stats.tournamentWins += 1; else stats.tournamentLosses += 1;
-        }
-    }
-
-    recordMatchResult(match) {
-        if (!match) return;
-        const winner = match.getWinner();
-        const players = match.getPlayers();
-        const scores = match.getScores();
-        if (!scores) return;
-
-        match.setEndTime();
-        const tournament = match.getTournament();
-        const mode = tournament ? "tournament" : (match.getIsLocal() ? "local" : "online");
-        const endTime = match.getEndTime() || Date.now();
-        const startTime = match.getStartTime() || endTime;
-        const durationMs = Math.max(0, endTime - startTime);
-
-        if (match.getIsLocal() && players[0] && players[0] === players[1]) {
-            const user = players[0];
-            const stats = this.ensureUserStats(user);
-            const history = this.ensureMatchHistory(user);
-            if (!stats || !history) return;
-
-            const userScore = scores[0];
-            const opponentScore = scores[1];
-            const result = userScore > opponentScore ? "win" : "loss"; // > para evitar empates como victorias
-            
-            this.applyMatchResult(stats, result, mode, userScore, opponentScore, endTime);
-            history.unshift({
-                id: match.getId(), timestamp: endTime, durationMs, mode,
-                opponent: "Local (self)", userScore, opponentScore, result,
-                tournamentId: tournament ? tournament.getTournamentId() : null,
-            });
-            if (history.length > 50) history.pop();
-            return;
-        }
-
-        if (!players[0] || !players[1]) return;
-
-        players.forEach((user, index) => {
-            if (!user) return;
-            const opponent = players[index === 0 ? 1 : 0];
-            if (!opponent) return;
-            
-            const stats = this.ensureUserStats(user);
-            const history = this.ensureMatchHistory(user);
-            if (!stats || !history) return;
-            
-            const userScore = scores[index];
-            const opponentScore = scores[index === 0 ? 1 : 0];
-            const result = user === winner ? "win" : "loss";
-            
-            this.applyMatchResult(stats, result, mode, userScore, opponentScore, endTime);
-            history.unshift({
-                id: match.getMatchId(), timestamp: endTime, durationMs, mode,
-                opponent: opponent.getDisplayName(), userScore, opponentScore, result,
-                tournamentId: tournament ? tournament.getTournamentId() : null,
-            });
-            if (history.length > 50) history.pop();
-        });
-    }
-
-    getUserStats(user) { return this.ensureUserStats(user); }
-
-    getMatchHistory(user, limit = 20) {
-        const history = this.ensureMatchHistory(user);
-        if (!history) return [];
-        return history.slice(0, limit);
-    }
-
-//----------------------------------------------------------------------------------------STATS
 //----------------------------------------------------------------------------------------UTILS
     createId() { 
 

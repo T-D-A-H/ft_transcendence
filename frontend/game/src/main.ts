@@ -37,7 +37,7 @@ import {
 
 import { ProfileInfo, TournamentInfo } from "./vars.js";
 import { startAiMode, stopAiMode, isAiModeActive } from "./ai.js";
-import { initStatsDashboard, loadDashboard } from "./stats.js";
+import { initStatsDashboard} from "./stats.js";
 import { friendsListInviteUL, getGameVisibility} from "./ui.js";
 import { loginModal, closeLoginButton, logoutButton,usernameInput, passwordInput, submitLoginButton, dontHaveAnAccountButton} from "./ui.js";
 import { registerModal, closeRegisterButton, submitRegisterButton, regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput, alreadyHaveAnAccountButton} from "./ui.js";
@@ -192,7 +192,7 @@ menuButtons.forEach(button => {
 		});
     if (targetId === "stats_list") {
       getProfileInfo(false);
-      loadDashboard();
+/*       loadDashboard(); */
     }
 
 	});
@@ -427,7 +427,6 @@ export async function searchAvailableGames(URL_TYPE: string, ul_list: HTMLUListE
 		}
 	});
 }
-
 
 
 startMatchButton.onclick = async () => {

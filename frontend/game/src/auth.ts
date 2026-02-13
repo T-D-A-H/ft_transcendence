@@ -98,7 +98,6 @@ Promise<{ status: number | string; token?: string; tempToken?: string; method?: 
 		if (result.status === "ok") {
 			return { 
 				status: 0
-				// ✅ Token está en httpOnly cookie, NO lo enviamos al frontend
 			};
 		}
 
@@ -106,8 +105,7 @@ Promise<{ status: number | string; token?: string; tempToken?: string; method?: 
 		if (result.status === "requires_2fa") {
 			return { 
 				status: "requires_2fa",
-				method: result.method // "email"
-				// ✅ Cookie temporal en el servidor, no aquí
+				method: result.method
 			};
 		}
 

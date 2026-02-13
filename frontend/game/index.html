@@ -194,13 +194,18 @@
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div class="pong-box w-full">
-                                            <div class="pong-list-box-name-msg ">
-                                                <span>Wins vs losses Chart</span>
-                                            </div>
-                                            <canvas id="stats_winloss_chart" width="320" height="120" class="w-full"></canvas>
-                                        </div>
+										<div class="pong-box w-full flex-col items-start">
+											<div class="pong-list-box-name-msg w-full">
+												<span>Wins vs losses Chart</span>
+											</div>
+											<canvas id="stats_winloss_chart" width="320" height="115" class="w-full"></canvas>
+											<!-- Etiquetas fuera del canvas -->
+											<div class="w-full flex justify-around" style="margin-top: 2px;">
+												<span class="pong-font" style="font-size: 5px;">LOCAL</span>
+												<span class="pong-font" style="font-size: 5px;">ONLINE</span>
+												<span class="pong-font" style="font-size: 5px;">TOURN</span>
+											</div>
+										</div>
 
                                         <div class="pong-box w-full">
                                             <div class="pong-list-box-name-msg">

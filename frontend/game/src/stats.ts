@@ -45,10 +45,15 @@ function clearCanvas(canvas: HTMLCanvasElement): void {
   // Optional: draw empty placeholder state
 }
 
+export function getWinRate(stats: UserStats) {
+  const winRate = stats.totalGames > 0 ? (stats.totalWins / stats.totalGames) * 100 : 0;
+  return (formatPercent(winRate));
+}
+
 /**
  * Renders the top-left "Player Summary" box
  */
-function renderSummary(stats: UserStats): void {
+export function renderSummary(stats: UserStats): void {
   const winRate = stats.totalGames > 0 ? (stats.totalWins / stats.totalGames) * 100 : 0;
   
   if (totalGamesEl) totalGamesEl.textContent = String(stats.totalGames);
@@ -60,7 +65,7 @@ function renderSummary(stats: UserStats): void {
 /**
  * Renders the new "Game Modes Details" box using the snake_case vars from vars.ts
  */
-function renderModeBreakdown(stats: UserStats): void {
+export function renderModeBreakdown(stats: UserStats): void {
   // Local
   if (localPlayedEl) localPlayedEl.textContent = String(stats.local_played);
   if (localWonEl) localWonEl.textContent = String(stats.local_won);
@@ -78,72 +83,41 @@ function renderModeBreakdown(stats: UserStats): void {
  * Renders the Win/Loss Chart
  * Calculates losses based on Played - Won since vars.ts only guarantees those two.
  */
-function renderWinLossChart(stats: UserStats): void {
+export function renderWinLossChart(stats: UserStats): void {
   if (!winLossCanvas) return;
   const ctx = winLossCanvas.getContext("2d");
   if (!ctx) return;
-  
+
   ctx.clearRect(0, 0, winLossCanvas.width, winLossCanvas.height);
 
-  const padding = 12;
+  const padding = 10;
   const width = winLossCanvas.width - padding * 2;
-  const height = winLossCanvas.height - padding * 2;
-
-  // Calculate stats (fallback to 0 if undefined)
-  const locPlayed = stats.local_played || 0;
-  const locWon = stats.local_won || 0;
-  const locLost = locPlayed - locWon;
-
-  const onlPlayed = stats.online_played || 0;
-  const onlWon = stats.online_won || 0;
-  const onlLost = onlPlayed - onlWon;
-
-  const trnPlayed = stats.tournaments_played || 0;
-  const trnWon = stats.tournaments_won || 0;
-  const trnLost = trnPlayed - trnWon;
+  const height = winLossCanvas.height - padding;
+  const baseLineY = padding + height;
 
   const categories = [
-    { label: "Local", wins: locWon, losses: locLost },
-    { label: "Online", wins: onlWon, losses: onlLost },
-    { label: "Tourn", wins: trnWon, losses: trnLost },
+    { wins: stats.local_won || 0,       losses: (stats.local_played - stats.local_won) || 0 },
+    { wins: stats.online_won || 0,      losses: (stats.online_played - stats.online_won) || 0 },
+    { wins: stats.tournaments_won || 0, losses: (stats.tournaments_played - stats.tournaments_won) || 0 },
   ];
 
-  const maxGames = Math.max(1, ...categories.map((cat) => cat.wins + cat.losses));
-  // Adjust bar width based on canvas size (320px wide)
-  const barWidth = width / categories.length - 20; 
-
-  ctx.font = "8px 'PressStart2P', monospace";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "top";
+  const maxGames = Math.max(1, ...categories.map(c => c.wins + c.losses));
+  const barWidth = width / categories.length - 20;
 
   categories.forEach((cat, index) => {
     const total = cat.wins + cat.losses;
-    // Distribute bars evenly
     const x = padding + 10 + index * (barWidth + 20);
-    
-    // Height calculation
-    const barMaxHeight = height - 15; // Leave space for text at bottom
-    const barCurrentHeight = (total / maxGames) * barMaxHeight;
-    
-    const winHeight = total > 0 ? (cat.wins / total) * barCurrentHeight : 0;
-    const lossHeight = barCurrentHeight - winHeight;
 
-    // Draw Wins (Green) - Top part of the stack
+    const barCurrentHeight = (total / maxGames) * height;
+    const winHeight  = total > 0 ? (cat.wins / total) * barCurrentHeight : 0;
+    const lossHeight = barCurrentHeight - winHeight;
+    const startY     = baseLineY - barCurrentHeight;
+
     ctx.fillStyle = greenish;
-    // Y position is: TopPadding + (TotalHeightAvailable - ActualHeight) + (EmptySpaceAboveBar)
-    const startY = padding + (barMaxHeight - barCurrentHeight);
-    
     ctx.fillRect(x, startY, barWidth, winHeight);
 
-    // Draw Losses (Red) - Bottom part of the stack
     ctx.fillStyle = redish;
     ctx.fillRect(x, startY + winHeight, barWidth, lossHeight);
-
-    // Draw Label
-    ctx.fillStyle = blackish; // Or white depending on theme, using imported var
-    // To make text visible on dark background if blackish is dark:
-    ctx.fillStyle = "#c7f6ff"; // forcing pong-white for text visibility on canvas
-    ctx.fillText(cat.label, x + barWidth / 2, padding + barMaxHeight + 4);
   });
 }
 
@@ -189,7 +163,7 @@ function renderHistory(history: MatchHistoryItem[]): void {
   });
 }
 
-function renderEmptyState(): void {
+/* function renderEmptyState(): void {
   if(totalGamesEl) totalGamesEl.textContent = "0";
   if(winRateEl) winRateEl.textContent = "0%";
   if(streakEl) streakEl.textContent = "0";
@@ -202,9 +176,9 @@ function renderEmptyState(): void {
 
   if(winLossCanvas) clearCanvas(winLossCanvas);
   if(historyList) historyList.textContent = "No matches recorded.";
-}
+} */
 
-export async function loadDashboard(): Promise<void> {
+/* export async function loadDashboard(): Promise<void> {
   
   if (!userSocket) {
     console.warn("❌ No WebSocket, showing empty state");
@@ -225,15 +199,15 @@ export async function loadDashboard(): Promise<void> {
 
   if (!statsResult || statsResult.status !== 200 || !stats) {
     console.warn("❌ Invalid stats response");
-    renderEmptyState();
+    renderEmptyState(); 
     showNotification("Could not load your statistics.");
     return;
   }
   renderSummary(stats);
-  renderModeBreakdown(stats);
+  renderModeBreakdown(stats); 
   renderWinLossChart(stats);
   renderHistory(history);
-}
+} */
 
 let needsRefresh = false;
 
@@ -241,7 +215,7 @@ let needsRefresh = false;
 export function initStatsDashboard(): void {
   if (refreshButton) {
     refreshButton.onclick = () => {
-      loadDashboard();
+ /*      loadDashboard(); */
       needsRefresh = false;
     };
   }
@@ -251,7 +225,7 @@ export function initStatsDashboard(): void {
     
     const statsList = document.getElementById("stats_list");
     if (statsList && !statsList.classList.contains("hidden")) {
-      loadDashboard();
+/*       loadDashboard(); */
       needsRefresh = false;
     }
   });
@@ -264,7 +238,7 @@ export function initStatsDashboard(): void {
           const isVisible = !statsList.classList.contains("hidden");
     
           if (isVisible && needsRefresh) {
-            loadDashboard();
+           /*  loadDashboard(); */
             needsRefresh = false;
           }
         }

@@ -61,13 +61,28 @@ function signupHandler(db, bcrypt, saltRounds, fastify) {
 				db.run(
 					`INSERT INTO users (username, display_name, email, password, twofa, oauth_provider, oauth_id, avatar) 
 					VALUES (?,?,?,?,?,?,?,?)`,
-					[username, display_name, email, hashed, "skip", null, null, defaultAvatar], // <--- Pasamos el defaultAvatar al final
+					[username, display_name, email, hashed, "skip", null, null, defaultAvatar],
 					function(err) {
 						if (err) reject(err);
 						else resolve(this.lastID);
 					}
 				);
 			});
+
+			await new Promise((resolve, reject) => {
+                db.run(
+                    "INSERT INTO stats (user_id) VALUES (?)", 
+                    [userId], 
+                    function(err) {
+                        if (err) {
+                            console.error("Error creating stats for user:", err);
+                            resolve(); 
+                        } else {
+                            resolve();
+                        }
+                    }
+                );
+            });
 
 			//  Generar token JWT temporal para configurar 2FA
 			const setupToken = fastify.jwt.sign(

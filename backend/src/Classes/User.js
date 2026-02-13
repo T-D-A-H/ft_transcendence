@@ -1,4 +1,5 @@
 const LOGGER = require("../LOGGER.js");
+const UserStats = require("./UserStats.js");
 
 class User {
     
@@ -12,21 +13,14 @@ class User {
         this.display_name = display_name;
         this.socket = socket;
         this.isConnected = false;
-
         this.currentMatch = null;
         this.pendingRequests = new Map();
         this.currentTournament = null;
         this.isPlaying = false;
         this.displaySide = User.SIDE.RIGHT;
-
         this.avatar = avatar || "&#9865;";
-
-        this.local_played = stats?.local_played || 0;
-        this.local_won = stats?.local_won || 0;
-        this.online_played = stats?.online_played || 0;
-        this.online_won = stats?.online_won || 0;
-        this.tournaments_played = stats?.tournaments_played || 0;
-        this.tournaments_won = stats?.tournaments_won || 0;
+        // --- STATS --- //
+        this.stats = new UserStats(stats);
     }
 
     send(message) {

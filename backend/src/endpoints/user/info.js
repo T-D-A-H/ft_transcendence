@@ -6,6 +6,7 @@ async function infoHandler(fastify, options) {
 	const { userManager, authFromCookie } = options;
 
 
+
 	// API requests FOR matches
     fastify.get('/requests/matches', { preHandler: authFromCookie }, async (req, reply) => {
 		//DESCOMENTAR PARA PROBAR
@@ -74,19 +75,6 @@ async function infoHandler(fastify, options) {
 		reply.code(result.status).send(result);
     });
 
-
-    fastify.get('/:user_id/stats', { preHandler: authFromCookie }, async (req, reply) => {
-
-		const targetUser = userManager.getUserById(req.params.user_id);
-
-		if (!targetUser) {
-			return reply.code(404).send({ msg: "User not found." });
-		}
-
-		const result = userManager.userStats(targetUser);
-        LOGGER(result.status, "info.js", "/:user_id/stats", result.msg);
-		reply.code(result.status).send(result);
-    });
 }
 
 
