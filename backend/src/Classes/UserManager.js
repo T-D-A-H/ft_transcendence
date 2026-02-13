@@ -316,7 +316,7 @@ class UserManager {
 
 	    const request_list = requestingUser.getPendingRequests();
 
-	    if (request_list.size === 0) {
+	    if (request_list.length === 0) {
 
             return { status: 400, msg: "You have no pending requests."};
 	    }
@@ -745,7 +745,6 @@ class UserManager {
             }
         }
         this.incrementTournamentPlayedDB(user.getId());
-        tournament.addUserToTournament(user, alias);
         const stats = this.ensureUserStats(user);
         if (stats) stats.tournamentsPlayed += 1;
         // -----------------------------------------------
@@ -986,7 +985,7 @@ class UserManager {
             
             this.applyMatchResult(stats, result, mode, userScore, opponentScore, endTime);
             history.unshift({
-                id: match.getMatchId(), timestamp: endTime, durationMs, mode,
+                id: match.getId(), timestamp: endTime, durationMs, mode,
                 opponent: "Local (self)", userScore, opponentScore, result,
                 tournamentId: tournament ? tournament.getTournamentId() : null,
             });

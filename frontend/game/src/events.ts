@@ -4,7 +4,7 @@ import {GameStatus, setGameStatus, getGameStatus, setMatchMode, GameType, setGam
 import { drawGame, clearBackground } from "./draw.js"
 import { userSocket } from "./websocket.js";
 import { showNotification } from "./main.js";
-import {MatchData} from "./ui.js";
+import {MatchData, currentGameButton, hide} from "./ui.js";
 
 
 export async function httpEvent(method: string, endpoint: string, body?: Record<string, any>) {
@@ -144,6 +144,7 @@ export async function registerEvents() {
 		showNotification(data.msg);
 		setSCORES(0, 0);
 		clearBackground();
+		hide(currentGameButton);
 		showMenu();
 	});
 	registerHandler("DRAW", (data) => {

@@ -87,6 +87,8 @@ export 	function showCanvas() {
 	drawGame();
 	if (getGameStatus() === GameStatus.READY_TO_START || getGameStatus() === GameStatus.IN_GAME) {
 
+		hide(currentGameCancel);
+		show(currentGameModal);
 		makeVisible(topBarOpponentButton);
 		show(topBarOpponentDisplayName);
 		makeVisible(topBarDisplayName);
@@ -98,17 +100,15 @@ export 	function showCanvas() {
 			show(startMatchButton);
 		}
 	}
-	hide(currentGameCancel);
-	show(currentGameModal);
+
 }
 
 export 	function showMenu() {
 	
 	hide(canvas);
 	show(menuModal);
-	hide(startMatchButton);
 	hide(exitMatchButton);
-	show(currentGameCancel);
+	hide(currentGameModal);
 	if (getGameStatus() !== GameStatus.READY_TO_START && getGameStatus() !== GameStatus.IN_GAME) {
 
 		makeInvisible(topBarOpponentButton);

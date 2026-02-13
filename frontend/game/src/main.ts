@@ -24,6 +24,8 @@ import {
   menuModal,
   topBarProfilePicture,
   updateStatsUI,
+  canvas,
+  showCanvas
 } from "./ui.js";
 
 import {
@@ -430,7 +432,8 @@ export async function searchAvailableGames(URL_TYPE: string, ul_list: HTMLUListE
 
 startMatchButton.onclick = async () => {
 
-    hide(startMatchButton);
+  showCanvas();
+  hide(startMatchButton);
 	if (getGameType() !== GameType.TWO_PLAYER && getGameType() !== GameType.AI)
     	showNotification("Waiting for player...");
 
@@ -445,7 +448,7 @@ startMatchButton.onclick = async () => {
         if (response.status !== 200 && response.status !== 202){
             return showNotification(response.msg);
         }
-		hide(currentGameModal);
+		    hide(currentGameModal);
         setGameStatus(GameStatus.IN_GAME);
         initKeyHandling();
     }
