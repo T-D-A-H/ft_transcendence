@@ -226,6 +226,14 @@ class Match {
     getIsLocal() {
         return this.locally === true;
     }
+
+	getScores() {
+		return this.SCORES;
+	}
+
+	getMatchType() {
+		return (this.matchType);
+	}
 }
 
 module.exports = Match;

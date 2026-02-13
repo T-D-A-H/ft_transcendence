@@ -14,7 +14,7 @@ class User {
         this.isConnected = false;
 
         this.currentMatch = null;
-        this.pendingMatchRequests = new Map();
+        this.pendingRequests = new Map();
         this.currentTournament = null;
         this.isPlaying = false;
         this.displaySide = User.SIDE.RIGHT;
@@ -140,6 +140,7 @@ class User {
     }
 
     getId() {return this.id;}
+    getAvatar() {return this.avatar}
     getUsername() {return this.username;}
     getDisplayName() {return this.display_name;}
     getSocket() {return this.socket;}

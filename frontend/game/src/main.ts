@@ -30,7 +30,7 @@ import {
   changeDisplayName,
   changeUserName,
   changeEmail,
-  changePassword,
+  changePassword
 } from "./change.js";
 
 import { ProfileInfo, TournamentInfo } from "./vars.js";
@@ -548,7 +548,7 @@ export async function getProfileInfo(reset: boolean) {
 		return;
 	}
 	try {
-		
+
 		const response = await httpEvent(GET, `/${BASE_URL}/${USER_URL}/me/${INFO_URL}`);
 		if (response.status !== 200)
 			return ;

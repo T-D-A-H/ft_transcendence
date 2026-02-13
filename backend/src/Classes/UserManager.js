@@ -2,7 +2,6 @@ const User = require("./User.js");
 const Match = require("./Match.js");
 const LOGGER = require("../LOGGER.js");
 const Tournament = require("./Tournament.js");
-// AÑADIDO: Importamos el servicio de Blockchain
 const blockchainService = require("../BlockchainService.js");
 
 class UserManager {
@@ -345,7 +344,16 @@ class UserManager {
             target: {
                 display_name: targetUser.getDisplayName(),
 	    	    username: targetUser.getUsername(),
-                user_id: targetUser.getId()
+                user_id: targetUser.getId(),
+                avatar: targetUser.getAvatar()
+                // stats: {
+                //     local_played: targetUser.getLo || 0, 
+                //     local_won: requestingUser.local_won || 0,
+                //     online_played: requestingUser.online_played || 0,
+                //     online_won: requestingUser.online_won || 0,
+                //     tournaments_played: requestingUser.tournaments_played || 0,
+                //     tournaments_won: requestingUser.tournaments_won || 0
+                // }
             }
         };
     }
@@ -745,7 +753,6 @@ class UserManager {
             }
         }
         this.incrementTournamentPlayedDB(user.getId());
-        tournament.addUserToTournament(user, alias);
         const stats = this.ensureUserStats(user);
         if (stats) stats.tournamentsPlayed += 1;
         // -----------------------------------------------
@@ -979,14 +986,14 @@ class UserManager {
             const stats = this.ensureUserStats(user);
             const history = this.ensureMatchHistory(user);
             if (!stats || !history) return;
-            
+
             const userScore = scores[0];
             const opponentScore = scores[1];
             const result = userScore > opponentScore ? "win" : "loss"; // > para evitar empates como victorias
             
             this.applyMatchResult(stats, result, mode, userScore, opponentScore, endTime);
             history.unshift({
-                id: match.getMatchId(), timestamp: endTime, durationMs, mode,
+                id: match.getId(), timestamp: endTime, durationMs, mode,
                 opponent: "Local (self)", userScore, opponentScore, result,
                 tournamentId: tournament ? tournament.getTournamentId() : null,
             });

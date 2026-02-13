@@ -3,7 +3,7 @@ import { boardThemes } from "./themes.js"; // Importado de themes.js
 import { TournamentInfo, ProfileInfo, UserStats } from "./vars.js";
 import { changeAvatar } from "./change.js";
 import {GameStatus, setGameStatus, getGameStatus, GameType, setGameType, getGameType, setCurrentTournamentId, setCurrentMatchId} from "./vars.js";
-
+import { showNotification } from "./main.js";
 
 //------------------------------------------------------------------------TOP-PROFILE-OPPONENT
 
@@ -146,8 +146,7 @@ export function updateProfileUI(displayName: string | null, userName?: string): 
 
 	if (topBarDisplayName) topBarDisplayName.textContent = truncateText(displayName, 16);
 	if (menuDisplayName) menuDisplayName.textContent = truncateText(displayName, 64);
-	if (menuUsername && userName !== undefined) menuUsername.textContent = "@" + truncateText(displayName, 64);
-
+	if (menuUsername && userName !== undefined) menuUsername.textContent = "@" + truncateText(userName, 64);
 }
 
 export function updateOpponentUI(opponentDisplayName: string, id: string) {
@@ -741,20 +740,28 @@ const selfProfileImage =
 	document.getElementById("self_profile_image") as HTMLDivElement;
 
 function renderProfilePicGrid(): void {
-	profilePicGrid.innerHTML = "";
+    profilePicGrid.innerHTML = "";
 
-	for (const symbol of avatarSymbols) {
-		const btn = document.createElement("button");
-		btn.className = "profilepic-item";
-		btn.innerHTML = symbol;
+    for (const symbol of avatarSymbols) {
+        const btn = document.createElement("button");
+        btn.className = "profilepic-item";
+        btn.innerHTML = symbol;
 
-		btn.onclick = () => {
-			selfProfileImage.innerHTML = symbol;
-			hide(profilePicModal); 
-		};
+        btn.onclick = async () => {
+            const result = await changeAvatar(symbol);
+            
+            if (result.status === 0) {
+                selfProfileImage.innerHTML = symbol;
+                showNotification("Avatar guardado!");
+                hide(profilePicModal);
+                show(menuModal);
+            } else {
+                showNotification("Error al guardar avatar");
+            }
+        };
 
-		profilePicGrid.appendChild(btn);
-	}
+        profilePicGrid.appendChild(btn);
+    }
 }
 
 changeProfilePicButton.onclick = () => {

@@ -6,7 +6,6 @@ async function infoHandler(fastify, options) {
 	const { userManager, authFromCookie } = options;
 
 
-
 	// API requests FOR matches
     fastify.get('/requests/matches', { preHandler: authFromCookie }, async (req, reply) => {
 		//DESCOMENTAR PARA PROBAR

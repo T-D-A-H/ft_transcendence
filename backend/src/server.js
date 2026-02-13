@@ -120,8 +120,6 @@ async function startServer() {
 	const buildMatchResultHandler = require("./endpoints/user/matchResult.js");
 	fastify.post("/api/match-result", buildMatchResultHandler(db, fastify));
 
-
-
 	// API para websocket
 	const websocketHandler = require("./endpoints/user/websocket.js");
 	fastify.register(websocketHandler, {prefix: '/api/games', userManager, authFromCookie});
@@ -137,7 +135,6 @@ async function startServer() {
 	// API para info de perfiles
 	const infoHandler = require("./endpoints/user/info.js");
 	fastify.register(infoHandler, {prefix: '/api/users', userManager, authFromCookie});
-
 
 	// API para friends
 	const friendsHandler = require("./endpoints/user/friends.js");

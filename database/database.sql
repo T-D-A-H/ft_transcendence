@@ -21,6 +21,20 @@ CREATE TABLE users (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+/* CREATE TABLE stats (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL UNIQUE,
+    local_played INTEGER DEFAULT 0,
+    local_won INTEGER DEFAULT 0,
+    online_played INTEGER DEFAULT 0,
+    online_won INTEGER DEFAULT 0,
+    tournaments_played INTEGER DEFAULT 0,
+    tournaments_won INTEGER DEFAULT 0,
+    ai_played INTEGER DEFAULT 0,
+    ai_won INTEGER DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+); */
+
 CREATE TABLE relationships (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
