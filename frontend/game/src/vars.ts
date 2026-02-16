@@ -164,6 +164,7 @@ export interface UserStats {
   totalLosses: number;
   currentWinStreak: number;
   bestWinStreak: number;
+  winRate: string;
   pointsFor: number;
   pointsAgainst: number;
   lastMatchAt: number | null;

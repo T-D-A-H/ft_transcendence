@@ -87,6 +87,21 @@ async function matchesHandler(fastify, options) {
 		LOGGER(result.status, "matches.js", `/${match_id}/exit`, result.msg);
     	reply.code(result.status).send(result.msg);
     });
+
+	fastify.get('/history', { preHandler: authFromCookie }, async (req, reply) => {
+        try {
+            const history = await userManager.getMatchHistoryFromDB(req.user.id);
+            
+            return reply.send({ 
+                status: 200, 
+                msg: "History fetched", 
+                target: history 
+            });
+        } catch (err) {
+            console.error("Error fetching history:", err);
+            return reply.code(500).send({ status: 500, msg: "Database error" });
+        }
+    });
 }
 
 module.exports = matchesHandler;

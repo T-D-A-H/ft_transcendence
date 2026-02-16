@@ -59,8 +59,6 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 			tournaments_won: user.tournaments_won || 0,
 			ai_played: user.ai_played || 0,
 			ai_won: user.ai_won || 0,
-			
-			// Estos campos extra
 			matches: user.matches || 0,
 			total_wins:user.total_wins || 0,
 			win_rate: user.win_rate || 0,

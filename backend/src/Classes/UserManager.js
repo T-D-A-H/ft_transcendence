@@ -334,12 +334,25 @@ class UserManager {
 	    }
         return { status: 200, msg: "Pending request list updated.", target: list};
     }
+
+    formatPercent(value) {
+        if (!Number.isFinite(value)) return "0%";
+            return `${Math.round(value)}%`;
+    }
     
     // -- BETTER STATS INFO -- //
     userInfo(targetUser) {
         // Leemos directamente del objeto User actualizado
-        const s = targetUser.stats; 
 
+        const s = targetUser.stats;
+
+        let winRate_temp = s.matches > 0 ? (s.total_wins / s.matches) * 100 : 0;
+        if (!Number.isFinite(winRate_temp))
+            winRate_temp = "0%";
+        else
+            winRate_temp = `${Math.round(winRate_temp)}%`;
+        
+        s.win_rate = winRate_temp;
         return { 
             status: 200, 
             msg: "Succesfully fetched user info.", 
@@ -358,10 +371,10 @@ class UserManager {
                     ai_played: s.ai_played,
                     ai_won: s.ai_won,
                     totalGames: s.matches, 
-                    totalWins: s.total_wins, 
+                    totalWins: s.total_wins,
                     currentWinStreak: s.current_streak,
                     bestWinStreak: s.best_streak,
-                    winRate: s.win_rate
+                    winRate: s.win_rate 
                 }
             }
         };
@@ -451,21 +464,19 @@ class UserManager {
             return;
 
         let query = "";
-        LOGGER(200, "UserManager.js", "saveGameStatsToDB", 1);
-        
         const streakLogic = isWin 
             ? ", current_streak = current_streak + 1, best_streak = MAX(best_streak, current_streak + 1)" 
             : ", current_streak = 0";
 
         if (resultType === "online") {
-            query = `UPDATE stats SET online_played = online_played + 1, matches = matches + 1 ${isWin ? ", online_won = online_won + 1" : ""} ${streakLogic} WHERE user_id = ?`;
+            query = `UPDATE stats SET online_played = online_played + 1, matches = matches + 1, _wins = totatotall_wins + 1 ${isWin ? ", online_won = online_won + 1" : ""} ${streakLogic} WHERE user_id = ?`;
         }
         else if (resultType === "local") {
             // Normalmente en local no contamos rachas globales, pero depende de tu juego. Asumimos que sí.
              query = `UPDATE stats SET local_played = local_played + 1, matches = matches + 1 ${isWin ? ", local_won = local_won + 1" : ""} WHERE user_id = ?`;
         }
         else if (resultType === "tournament") {
-             query = `UPDATE stats SET tournaments_played = tournaments_played + 1, matches = matches + 1 ${isWin ? ", tournaments_won = tournaments_won + 1" : ""} ${streakLogic} WHERE user_id = ?`;
+             query = `UPDATE stats SET tournaments_played = tournaments_played + 1, matches = matches + 1, total_wins = total_wins + 1 ${isWin ? ", tournaments_won = tournaments_won + 1" : ""} ${streakLogic} WHERE user_id = ?`;
         }
         else if (resultType === "ai") {
             query = `UPDATE stats SET ai_played = ai_played + 1, matches = matches + 1 ${isWin ? ", ai_won = ai_won + 1" : ""} WHERE user_id = ?`;
@@ -705,26 +716,36 @@ class UserManager {
         }
 
         // --- CASO 1: PARTIDA ONLINE O TORNEO (2 Jugadores Reales) ---
+// --- CASO 1: PARTIDA ONLINE O TORNEO (2 Jugadores Reales) ---
         if (winnerUser && loserUser && match.getMatchType() !== "2player" && !match.getMatchType().startsWith("ai")) {
+            
             const type = tournament ? "tournament" : "online";
-            // WINNER
+            winnerUser.stats.matches = (winnerUser.stats.matches || 0) + 1;
+            winnerUser.stats.total_wins = (winnerUser.stats.total_wins || 0) + 1;
+
             if (type === "online") {
-                winnerUser.stats.online_played++;
-                winnerUser.stats.online_won++;
-                winnerUser.stats.matches++;
-                winnerUser.stats.total_wins++;
+                winnerUser.stats.online_played = (winnerUser.stats.online_played || 0) + 1;
+                winnerUser.stats.online_won = (winnerUser.stats.online_won || 0) + 1;
+            } else if (type === "tournament") {
+                winnerUser.stats.tournaments_played = (winnerUser.stats.tournaments_played || 0) + 1;
+                winnerUser.stats.tournaments_won = (winnerUser.stats.tournaments_won || 0) + 1;
             }
-            winnerUser.stats.current_streak++;
-            if (winnerUser.stats.current_streak > winnerUser.stats.best_streak) {
+            winnerUser.stats.current_streak = (winnerUser.stats.current_streak || 0) + 1;
+            if (winnerUser.stats.current_streak > (winnerUser.stats.best_streak || 0)) {
                 winnerUser.stats.best_streak = winnerUser.stats.current_streak;
             }
+
             this.saveGameStatsToDB(winnerUser.getId(), type, true);
 
-            // LOSER
+            loserUser.stats.matches = (loserUser.stats.matches || 0) + 1;
+
             if (type === "online") {
-                loserUser.stats.online_played++;
+                loserUser.stats.online_played = (loserUser.stats.online_played || 0) + 1;
+            } else if (type === "tournament") {
+                loserUser.stats.tournaments_played = (loserUser.stats.tournaments_played || 0) + 1;
             }
             loserUser.stats.current_streak = 0;
+
             this.saveGameStatsToDB(loserUser.getId(), type, false);
             
             winnerUser.notify("WIN", `You won against ${loserUser.getDisplayName()}`);
@@ -736,11 +757,9 @@ class UserManager {
             const user = players[0]; 
             if (user) {
                 user.stats.local_played++;
-                user.stats.matches++;
                 
                 if (scores[1] > scores[0]) {
                     user.stats.local_won++;
-                    user.stats.total_wins++;
                     this.saveGameStatsToDB(user.getId(), "local", true);
                     user.notify("WIN", "You won the local match!");
                 } else {
@@ -755,10 +774,8 @@ class UserManager {
             const user = players[0];
             if (user) {
                 user.stats.ai_played++;
-                user.stats.matches++;
                 if (scores[1] > scores[0]) {
                     user.stats.ai_won++;
-                    user.stats.total_wins++;
                     this.saveGameStatsToDB(user.getId(), "ai", true);
                     user.notify("WIN", "You beat the AI!");
                 } else {
@@ -781,6 +798,8 @@ class UserManager {
                 loserUser.unsetTournament();
             }
         }
+
+
 
         players.forEach(p => {
             if (p) {

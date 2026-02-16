@@ -23,7 +23,6 @@ import {
   newDisplayNameInput,
   menuModal,
   topBarProfilePicture,
-  updateStatsUI,
   canvas,
   showCanvas
 } from "./ui.js";
@@ -35,9 +34,7 @@ import {
   changePassword
 } from "./change.js";
 
-import { ProfileInfo, TournamentInfo } from "./vars.js";
-import { startAiMode, stopAiMode, isAiModeActive } from "./ai.js";
-import { initStatsDashboard} from "./stats.js";
+import { initStatsDashboard, updateStatsUI} from "./stats.js";
 import { friendsListInviteUL, getGameVisibility} from "./ui.js";
 import { loginModal, closeLoginButton, logoutButton,usernameInput, passwordInput, submitLoginButton, dontHaveAnAccountButton} from "./ui.js";
 import { registerModal, closeRegisterButton, submitRegisterButton, regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput, alreadyHaveAnAccountButton} from "./ui.js";
@@ -539,6 +536,7 @@ export async function getProfileInfo(reset: boolean) {
       username: "",
       displayName: "",
       totalGames: 0,
+	  winRate:"",
       totalWins: 0,
       totalLosses: 0,
       currentWinStreak: 0,
@@ -576,7 +574,7 @@ function hideNotification(): void {
 	notificationBox.classList.remove("opacity-100");
 	notificationBox.classList.add("opacity-0");
 	hide(notificationAcceptButton);
-  hide(notificationBox);
+	hide(notificationBox);
 }
 
 export function showNotification(text: string | any, type?: string, id?: string): void {
