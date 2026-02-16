@@ -34,6 +34,20 @@ import {
   changePassword
 } from "./change.js";
 
+import { 
+    aiEasyButton, 
+    aiMediumButton, 
+    aiHardButton, 
+    local2PlayerButton
+} from "./ui.js";
+
+import { 
+    startAiMode, 
+    setAiDifficulty, 
+    isAiModeActive, 
+    stopAiMode 
+} from "./ai.js";
+
 import { initStatsDashboard, updateStatsUI} from "./stats.js";
 import { friendsListInviteUL, getGameVisibility} from "./ui.js";
 import { loginModal, closeLoginButton, logoutButton,usernameInput, passwordInput, submitLoginButton, dontHaveAnAccountButton} from "./ui.js";
@@ -455,23 +469,26 @@ startMatchButton.onclick = async () => {
 };
 
 exitMatchButton.onclick = async () => {
-
     hide(exitMatchButton);
-    try {
 
-		let URL = `/${BASE_URL}/${MATCH_URL}/${getCurrentMatchId()}/${EXIT_URL}`;
-		if (getGameType() === GameType.TOURNAMENT)
-			URL = `/${BASE_URL}/${TOURNAMENT_URL}/${getCurrentTournamentId()}/${MATCH_URL}/${getCurrentMatchId()}/${EXIT_URL}`;
+    if (isAiModeActive()) {
+        stopAiMode();
+        return;
+    }
+    try {
+        let URL = `/${BASE_URL}/${MATCH_URL}/${getCurrentMatchId()}/${EXIT_URL}`;
+        if (getGameType() === GameType.TOURNAMENT)
+            URL = `/${BASE_URL}/${TOURNAMENT_URL}/${getCurrentTournamentId()}/${MATCH_URL}/${getCurrentMatchId()}/${EXIT_URL}`;
 
         const response = await httpEvent(POST, URL);
 
         showNotification(response.msg);
         if (response.status !== 200)
-            return ;
+            return;
         showMenu();
     }
     catch (err: any) {
-    	console.log(err?.msg ?? "Request failed");
+        console.log(err?.msg ?? "Request failed");
     }
 };
 
@@ -618,6 +635,33 @@ export function showNotification(text: string | any, type?: string, id?: string)
 //     startAiMode();
 //   };
 // }
+
+//! ------------ AI ------------//
+if (aiEasyButton) {
+    aiEasyButton.onclick = () => {
+        setAiDifficulty(1);
+        hide(createGameModal);
+        startAiMode();
+    };
+}
+
+// --- Lógica Botón Medium ---
+if (aiMediumButton) {
+    aiMediumButton.onclick = () => {
+        setAiDifficulty(3);
+        hide(createGameModal);
+        startAiMode();
+    };
+}
+
+// --- Lógica Botón Hard ---
+if (aiHardButton) {
+    aiHardButton.onclick = () => {
+        setAiDifficulty(5);
+        hide(createGameModal);
+        startAiMode();
+    };
+}
 
 // ==========================================
 // SETTINGS MENU LOGIC

@@ -194,7 +194,6 @@ export async function loadDashboard(): Promise<void> {
 
     } catch (err) {
         console.error("Error loading dashboard:", err);
-        showNotification("Error updating stats");
     }
 }
 

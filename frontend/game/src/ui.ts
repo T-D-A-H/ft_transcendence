@@ -913,6 +913,19 @@ if (boardThemeApplyButton) {
     };
 }
 
+// --- ELEMENTOS DE MODO LOCAL / IA ---
+export const aiEasyButton = 
+    document.getElementById("ai_easy") as HTMLButtonElement;
+
+export const aiMediumButton = 
+    document.getElementById("ai_medium") as HTMLButtonElement;
+
+export const aiHardButton = 
+    document.getElementById("ai_hard") as HTMLButtonElement;
+
+export const local2PlayerButton = 
+    document.getElementById("2player") as HTMLButtonElement;
+
 // --- DISPLAY NAME, USERNAME, EMAIL, PASSWORD ELEMENTS ---
 
 export const changeDisplayNameButton =
