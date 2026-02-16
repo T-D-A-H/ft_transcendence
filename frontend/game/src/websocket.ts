@@ -38,6 +38,7 @@ export function initializeWebSocket() {
             try { ws.close(); } catch(e) {}
             reject(err);
         };
+        
 
         ws.onclose = async (event) => {
             console.log("WebSocket disconnected");

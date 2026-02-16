@@ -28,13 +28,34 @@ echo "Cleaning up existing ELK containers..."
 cd "$(dirname "$0")"
 docker compose --env-file ../.env -f ELK.yaml down -v 2>/dev/null || true
 
+# Build all images first
+echo "Building Docker images..."
+docker compose --env-file ../.env -f ELK.yaml build
+
 # Start Elasticsearch first
 echo "Starting Elasticsearch"
 docker compose --env-file ../.env -f ELK.yaml up -d elasticsearch
 
-# Wait for Elasticsearch to initialize
-echo "Waiting for Elasticsearch (30s)"
-sleep 30
+# Wait for Elasticsearch to be ready
+echo "Waiting for Elasticsearch..."
+ELASTICSEARCH_URL="http://localhost:9200"
+MAX_ATTEMPTS=60
+ATTEMPT=0
+
+while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+    if curl -sf "$ELASTICSEARCH_URL" > /dev/null 2>&1; then
+        echo "Elasticsearch ready"
+        break
+    fi
+    ATTEMPT=$((ATTEMPT + 1))
+    sleep 2
+done
+
+if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+    echo "Warning: Elasticsearch timeout"
+    echo "Checking Elasticsearch logs..."
+    docker logs ft_elasticsearch --tail 50
+fi
 
 # Start Kibana and Logstash
 echo "Starting Kibana and Logstash"

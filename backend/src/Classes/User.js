@@ -13,34 +13,35 @@ class User {
         this.display_name = display_name;
         this.socket = socket;
         this.isConnected = false;
+        
+        // Estado del juego
         this.currentMatch = null;
-        this.pendingRequests = new Map();
         this.currentTournament = null;
         this.isPlaying = false;
+        
+        this.pendingRequests = new Map();
         this.displaySide = User.SIDE.RIGHT;
         this.avatar = avatar || "&#9865;";
-        // --- STATS --- //
+        
+        // --- STATS (Instancia de la clase UserStats) --- //
         this.stats = new UserStats(stats);
     }
 
     send(message) {
-
         if (this.socket && this.isConnected) {
             this.socket.send(JSON.stringify(message));
         }
     }
 
     notify(type, msg, info) {
-
-    	const payload = {type: type};
-    
+        const payload = {type: type};
         if (msg !== null) {
             payload.msg = msg;
         }
-    	if (info !== null) {
-    		payload.info = info;
-    	}
-    	this.send(payload);
+        if (info !== null) {
+            payload.info = info;
+        }
+        this.send(payload);
     }
 
     disconnect() {
@@ -71,32 +72,35 @@ class User {
     }
 
     _makePendingKey(type, id, userId) {
-	    return `${type}:${id}:${userId}`;
+        return `${type}:${id}:${userId}`;
     }
 
-	addPendingRequest(type, id, targetUserId) {
-        
-    	const key = this._makePendingKey(type, id, targetUserId);
+    addPendingRequest(type, id, targetUserId) {
+        const key = this._makePendingKey(type, id, targetUserId);
 
-    	if (!this.pendingRequests.has(key)) {
-    		this.pendingRequests.set(key, {
-    			type: type,
-    			id: id,
-    			user: targetUserId
-    		});
-    	}
+        if (!this.pendingRequests.has(key)) {
+            this.pendingRequests.set(key, {
+                type: type,
+                id: id,
+                user: targetUserId
+            });
+        }
+    }
+
+    // 🔥 AÑADIDO: Este método es llamado por UserManager en sendTournamentInvite
+    addPendingTournamentRequest(type, id, targetUserId) {
+        this.addPendingRequest(type, id, targetUserId);
     }
 
     removePendingRequest(type, id, targetUserId) {
-    	const key = this._makePendingKey(type, id, targetUserId);
-    	this.pendingRequests.delete(key);
+        const key = this._makePendingKey(type, id, targetUserId);
+        this.pendingRequests.delete(key);
     }
 
     hasPendingRequest(type, id, targetUserId) {
-    	const key = this._makePendingKey(type, id, targetUserId);
-    	return this.pendingRequests.has(key);
+        const key = this._makePendingKey(type, id, targetUserId);
+        return this.pendingRequests.has(key);
     }
-
 
     getPendingRequests() {
         return (this.pendingRequests);
@@ -111,7 +115,6 @@ class User {
     }
 
     changeDisplaySide() {
-
         if (this.displaySide === User.SIDE.RIGHT) {
             this.displaySide = User.SIDE.LEFT;
         }
@@ -130,11 +133,11 @@ class User {
     }
 
     isInGame() {
-        return (this.currentMatch !== null && this.currentTournament !== null)
+        return (this.currentMatch !== null || this.currentTournament !== null);
     }
 
     getId() {return this.id;}
-    getAvatar() {return this.avatar}
+    getAvatar() {return this.avatar;}
     getUsername() {return this.username;}
     getDisplayName() {return this.display_name;}
     getSocket() {return this.socket;}
@@ -142,8 +145,11 @@ class User {
     getCurrentMatch() {return this.currentMatch;}
     getIsPlaying() {return this.isPlaying;}
     getCurrentTournament() {return this.currentTournament;}
-    incrementLocalPlayed() { this.local_played++; }
-    incrementLocalWon() { this.local_won++; }
+
+    // 🔥 CORREGIDO: Acceso a través de this.stats
+    incrementLocalPlayed() { this.stats.local_played++; }
+    incrementLocalWon() { this.stats.local_won++; }
+    
     updateDisplayName(newName) {this.display_name = newName;}
     updateUserName(newName) {this.username = newName;}
 }

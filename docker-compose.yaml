@@ -12,13 +12,13 @@ services:
     volumes:
       - ./backend/src:/app/src
       - db_data:/data
-      # - ./database/blockchain/artifacts:/app/blockchain/artifacts:ro
+      - ./database/blockchain/artifacts:/app/blockchain/artifacts:ro
     env_file:
       - ./backend/.env
-      # - ./database/blockchain/.env
+      - ./database/blockchain/.env
     depends_on:
       - database
-      # - blockchain
+      - blockchain
     restart: unless-stopped
     networks:
       - ft_transcendence
@@ -37,25 +37,25 @@ services:
     networks:
       - ft_transcendence
 
-  # blockchain:
-  #   container_name: ft_blockchain
-  #   build:
-  #     context: ./database/blockchain
-  #     dockerfile: Dockerfile
-  #   user: "root"
-  #   ports:
-  #     - "8545:8545"
-  #   volumes:
-  #     - ./database/blockchain:/app
-  #     - /app/node_modules
-  #   env_file:
-  #     - ./database/blockchain/.env
-  #   environment:
-  #     - RUN_LOCAL_NODE=false
-  #     - NODE_ENV=production
-  #   restart: unless-stopped
-  #   networks:
-  #     - ft_transcendence
+  blockchain:
+    container_name: ft_blockchain
+    build:
+      context: ./database/blockchain
+      dockerfile: Dockerfile
+    user: "root"
+    ports:
+      - "8545:8545"
+    volumes:
+      - ./database/blockchain:/app
+      - /app/node_modules
+    env_file:
+      - ./database/blockchain/.env
+    environment:
+      - RUN_LOCAL_NODE=false
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - ft_transcendence
 
   frontend:
     container_name: ft_frontend

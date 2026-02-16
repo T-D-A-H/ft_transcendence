@@ -62,19 +62,49 @@ class Tournament {
 		this.winners.delete(userId);
 	}
 
-	updateWinner(requestedMatchId, userWhoWonId) { LOGGER(200, "Tournament.js", "updateWinner", "Called");
+	updateWinner(requestedMatchId, userWhoWonId) { 
+		LOGGER(200, "Tournament.js", "updateWinner", "Called");
 
 		const match = this.matches.get(requestedMatchId);
 		if (!match)
 			return false;
+		
 		this.winners.set(userWhoWonId, this.players.get(userWhoWonId));
 		this.matchDoneCount++;
-        // --- AÑADIDO: Actualizar puntuación ---
-        // Cada victoria suma 100 puntos. Esto se usará para grabar en la blockchain al final.
-        const currentScore = this.playerScores.get(userWhoWon) || 0;
-        this.playerScores.set(userWhoWon, currentScore + 100);
-        // --------------------------------------
+		
+		const currentScore = this.playerScores.get(userWhoWonId) || 0;
+		this.playerScores.set(userWhoWonId, currentScore + 100);
+		// --------------------------------------
+		
 		return true;
+	}
+
+	sendLose(loserUser, winnerUser) {
+		LOGGER(200, "Tournament.js", "sendLose", `${loserUser.getDisplayName()} lost`);
+		
+		const winnerAlias = this.getPlayerAlias(winnerUser.getId());
+		
+		loserUser.notify("TOURNAMENT_ELIMINATED", `You were eliminated by ${winnerAlias}`, {
+			tournament_id: this.id,
+			winner: winnerAlias
+		});
+	}
+
+	sendFinalWin(winnerUserId) {
+		LOGGER(200, "Tournament.js", "sendFinalWin", `Winner: ${winnerUserId}`);
+		
+		// Obtener el objeto User desde el UserManager
+		// Como no tenemos acceso directo aquí, enviaremos una notificación simple
+		const winnerAlias = this.getPlayerAlias(winnerUserId);
+		
+		// Broadcast a todos los jugadores
+		for (const [userId, playerData] of this.players) {
+			const user = this.players.get(userId);
+			if (user) {
+				// Aquí necesitamos acceso al UserManager para obtener el objeto User
+				// Por ahora, dejamos este método vacío y lo manejamos en stopTournament
+			}
+		}
 	}
 
 	prepareNextRound() { LOGGER(200, "Tournament.js", "prepareNextRound", "Called");

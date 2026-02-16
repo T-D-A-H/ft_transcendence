@@ -48,6 +48,7 @@ import {
     stopAiMode 
 } from "./ai.js";
 
+
 import { initStatsDashboard, updateStatsUI} from "./stats.js";
 import { friendsListInviteUL, getGameVisibility} from "./ui.js";
 import { loginModal, closeLoginButton, logoutButton,usernameInput, passwordInput, submitLoginButton, dontHaveAnAccountButton} from "./ui.js";

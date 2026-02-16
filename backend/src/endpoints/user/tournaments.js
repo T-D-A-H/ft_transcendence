@@ -6,7 +6,6 @@ async function tournamentsHandler(fastify, options) {
 
 	const { userManager, authFromCookie } = options;
 
-	// Create a tournament
     fastify.post('/', { preHandler: authFromCookie }, async (req, reply) => {
 
     	let { size, visibility } = req.body;
@@ -15,7 +14,7 @@ async function tournamentsHandler(fastify, options) {
     		return reply.code(400).send({ msg: "Missing size." });
 		if (!visibility)
 			visibility = false;
-    	const result = userManager.createTournamentRequest(req.user, size, visibility);
+    	const result = await userManager.createTournamentRequest(req.user, size, visibility);
 		LOGGER(result.status, "tournaments.js", "GET /", result.msg);
     	reply.code(result.status).send(result);
     });
@@ -33,17 +32,18 @@ async function tournamentsHandler(fastify, options) {
 	// Join a tournament
     fastify.post('/:tournament_id/join', { preHandler: authFromCookie }, async (req, reply) => {
 
-		const { tournament_id } = req.params;
+        const { tournament_id } = req.params;
 
-		const targetTournament = userManager.getTournamentById(tournament_id);
-		if (!targetTournament) {
-			return reply.code(404).send({ msg: "Tournament not found." });
-		}
-		if (targetTournament.isPublic() === false)
-			return reply.code(404).send({ msg: "Tournament is private." });
-    	const result = userManager.joinTournamentRequest(req.user, targetTournament);
-		LOGGER(result.status, "tournaments.js", `/${tournament_id}/join`, result.msg);
-    	reply.code(result.status).send(result);
+        const targetTournament = userManager.getTournamentById(tournament_id);
+        if (!targetTournament) {
+            return reply.code(404).send({ msg: "Tournament not found." });
+        }
+        if (targetTournament.isPublicTournament() === false)
+            return reply.code(404).send({ msg: "Tournament is private." });
+            
+        const result = userManager.joinTournamentRequest(req.user, targetTournament);
+        LOGGER(result.status, "tournaments.js", `/${tournament_id}/join`, result.msg);
+        reply.code(result.status).send(result);
     });
 
 	// start tournament game

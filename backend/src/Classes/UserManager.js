@@ -135,46 +135,32 @@ class UserManager {
         return { status: 200, msg: "Succesfully exited Match."};
     }
 
-    createTournamentRequest(user, tournamentSize, visibility) {
 
-    	const size = Number(tournamentSize);
+joinTournamentRequest(user, tournament) {
 
-    	if (user.isInGame() === true) {
-    		return { status: 400, msg: "You are already in a game/tournament." };
-    	}
-    	if (size < 2 || size > 64 || size % 2 !== 0) {
-    		return { status: 400, msg: "Tournament sizes should be even numbers (2-64)." };
-    	}
-    	const tournament = this.createTournament(user, user.getDisplayName(), size, visibility);
-    	this.addToTournament(user, tournament, user.getDisplayName());
-        user.notify("UPDATE", "tournament", {
-            id: tournament.id,
-            type: "tournament",
-            size: tournament.getCurrentSize().toString() + "/" + tournament.getTournamentSize().toString(),
-            creator: tournament.getCreatorAlias(),
-            players: [tournament.getPlayers().alias],
-            status: "Waiting..."
-        });
-    	return { status: 200, msg: "Tournament created!", tournament_id:  tournament.getId()};
-    }
+        // 1. Si el usuario ya está en juego
+        if (user.isInGame() === true) {
+            
+            // 🔥 CORRECCIÓN: Si ya está en ESTE torneo, simplemente devolvemos éxito (reconexión)
+            if (user.getCurrentTournament() === tournament) {
+                return { 
+                    status: 200, 
+                    msg: `Welcome back to ${tournament.getCreatorAlias()}'s tournament.` 
+                };
+            }
+            return { status: 400, msg: "You are already in a game/tournament." };
+        }
 
-    joinTournamentRequest(user, tournament) {
+        if (tournament.getIfTournamentFull()) {
+            return { status: 400, msg: "Tournament already full." };
+        }
 
-
-    	if (user.isInGame() === false) {
-    		if (user.getCurrentTournament() === tournament)
-    			return { status: 400, msg: "You are already in this tournament." };
-    		return { status: 400, msg: "You are already in a game/tournament." };
-    	}
-    	if (tournament.getIfTournamentFull()) {
-    		return { status: 400, msg: "Tournament already full." };
-    	}
-    	const added = this.addToTournament(user, tournament, user.getDisplayName());
-    	if (!added) {
-    		return { status: 500, msg: "Could not join tournament." };
-    	}
+        const added = this.addToTournament(user, tournament, user.getDisplayName());
+        if (!added) {
+            return { status: 500, msg: "Could not join tournament." };
+        }
         
-    	tournament.broadcast(this, "NOTIFICATION",`${user.getDisplayName()} joined the tournament. ${tournament.getCurrentSize()}/${tournament.getTournamentSize()}`, null, [user.getId()])
+        tournament.broadcast(this, "NOTIFICATION",`${user.getDisplayName()} joined the tournament. ${tournament.getCurrentSize()}/${tournament.getTournamentSize()}`, null, [user.getId()])
         tournament.broadcast("UPDATE", "tournament", {
             id: tournament.id,
             type: "tournament",
@@ -183,7 +169,7 @@ class UserManager {
             players: [tournament.getPlayers().alias],
             status: (tournament.getCurrentSize() === tournament.getTournamentSize()) ? "Ready" : "Waiting..."
         });
-    	return { status: 200, msg: `Joined ${tournament.getCreatorAlias()}'s tournament.` };
+        return { status: 200, msg: `Joined ${tournament.getCreatorAlias()}'s tournament.` };
     }
 
     sendTournamentInvite(user, targetTournament, targetUsername) {
@@ -346,14 +332,14 @@ class UserManager {
 
         const s = targetUser.stats;
 
-        let winRate_temp = s.matches > 0 ? (s.total_wins / s.matches) * 100 : 0;
+        let winRate_temp = s.matches > 0 ? (s.total_wins/ s.matches) * 100 : 0;
         if (!Number.isFinite(winRate_temp))
             winRate_temp = "0%";
         else
             winRate_temp = `${Math.round(winRate_temp)}%`;
         
         s.win_rate = winRate_temp;
-        return { 
+        return {
             status: 200, 
             msg: "Succesfully fetched user info.", 
             target: {
@@ -462,18 +448,18 @@ class UserManager {
     saveGameStatsToDB(userId, resultType, isWin) {
         if (!this.db)
             return;
-
+        LOGGER(200, userId, resultType, isWin);
         let query = "";
         const streakLogic = isWin 
             ? ", current_streak = current_streak + 1, best_streak = MAX(best_streak, current_streak + 1)" 
             : ", current_streak = 0";
 
         if (resultType === "online") {
-            query = `UPDATE stats SET online_played = online_played + 1, matches = matches + 1, _wins = totatotall_wins + 1 ${isWin ? ", online_won = online_won + 1" : ""} ${streakLogic} WHERE user_id = ?`;
+            query = `UPDATE stats SET online_played = online_played + 1, matches = matches + 1, total_wins = total_wins + 1 ${isWin ? ", online_won = online_won + 1" : ""} ${streakLogic} WHERE user_id = ?`;
         }
         else if (resultType === "local") {
             // Normalmente en local no contamos rachas globales, pero depende de tu juego. Asumimos que sí.
-             query = `UPDATE stats SET local_played = local_played + 1, matches = matches + 1 ${isWin ? ", local_won = local_won + 1" : ""} WHERE user_id = ?`;
+            query = `UPDATE stats SET local_played = local_played + 1, matches = matches + 1 ${isWin ? ", local_won = local_won + 1" : ""} WHERE user_id = ?`;
         }
         else if (resultType === "tournament") {
              query = `UPDATE stats SET tournaments_played = tournaments_played + 1, matches = matches + 1, total_wins = total_wins + 1 ${isWin ? ", tournaments_won = tournaments_won + 1" : ""} ${streakLogic} WHERE user_id = ?`;
@@ -709,47 +695,81 @@ class UserManager {
 
             this.db.run(
                 `INSERT INTO matches (player1_id, player2_id, score_p1, score_p2, winner_id, game_mode, played_at)
-                 VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
                 [p1_id, p2_id, scores[0], scores[1], w_id, match.getMatchType()],
                 (err) => { if (err) console.error("Error inserting match history:", err); }
             );
         }
 
         // --- CASO 1: PARTIDA ONLINE O TORNEO (2 Jugadores Reales) ---
-// --- CASO 1: PARTIDA ONLINE O TORNEO (2 Jugadores Reales) ---
         if (winnerUser && loserUser && match.getMatchType() !== "2player" && !match.getMatchType().startsWith("ai")) {
-            
+        
             const type = tournament ? "tournament" : "online";
-            winnerUser.stats.matches = (winnerUser.stats.matches || 0) + 1;
-            winnerUser.stats.total_wins = (winnerUser.stats.total_wins || 0) + 1;
 
             if (type === "online") {
+                // ONLINE: Actualizar stats en memoria Y en DB
+                winnerUser.stats.matches = (winnerUser.stats.matches || 0) + 1;
+                winnerUser.stats.total_wins = (winnerUser.stats.total_wins || 0) + 1;
                 winnerUser.stats.online_played = (winnerUser.stats.online_played || 0) + 1;
                 winnerUser.stats.online_won = (winnerUser.stats.online_won || 0) + 1;
-            } else if (type === "tournament") {
-                winnerUser.stats.tournaments_played = (winnerUser.stats.tournaments_played || 0) + 1;
-                winnerUser.stats.tournaments_won = (winnerUser.stats.tournaments_won || 0) + 1;
-            }
-            winnerUser.stats.current_streak = (winnerUser.stats.current_streak || 0) + 1;
-            if (winnerUser.stats.current_streak > (winnerUser.stats.best_streak || 0)) {
-                winnerUser.stats.best_streak = winnerUser.stats.current_streak;
-            }
+                winnerUser.stats.current_streak = (winnerUser.stats.current_streak || 0) + 1;
+                
+                if (winnerUser.stats.current_streak > (winnerUser.stats.best_streak || 0)) {
+                    winnerUser.stats.best_streak = winnerUser.stats.current_streak;
+                }
 
-            this.saveGameStatsToDB(winnerUser.getId(), type, true);
+                this.saveGameStatsToDB(winnerUser.getId(), "online", true);
 
-            loserUser.stats.matches = (loserUser.stats.matches || 0) + 1;
-
-            if (type === "online") {
+                loserUser.stats.matches = (loserUser.stats.matches || 0) + 1;
                 loserUser.stats.online_played = (loserUser.stats.online_played || 0) + 1;
-            } else if (type === "tournament") {
-                loserUser.stats.tournaments_played = (loserUser.stats.tournaments_played || 0) + 1;
-            }
-            loserUser.stats.current_streak = 0;
+                loserUser.stats.current_streak = 0;
 
-            this.saveGameStatsToDB(loserUser.getId(), type, false);
-            
-            winnerUser.notify("WIN", `You won against ${loserUser.getDisplayName()}`);
-            loserUser.notify("WIN", `You lost against ${winnerUser.getDisplayName()}`);
+                this.saveGameStatsToDB(loserUser.getId(), "online", false);
+                
+                winnerUser.notify("WIN", `You won against ${loserUser.getDisplayName()}`);
+                loserUser.notify("WIN", `You lost against ${winnerUser.getDisplayName()}`);
+            } else {
+                // 🔥 TORNEO: Actualizar stats TAMBIÉN (matches y streak)
+                
+                // GANADOR: actualizar stats en memoria
+                winnerUser.stats.matches = (winnerUser.stats.matches || 0) + 1;
+                winnerUser.stats.total_wins = (winnerUser.stats.total_wins || 0) + 1;
+                winnerUser.stats.current_streak = (winnerUser.stats.current_streak || 0) + 1;
+                
+                if (winnerUser.stats.current_streak > (winnerUser.stats.best_streak || 0)) {
+                    winnerUser.stats.best_streak = winnerUser.stats.current_streak;
+                }
+
+                // 🔥 GUARDAR EN DB (matches, total_wins, streak)
+                if (this.db) {
+                    const queryWinner = `UPDATE stats SET 
+                        matches = matches + 1,
+                        total_wins = total_wins + 1
+                        WHERE user_id = ?`;
+                    
+                    this.db.run(queryWinner, [winnerUser.getId()], (err) => {
+                        if (err) console.error("Error updating winner stats:", err);
+                        else LOGGER(200, "UserManager", "stopMatch", `✅ Updated tournament match stats for winner ${winnerUser.getId()}`);
+                    });
+                }
+                if (this.db) {
+                    const queryLoser = `UPDATE stats SET 
+                        matches = matches + 1
+                        WHERE user_id = ?`;
+                    
+                    this.db.run(queryLoser, [loserUser.getId()], (err) => {
+                        if (err) console.error("Error updating loser stats:", err);
+                        else LOGGER(200, "UserManager", "stopMatch", `✅ Updated tournament match stats for loser ${loserUser.getId()}`);
+                    });
+                }
+
+                // PERDEDOR: actualizar stats en memoria
+                loserUser.stats.matches = (loserUser.stats.matches || 0) + 1;
+                loserUser.stats.current_streak = 0;
+                
+                winnerUser.notify("WIN", `You won against ${loserUser.getDisplayName()}`);
+                loserUser.notify("WIN", `You lost against ${winnerUser.getDisplayName()}`);
+            }
         }
 
         // --- CASO 2: PARTIDA LOCAL (1 Jugador Real vs Invitado) ---
@@ -785,21 +805,17 @@ class UserManager {
             }
         }
 
-        // --- TORNEO ---
+        // --- TORNEO: Solo actualizar el ganador de la ronda ---
         if (tournament !== null) {
             tournament.updateWinner(match.getId(), winnerUser.getId());
             tournament.broadcast(this, "NOTIFICATION", `${winnerUser.getDisplayName()} won round against ${loserUser.getDisplayName()}`, null, [winnerUser.getId(), loserUser.getId()]);
 
             if (loserUser) {
-                loserUser.stats.matches++;
-                loserUser.stats.tournaments_played++;
-                this.saveGameStatsToDB(loserUser.getId(), "tournament", false);
+                // 🔥 NO actualizar stats aquí, solo notificar
                 tournament.sendLose(loserUser, winnerUser);
                 loserUser.unsetTournament();
             }
         }
-
-
 
         players.forEach(p => {
             if (p) {
@@ -843,18 +859,59 @@ class UserManager {
     }
 //----------------------------------------------------------------------------------------MATCH
 //----------------------------------------------------------------------------------------TOURNAMENT
+    async createTournamentRequest(user, tournamentSize, visibility) {
+        const size = Number(tournamentSize);
 
-    async createTournament(user, alias, size, visibility) { LOGGER(200, "UserManager.js", "createTournament", "Called by user alias: " + alias);
+        // Validaciones
+        if (user.isInGame() === true) {
+            return { status: 400, msg: "You are already in a game/tournament." };
+        }
+        if (size < 2 || size > 64 || size % 2 !== 0) {
+            return { status: 400, msg: "Tournament sizes should be even numbers (2-64)." };
+        }
+
+        try {
+            // 1. Crear el torneo
+            const tournament = await this.createTournament(user, user.getDisplayName(), size, visibility);
+
+            // 2. Añadir al creador
+            this.addToTournament(user, tournament, user.getDisplayName());
+
+            // 3. Notificar
+            user.notify("UPDATE", "tournament", {
+                id: tournament.getId(),
+                type: "tournament",
+                size: tournament.getCurrentSize().toString() + "/" + tournament.getTournamentSize().toString(),
+                creator: tournament.getCreatorAlias(),
+                players: [tournament.getPlayers().alias], 
+                status: "Waiting..."
+            });
+
+            // 🔥 ESTE RETURN ES OBLIGATORIO PARA QUE LA API FUNCIONE
+            return { 
+                status: 200, 
+                msg: "Tournament created!", 
+                tournament_id: tournament.getId() 
+            };
+
+        } catch (err) {
+            console.error(err);
+            return { status: 500, msg: "Internal Server Error creating tournament." };
+        }
+    }
+
+    async createTournament(user, alias, size, visibility) { 
+        LOGGER(200, "UserManager.js", "createTournament", "Called by user alias: " + alias);
 
         const tournament_id = this.createId();
-		const tournament = new Tournament(user.getId(), alias, tournament_id, size, visibility);
+        const tournament = new Tournament(user.getId(), alias, tournament_id, size, visibility);
     
-        // --- AÑADIDO: Lógica de creación en Blockchain ---
+        // --- Lógica Blockchain ---
         if (this.blockchainEnabled) {
             try {
                 const tournamentName = `Tournament ${tournament_id} - ${alias}`;
                 const startTime = Math.floor(Date.now() / 1000);
-                const endTime = startTime + (7 * 24 * 60 * 60); // 7 days duration
+                const endTime = startTime + (7 * 24 * 60 * 60); 
                 
                 const blockchainId = await blockchainService.createTournament(
                     tournamentName,
@@ -868,38 +925,51 @@ class UserManager {
                 LOGGER(400, "UserManager", "createTournament", "Failed to create on blockchain: " + error.message);
             }
         }
-        this.incrementTournamentPlayedDB(user.getId());
-/*         const stats = this.ensureUserStats(user); */
-        if (stats) stats.tournamentsPlayed += 1;
-        // -----------------------------------------------
+        
+
         this.tournaments.set(tournament_id, tournament);
         return (tournament);
     }
 
-    addToTournament(user, tournament, alias) { LOGGER(200, "UserManager.js", "addToTournament", "Added user: " + alias);
+addToTournament(user, tournament, alias) { 
+    LOGGER(200, "UserManager.js", "addToTournament", "Added user: " + alias);
 
-        if (tournament.addUser(user.getId(), alias) === false) {
-            return (false);
-        }
-        // Sumar tournament_played en DB al unirse
-        this.incrementTournamentPlayedDB(user.getId());
-        user.setTournament(tournament);
-/*         const stats = this.ensureUserStats(user); */
-        if (stats) stats.tournamentsPlayed += 1;
-        return (true);
+    if (tournament.addUser(user.getId(), alias) === false) {
+        return (false);
     }
+    
+    this.incrementTournamentPlayedDB(user.getId());
+    
+    user.setTournament(tournament);
+
+    if (user.stats) {
+        user.stats.tournaments_played = (user.stats.tournaments_played || 0) + 1;
+    }
+    
+    return (true);
+}
 
     removeTournament(tournament_id) { LOGGER(200, "UserManager.js", "removeTournament", "deleted tournament id: " + tournament_id);
         this.tournaments.delete(tournament_id);
     }
 
-    async stopTournament(tournament) { LOGGER(200, "UserManager.js", "stopTournament", "called");
+    async stopTournament(tournament) {
 
-        const winner_user = this.getUserByID(tournament.getWinner());
+        const winner_id = tournament.getWinner();
+        if (winner_id === null) {
+            this.removeTournament(tournament.getId());
+            return;
+        }
 
-        if (winner_user === null) return;
-        // --- AÑADIDO: Lógica para guardar scores y finalizar en Blockchain ---
-        if (this.blockchainEnabled && tournament.blockchainId && winner_user !== null) {
+        const winner_user = this.getUserByID(winner_id);
+        if (!winner_user) {
+            LOGGER(400, "UserManager", "stopTournament", "Winner user not found");
+            this.removeTournament(tournament.getId());
+            return;
+        }
+
+        // Save all player scores to blockchain before finalizing
+        if (this.blockchainEnabled && tournament.blockchainId) {
             try {
                 LOGGER(200, "UserManager", "stopTournament", "Saving tournament results to blockchain...");
                 console.log("\n" + "=".repeat(70));
@@ -915,11 +985,10 @@ class UserManager {
                 console.log("Recording player scores:");
                 for (const [user, playerData] of tournament.players.entries()) {
                     try {
-                        // Convert user ID to valid Fuji Testnet address (relleno con ceros)
+                        // Convert user ID to valid Fuji Testnet address
                         const userId = user.id.toString().replace(/[^a-f0-9]/gi, '').substring(0, 40);
                         const playerAddress = '0x' + userId.padStart(40, '0');
-                        // Aseguramos que getPlayerScore exista, si no 0
-                        const score = (typeof tournament.getPlayerScore === 'function') ? tournament.getPlayerScore(user) : 0;
+                        const score = tournament.getPlayerScore(user) || 0;
                         
                         const result = await blockchainService.recordScore(
                             tournament.blockchainId,
@@ -928,8 +997,9 @@ class UserManager {
                             score
                         );
                         txHashes.push({ type: 'score', player: playerData.alias, tx: result.transactionHash });
-                        console.log(`${playerData.alias}: ${score} points - TX: ${result.transactionHash}`);
-                        LOGGER(200, "UserManager", "stopTournament", `Recorded score for ${playerData.alias}: ${score}`);
+                        console.log(`${playerData.alias}: ${score} points`);
+                        console.log(`    TX: ${result.transactionHash}`);
+                        LOGGER(200, "UserManager", "stopTournament", `Recorded score for ${playerData.alias}: ${score} - TX: ${result.transactionHash}`);
                     } catch (error) {
                         console.log(`✗ ${playerData.alias}: Failed - ${error.message}`);
                         LOGGER(400, "UserManager", "stopTournament", `Failed to record score for ${playerData.alias}: ${error.message}`);
@@ -941,16 +1011,35 @@ class UserManager {
                 console.log("Finalizing tournament...");
                 const finalizeResult = await blockchainService.finalizeTournament(tournament.blockchainId);
                 txHashes.push({ type: 'finalize', tx: finalizeResult.transactionHash });
-                console.log(`Tournament finalized! TX: ${finalizeResult.transactionHash}`);
-                LOGGER(200, "UserManager", "stopTournament", `Tournament ${tournament.blockchainId} finalized`);
+                console.log(`Tournament finalized!`);
+                console.log(`    TX: ${finalizeResult.transactionHash}`);
+                LOGGER(200, "UserManager", "stopTournament", `Tournament ${tournament.blockchainId} finalized - TX: ${finalizeResult.transactionHash}`);
                 console.log("");
                 
-                // Get and log final results (verificación)
+                // Get and log final results
                 const results = await blockchainService.getTournamentResults(tournament.blockchainId);
                 console.log("FINAL RANKINGS (verified on blockchain):");
+                console.log("-".repeat(70));
                 results.rankings.forEach((player, index) => {
                     const medal = index === 0 ? "1. " : index === 1 ? "2. " : index === 2 ? "3. " : "  ";
                     console.log(`${medal} ${index + 1}. ${player.playerName.padEnd(20)} - ${player.score} points`);
+                    LOGGER(200, "UserManager", "stopTournament", `${index + 1}. ${player.playerName}: ${player.score} points`);
+                });
+                console.log("-".repeat(70));
+                console.log("");
+                
+                console.log("BLOCKCHAIN VERIFICATION:");
+                console.log(`  Network: Avalanche Fuji Testnet`);
+                console.log(`  Contract: ${process.env.CONTRACT_ADDRESS}`);
+                console.log(`  View on SnowTrace: https://testnet.snowtrace.io/address/${process.env.CONTRACT_ADDRESS}`);
+                console.log("");
+                console.log("Transaction Hashes:");
+                txHashes.forEach((tx, i) => {
+                    if (tx.type === 'score') {
+                        console.log(`  ${i + 1}. Score (${tx.player}): https://testnet.snowtrace.io/tx/${tx.tx}`);
+                    } else {
+                        console.log(`  ${i + 1}. Finalization: https://testnet.snowtrace.io/tx/${tx.tx}`);
+                    }
                 });
                 console.log("=".repeat(70) + "\n");
             } catch (error) {
@@ -958,15 +1047,24 @@ class UserManager {
                 LOGGER(400, "UserManager", "stopTournament", "Failed to save to blockchain: " + error.message);
             }
         }
-        // ---------------------------------------------------------------------
-        console.log("WINNER USER = " + winner_user.getUsername());
-        
-        winner_user.tournaments_played = (winner_user.tournaments_played || 0) + 1;
-        winner_user.tournaments_won = (winner_user.tournaments_won || 0) + 1;
-        this.saveGameStatsToDB(winner_user.id, null, "tournament_win");
+        if (winner_user.stats) {
+            winner_user.stats.tournaments_won = (winner_user.stats.tournaments_won || 0) + 1;
+        }
+        if (this.db) {
+            const query = `UPDATE stats SET tournaments_won = tournaments_won + 1 WHERE user_id = ?`;
+            this.db.run(query, [winner_user.getId()], (err) => {
+                if (err) {
+                    console.error("Error updating tournaments_won in DB:", err);
+                } else {
+                    LOGGER(200, "UserManager", "stopTournament", `✅ Updated tournaments_won for user ${winner_user.getId()}`);
+                }
+            });
+        }
+        // Notificar a todos los jugadores del torneo
+        tournament.broadcast(this, "NOTIFICATION", `${tournament.getPlayerAlias(winner_id)} won the Tournament!`);
+
+        // Limpieza
         this.removeTournament(tournament.getId());
-        tournament.broadcast(this, "NOTIFICATION", `${tournament.getPlayerAlias(tournament.getWinner())} won the Tournament.`, null, null);
-        LOGGER(200, "UserManager.js", "updateTournaments", "User: " + tournament.getPlayerAlias(tournament.getWinner()) + " won the Tournament!");
         winner_user.setTournament(null);
         winner_user.setIsPlaying(false);
     }
