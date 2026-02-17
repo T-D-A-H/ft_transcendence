@@ -4,7 +4,8 @@ import {GameStatus, setGameStatus, getGameStatus, setMatchMode, GameType, setGam
 import { drawGame, clearBackground } from "./draw.js"
 import { userSocket } from "./websocket.js";
 import { showNotification } from "./main.js";
-import {MatchData, currentGameButton, hide} from "./ui.js";
+import {MatchData, currentGameButton, hide, startMatchButton, show} from "./ui.js";
+import { onFriendWebSocketMessage } from "./friends.js";
 
 
 export async function httpEvent(method: string, endpoint: string, body?: Record<string, any>) {
@@ -85,11 +86,29 @@ export async function registerEvents() {
 
 		showNotification(data.msg, data.info?.type, data.info?.id);
 	});
+	registerHandler("FRIEND_UPDATE", (data) => {
+		onFriendWebSocketMessage(data);
+	});
+
+	registerHandler("TOURNAMENT_ELIMINATED", (data) => {
+		showNotification(data.msg);
+		setGameType(GameType.NONE);
+		setGameStatus(GameStatus.NOT_IN_GAME);
+		setSCORES(0, 0);
+		clearBackground();
+		hide(currentGameButton);
+		showMenu();
+	});
 	registerHandler("GAME_READY", (data) => {
 
 		setMatchMode("single");
 		setGameStatus(GameStatus.READY_TO_START);
 		setCurrentMatchId(data.info?.match_id);
+		    
+		const inviteModal = document.getElementById("invite-game-modal");
+		const onlineFriendsContainer = document.getElementById("online_friends");
+		if (inviteModal) hide(inviteModal);
+		if (onlineFriendsContainer) hide(onlineFriendsContainer);
 		if (data.info?.type === "tournament") {
 
 			setGameType(GameType.TOURNAMENT);
@@ -97,7 +116,6 @@ export async function registerEvents() {
 			updateTournamentUI(data.info?.self_displayname, data.info?.opponent_display_name);
 		}
 		else if (data.info?.type === "match") {
-
 			setGameType(GameType.MATCH);
 			updateOpponentUI(data.info?.display_name, data.info?.id);
 		}
@@ -116,11 +134,12 @@ export async function registerEvents() {
 	});
 	
 	registerHandler("UPDATE", (data) => {
-
 		if ((data.msg === "match" || data.msg === "tournament") && data.info) {
 			updateCurrentGame(data.info as MatchData);
+			if (data.info.status === "Ready") {
+				show(startMatchButton);
+			}
 		}
-
 	});
 	registerHandler("MIRROR", (data) => {
 

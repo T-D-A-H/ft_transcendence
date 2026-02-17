@@ -13,6 +13,7 @@ function buildLogoutHandler(userManager, fastify) {
                         const decoded = fastify.jwt.verify(token);
                         const userId = decoded.id;
                         const player = userManager.getUserByID(userId);
+                        await notifyFriendsOffline(userId, userManager);
                         
                         if (player) {
                             player.isConnected = false;
@@ -41,6 +42,35 @@ function buildLogoutHandler(userManager, fastify) {
 			return reply.code(500).send({ status: "error", error: "Error en el servidor" });
 		}
 	}
+}
+
+async function notifyFriendsOffline(userId, userManager) {
+    const db = userManager.db;
+    if (!db) return;
+
+    try {
+        const rows = await new Promise((resolve, reject) => {
+            db.all(
+                `SELECT 
+                    CASE WHEN user_id = ? THEN target_id ELSE user_id END as friend_id
+                FROM relationships
+                WHERE (user_id = ? OR target_id = ?)
+                  AND type = 'friend'
+                  AND status = 'ACCEPTED'`,
+                [userId, userId, userId],
+                (err, rows) => err ? reject(err) : resolve(rows || [])
+            );
+        });
+
+        for (const row of rows) {
+            const friend = userManager.getUserByID(row.friend_id);
+            if (friend && friend.getIsConnected()) {
+                friend.notify("FRIEND_UPDATE", "Friend went offline", null);
+            }
+        }
+    } catch (err) {
+        console.error("Error notifying friends on logout:", err);
+    }
 }
 
 module.exports = buildLogoutHandler;

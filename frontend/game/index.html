@@ -219,34 +219,16 @@
 						
 								<!-- friends -->
 								<div id="friends_list" class="pong-list hidden">
+
+									<!-- Header row: requests button + add button -->
 									<div class="flex gap-2 w-full">
-										<button id="requests_friend_button" class="pong-button-gray shrink-0 ">requests</button>
+										<button id="requests_friend_button" class="pong-button-gray shrink-0">requests</button>
 										<button id="add_friend_button" class="pong-button active-border border-2 ml-auto">ADD +</button>
 									</div>
-									<!-- FAKE FRIENDS FOR NOW -->
-									<div class="pong-button active-border full-width flex items-start justify-between">
-											<div class="flex flex-col text-left">
-												<span>John Doe</span>
-												<span class="text-[color:var(--pong-gray)]">@johndonut</span>
-											</div>
-											<span class="self-start p-2">ONLINE</span>
-									</div>
-									<div class="pong-button active-border full-width flex items-start justify-between">
-											<div class="flex flex-col text-left">
-												<span>Mary Lee</span>
-												<span class="text-[color:var(--pong-gray)]">@maryleeason</span>
-											</div>
-											<span class="self-start p-2">ONLINE</span>
-									</div>
-									<div class="pong-button active-border full-width flex items-start justify-between">
-											<div class="flex flex-col text-left">
-												<span>Lucy Liu</span>
-												<span class="text-[color:var(--pong-gray)]">@reallucyliu</span>
-											</div>
-											<span class="self-start p-2">OFFLINE</span>
-									</div>			
-									
-									<ul id="friends_list_ul" class="pong-friends-list"></ul>
+
+									<!-- Dynamic friends rendered by friends.ts -->
+									<ul id="friends_list_ul" class="pong-friends-list flex flex-col gap-1 w-full"></ul>
+
 								</div>
 
 								<!-- play -->
@@ -266,18 +248,25 @@
 				</div>
 
 				<!-- Invite Players Game Modal -->
-				<div id="invite-game-modal" class="pong-modal hidden">
-
-					<div class="pong-modal-header">
-						<button id="invite-game-cancel" class="pong-cancel-button">X</button>
-						<h2 class="pong-modal-top-text">Invite Friends</h2>
-					</div>
-					<input id="play_request_username2" type="text" class="pong-input-field" placeholder="Enter Username"/>
-					<div id="online_friends" class="pong-suboptions">
-						<ul id="friends_list_invite_ul" class="pong-tournament-list"></ul>
-					</div>
-
+			<div id="invite-game-modal" class="pong-modal hidden">
+				<div class="pong-modal-header">
+					<button id="invite-game-cancel" class="pong-cancel-button">X</button>
+					<h2 class="pong-modal-top-text">Invite Friends</h2>
 				</div>
+
+				<!-- Input manual -->
+				<div class="flex gap-2 w-full items-center">
+					<input id="play_request_username2" type="text" class="pong-input-field flex-1" placeholder="Enter username manually"/>
+					<button id="invite_manual_send" class="pong-submit-button active-border shrink-0">SEND</button>
+				</div>
+
+				<div class="pong-font text-[6px] text-center" style="color:var(--pong-gray)">— or pick from online friends —</div>
+
+				<!-- Lista de amigos online -->
+				<div id="online_friends" class="pong-suboptions">
+					<ul id="friends_list_invite_ul" class="pong-tournament-list flex flex-col gap-1"></ul>
+				</div>
+			</div>
 				
 				<!-- Requests Game Modal -->
 				<div id="requests-game-modal" class="pong-modal hidden">
@@ -624,6 +613,27 @@
 						<button id="twofa_submit_button" class="pong-submit-button active-border ml-auto">SUBMIT</button>
 					</div>
 				</div>
+				<!-- Friend Modal -->
+				<div id="add_friend_modal" class="pong-modal hidden">
+					<div class="pong-modal-header">
+						<button id="add_friend_cancel" class="pong-cancel-button">X</button>
+						<h2 class="pong-modal-top-text">Add Friend</h2>
+					</div>
+					<div class="flex flex-col gap-3 mt-4">
+						<input
+							id="add_friend_input"
+							type="text"
+							class="pong-input-field"
+							placeholder="Enter username"
+						/>
+					</div>
+					<div class="pong-modal-bottom-buttons">
+						<button id="add_friend_submit" class="pong-submit-button active-border ml-auto">
+							SEND REQUEST
+						</button>
+					</div>
+				</div>
+				
 
 			</div>
 		</div>
