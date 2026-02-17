@@ -22,8 +22,6 @@ class User {
         this.pendingRequests = new Map();
         this.displaySide = User.SIDE.RIGHT;
         this.avatar = avatar || "&#9865;";
-        
-        // --- STATS (Instancia de la clase UserStats) --- //
         this.stats = new UserStats(stats);
     }
 
@@ -87,7 +85,6 @@ class User {
         }
     }
 
-    // 🔥 AÑADIDO: Este método es llamado por UserManager en sendTournamentInvite
     addPendingTournamentRequest(type, id, targetUserId) {
         this.addPendingRequest(type, id, targetUserId);
     }

@@ -90,23 +90,6 @@ class Tournament {
 		});
 	}
 
-	sendFinalWin(winnerUserId) {
-		LOGGER(200, "Tournament.js", "sendFinalWin", `Winner: ${winnerUserId}`);
-		
-		// Obtener el objeto User desde el UserManager
-		// Como no tenemos acceso directo aquí, enviaremos una notificación simple
-		const winnerAlias = this.getPlayerAlias(winnerUserId);
-		
-		// Broadcast a todos los jugadores
-		for (const [userId, playerData] of this.players) {
-			const user = this.players.get(userId);
-			if (user) {
-				// Aquí necesitamos acceso al UserManager para obtener el objeto User
-				// Por ahora, dejamos este método vacío y lo manejamos en stopTournament
-			}
-		}
-	}
-
 	prepareNextRound() { LOGGER(200, "Tournament.js", "prepareNextRound", "Called");
 
 		

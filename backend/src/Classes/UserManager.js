@@ -328,8 +328,6 @@ joinTournamentRequest(user, tournament) {
     
     // -- BETTER STATS INFO -- //
     userInfo(targetUser) {
-        // Leemos directamente del objeto User actualizado
-
         const s = targetUser.stats;
 
         let winRate_temp = s.matches > 0 ? (s.total_wins/ s.matches) * 100 : 0;
@@ -366,19 +364,6 @@ joinTournamentRequest(user, tournament) {
         };
     }
 
-/*     userStats(targetUser) {
-        const s = targetUser.stats;
-        return { 
-            status: 200, 
-            msg: "Succesfully fetched user stats.", 
-            target: {
-                matches_total: s.matches,
-                matches_win: s.total_wins,
-                tournament_total: s.tournaments_played,
-                tournament_win: s.tournaments_won
-            }
-        };
-    } */
 
     async getMatchHistoryFromDB(userId) {
         return new Promise((resolve, reject) => {
@@ -887,7 +872,6 @@ joinTournamentRequest(user, tournament) {
                 status: "Waiting..."
             });
 
-            // 🔥 ESTE RETURN ES OBLIGATORIO PARA QUE LA API FUNCIONE
             return { 
                 status: 200, 
                 msg: "Tournament created!", 

@@ -29,7 +29,6 @@ async function tournamentsHandler(fastify, options) {
     });
 
 
-	// Join a tournament
     fastify.post('/:tournament_id/join', { preHandler: authFromCookie }, async (req, reply) => {
 
         const { tournament_id } = req.params;
