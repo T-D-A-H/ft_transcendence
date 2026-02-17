@@ -142,11 +142,8 @@ class User {
     getCurrentMatch() {return this.currentMatch;}
     getIsPlaying() {return this.isPlaying;}
     getCurrentTournament() {return this.currentTournament;}
-
-    // 🔥 CORREGIDO: Acceso a través de this.stats
     incrementLocalPlayed() { this.stats.local_played++; }
     incrementLocalWon() { this.stats.local_won++; }
-    
     updateDisplayName(newName) {this.display_name = newName;}
     updateUserName(newName) {this.username = newName;}
 }
