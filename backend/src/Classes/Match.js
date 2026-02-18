@@ -4,7 +4,7 @@ const User   = require("./User.js");
 
 class Match {
 
-	static ScoreMax = 4;
+	static ScoreMax = 4; // CAMBIAR
 	constructor(user, match_id, matchType, tournament, visibility) { LOGGER(200, "Match.js", "Constructor", "For " + user.getUsername() + " match_id: " + match_id);
 		
 		this.id = match_id;
@@ -33,13 +33,18 @@ class Match {
 		this.size = 0;
 	}
 
-	isPublicMatch() {
-		return (this.public);
+	getSize() {
+		return (this.size);
+	}
+
+	isPublic() {
+		
+		return (this.visibility);
 	}
 
     broadcast(type, msg, info) {
 
-		if (this.matchType === "ai" || this.matchType === "2player") {
+		if (this.locally === true) {
 			this.players[0].notify(type, msg, info)
 			return ;
 		}

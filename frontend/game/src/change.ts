@@ -4,10 +4,10 @@ export async function changeDisplayName(newName: string): Promise<{ status: numb
             return { status: 1, msg: "Name cannot be empty" };
         }
         
-        const res = await fetch("/api/change-display-name", {
-            method: "POST",
+        const res = await fetch("/api/users/me", {
+            method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ newName: newName }), 
+            body: JSON.stringify({ display_name: newName }), 
             credentials: "include"
         });
 
@@ -44,10 +44,10 @@ export async function changeUserName(newName: string): Promise<{ status: number;
             };
         } */
         
-        const res = await fetch("/api/change-username", {
-            method: "POST",
+        const res = await fetch("/api/users/me", {
+            method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ newName: newName }), 
+            body: JSON.stringify({ username: newName }), 
             credentials: "include"
         });
 
@@ -77,10 +77,10 @@ export async function changeEmail(newName: string): Promise<{ status: number; ms
             };
         } */
 
-        const res = await fetch("/api/change-email", {
-            method: "POST",
+        const res = await fetch("/api/users/me", {
+            method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ newName: newName }), 
+            body: JSON.stringify({ email: newName }), 
             credentials: "include"
         });
 
@@ -107,10 +107,10 @@ export async function changePassword(newPass: string, oldPass: string): Promise<
             return {status: 1, msg: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo."};
         } */
 
-        const res = await fetch("/api/change-pass", {
-            method: "POST",
+        const res = await fetch("/api/users/me", {
+            method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ newPass: newPass,  oldPass: oldPass }), 
+            body: JSON.stringify({ new_password: newPass,  old_password: oldPass }), 
             credentials: "include"
         });
 
@@ -129,8 +129,8 @@ export async function changePassword(newPass: string, oldPass: string): Promise<
 
 export async function changeAvatar(avatarSymbol: string) {
     try {
-        const response = await fetch("/api/change-avatar", {
-            method: "POST",
+        const response = await fetch("/api/users/me", {
+            method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ avatar: avatarSymbol }),
             credentials: "include"

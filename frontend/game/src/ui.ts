@@ -4,7 +4,6 @@ import { TournamentInfo, ProfileInfo, UserStats } from "./vars.js";
 import { changeAvatar } from "./change.js";
 import {GameStatus, setGameStatus, getGameStatus, GameType, setGameType, getGameType, setCurrentTournamentId, setCurrentMatchId} from "./vars.js";
 import { showNotification } from "./main.js";
-import { getWinRate, initStatsDashboard } from "./stats.js";
 
 //------------------------------------------------------------------------TOP-PROFILE-OPPONENT
 
@@ -79,6 +78,25 @@ export const menuButtons =
 	document.querySelectorAll<HTMLButtonElement>('.pong-menu-buttons .pong-button');
 
 
+export function updateSessionButtons(render: boolean) {
+	if (render) {
+		show(logoutButton);
+		show(changeUsernameButton);
+		show(changeDisplayNameButton);
+		show(changePasswordButton);
+		show(changeProfilePicButton);
+		show(changeEmailButton);
+	}
+	else {
+		hide(logoutButton);
+		hide(changeUsernameButton);
+		hide(changeDisplayNameButton);
+		hide(changePasswordButton);
+		hide(changeProfilePicButton);
+		hide(changeEmailButton);
+	}
+}
+
 export 	function showCanvas() {
 
 	hide(createGameModal);
@@ -136,6 +154,12 @@ openMenuButton.onclick = toggleMenu;
 
 export let savedDisplayName: string | null;
 
+let selfId: string;
+
+export function getSelfId(): string {
+	return selfId;
+}
+
 export function updateTournamentUI(self_displayname: string, opponent_displayname: string): void {
 
 	savedDisplayName = topBarDisplayName.textContent as string;
@@ -143,8 +167,8 @@ export function updateTournamentUI(self_displayname: string, opponent_displaynam
 	if (topBarOpponentDisplayName) topBarOpponentDisplayName.textContent =  truncateText(opponent_displayname, 16);
 }
 
-export function updateProfileUI(displayName: string | null, userName?: string): void {
-
+export function updateProfileUI(self_id: string, displayName: string | null, userName?: string): void {
+	selfId = self_id;
 	if (topBarDisplayName) topBarDisplayName.textContent = truncateText(displayName, 16);
 	if (menuDisplayName) menuDisplayName.textContent = truncateText(displayName, 64);
 	if (menuUsername && userName !== undefined) menuUsername.textContent = "@" + truncateText(userName, 64);
@@ -225,7 +249,6 @@ export const twoFAInput = // 2FA Email input
 export const twoFASubmitButton = // 2FA Submit Button
 	document.getElementById("twofa_submit_button") as HTMLButtonElement;
 
-
 export const twoFACancelButton = // 2FA Skip Button
 	document.getElementById("twofa_cancel_button") as HTMLButtonElement;
 
@@ -248,7 +271,6 @@ export const invitePlayersModal =
 export const invitePlayersCancelButton =
 	document.getElementById("invite-game-cancel") as HTMLButtonElement;
 
-
 export const friendsListInviteUL = 
 	document.getElementById("friends_list_invite_ul") as HTMLUListElement;
 
@@ -261,7 +283,29 @@ export const invitePlayersMatchButton =
 export const invitePlayersTournamentButton =
 	document.getElementById("invite_players_tournament") as HTMLButtonElement;
 
+export function renderFriendsList( ul_list: HTMLUListElement, friends: any[], onSelect: (id: string) => void) {
+	ul_list.innerHTML = "";
 
+	for (const friend of friends) {
+		const li = document.createElement("li");
+
+		const rowBtn = document.createElement("button");
+		rowBtn.className = "pong-tournament-list-button pong-font-hover";
+		rowBtn.dataset.id = String(friend.id);
+
+		rowBtn.innerHTML = `
+			<span class="truncate">${truncateText(friend.username || friend.display_name, 20)}</span>
+			<span class="text-left">${friend.status || ""}</span>
+			<span class="join-label text-right">INVITE</span>
+		`;
+
+		// Friends are always selectable
+		rowBtn.onclick = () => onSelect(String(friend.id));
+
+		li.appendChild(rowBtn);
+		ul_list.appendChild(li);
+	}
+}
 //------------------------------------------------------------------------FIND-ONLINE-FRIENDS------------------
 //------------------------------------------------------------------------REQUESTS-MODAL
 
@@ -292,6 +336,7 @@ export const requestsTypeButtons =
 export const requestsTypeOptions =
 	document.querySelectorAll<HTMLDivElement>(".pong-suboptions2");
 
+	
 
 export function renderPendingRequests(UL: HTMLUListElement, requests: any): HTMLButtonElement[] {
 
@@ -356,49 +401,48 @@ export const currentGameModal =
 export const currentGameCancel =
 	document.getElementById('current-game-cancel') as HTMLButtonElement;
 
-const currentGameStatus = 
+export const currentGameExit =
+	document.getElementById('exit-match-button') as HTMLButtonElement;
+
+export const currentGameStatus = 
 	document.getElementById('current_game_status') as HTMLSpanElement;
 
-const currentGameType = 
+export const currentGameType = 
 	document.getElementById('current_game_type') as HTMLSpanElement;
 
-const currentGameSize = 
+export const currentGameSubType = 
+	document.getElementById('current_game_subtype') as HTMLSpanElement;
+
+export const currentGameVisibility = 
+	document.getElementById('current_game_visibility') as HTMLSpanElement;
+
+export const currentGameSize = 
 	document.getElementById('current_game_size') as HTMLSpanElement;
 
-const currentGameCreator = 
+export const currentGameCreator = 
 	document.getElementById('current_game_creator') as HTMLSpanElement;
 
-const currentGamePlayers = 
+export const currentGamePlayers = 
 	document.getElementById('current_game_players') as HTMLUListElement;
 
+	
 
 export interface MatchData {
-	id: string;
+	match_id: string;
+	tournament_id: string;
 	type: string;
+	sub_type: string;
+	visibility: string;
 	size: string;
 	creator: string;
 	players: string[];
-	status: "Waiting..." | "Ready" | "Play";
+	status: "Waiting" | "Ready" | "Play";
 }
 
-let gameData: MatchData | null = null;
+export let gameData: MatchData | null = null;
 
- /// TEST
-export function updateCurrentGame(data: MatchData): void {
-
-	show(currentGameButton);
+export function setGameData(data: MatchData) {
 	gameData = data;
-	currentGameStatus.textContent = data!.status;
-	
-	currentGameType.textContent = data!.type;
-	if (data!.type === "tournament")
-		setCurrentTournamentId(data!.id);
-	else
-		setCurrentMatchId(data!.id);
-	currentGameSize.textContent = data!.size.toString();
-	currentGameCreator.textContent = data!.creator;
-
-	currentGamePlayers.innerHTML = data!.players.join(', ');
 }
 
 //------------------------------------------------------------------------CURRENT-GAME-MODAL
@@ -443,61 +487,21 @@ export function getSelectedMode(): string {
 	return (selected_mode);
 }
 
-matchTypeButtons.forEach((button): void => {
-
-	button.onclick = (): void => {
-
-		const targetId = button.dataset.target;
-		if (!targetId)
-			return ;
-		matchOptionPanels.forEach((modal): void =>
-		{
-			if (modal.id === targetId) {
-
-				show(modal);
-
-				if (targetId === "tournament") toggleVisibility(true);
-				else if (targetId === "online") toggleVisibility(false);
-
-				if (targetId !== "local") {
-					show(onlineToggleText);
-					show(onlineToggle);
-				}
-				else {
-					hide(onlineToggleText);
-					hide(onlineToggle);
-				}
-			}
-			else {
-
-				hide(modal);
-			}
-		});
-		matchTypeButtons.forEach(btn =>
-			btn.classList.remove('invert-colors'));
-		button.classList.add('invert-colors');
-		setSelectedMode(targetId);
-	};
-});
-
-
-export const friendsListUl = 
-	document.getElementById("friends_list_ul") as HTMLUListElement;
 
 //------------------------------------------------------------------------CREATE-GAME-MODAL-ONLINE-MATCH
 
 
-let onlineToggle =
+export let onlineToggle =
 	document.getElementById('online_toggle') as HTMLButtonElement;
 
-let onlineToggleText = 
+export let onlineToggleText = 
 	document.getElementById('online_toggle_text') as HTMLDivElement;
 
 onlineToggleText.textContent = "Only by Invite....";
 
 let isPublic: boolean = false; 
 
-function toggleVisibility(visibility: boolean): void {
+export function toggleVisibility(visibility: boolean): void {
 
 	isPublic = visibility;
 	if (isPublic === false) {
@@ -519,27 +523,12 @@ export function getGameVisibility(): boolean {
 }
 
 
-
 //------------------------------------------------------------------------CREATE-GAME-MODAL-ONLINE-MATCH
 //------------------------------------------------------------------------CREATE-GAME-MODAL-AI-MATCH
 
-const localOptions =
+export const localOptions =
 	document.querySelectorAll<HTMLButtonElement>('#local_options .pong-button');
 
-
-localOptions.forEach((button): void => {
-
-	button.onclick = (): void => {
-		const targetId = button.id;
-		if (!targetId)
-			return ;
-		localOptions.forEach(btn => {
-			btn.classList.remove('invert-colors');
-		});
-		button.classList.add('invert-colors');
-		setSelectedMode(targetId);
-	};
-});
 
 //------------------------------------------------------------------------CREATE-GAME-MODAL-AI-MATCH
 //------------------------------------------------------------------------CREATE-GAME-MODAL-ONLINE-TOURNAMENT
@@ -602,16 +591,27 @@ export const findGameButton =
 export const findGameCancelButton =
 	document.getElementById("find-game-cancel") as HTMLButtonElement;
 
-export const findGameListUL =
-	document.getElementById("find_games_ul") as HTMLUListElement;
+export const findMatchesListUL =
+	document.getElementById("find_matches_ul") as HTMLUListElement;
+
+export const findTournamentsListUL =
+	document.getElementById("find_tournaments_ul") as HTMLUListElement;
+
+export const findGameTypeButtons =
+	document.querySelectorAll<HTMLButtonElement>(".find-type");
+
+export const findGameTypeOptions =
+	document.querySelectorAll<HTMLDivElement>(".pong-suboptions3");
 
 
 export function renderGamesList(ul_list: HTMLUListElement, games: any[], onJoin: (id: string) => void) {
 	
+
 	ul_list.innerHTML = "";
 
 	for (const game of games) {
 		const li = document.createElement("li");
+		li.style.marginBottom = "6px";
 
 		const rowBtn = document.createElement("button");
 		rowBtn.className = "pong-tournament-list-button pong-font-hover";
@@ -702,11 +702,11 @@ export const nightModeButton = //night mode button
 
 export let nightMode = false;
 
-nightModeButton.onclick = () => {
-
+export function invertNightMode() {
 	nightMode = !nightMode;
-	document.documentElement.classList.toggle("pong-night-mode", nightMode);
+}
 
+export function swapNightMode() {
 	if (!nightMode) {
 		const temp = whitish;
 		whitish = blackish;
@@ -715,8 +715,7 @@ nightModeButton.onclick = () => {
 		whitish = "#000708";
 		blackish = "#c7f6ff";
 	}
-	drawGame();
-};
+}
 
 
 const avatarSymbols: string[] = [
@@ -725,22 +724,22 @@ const avatarSymbols: string[] = [
 	"&#9883;", "&#9884;", "&#10049;", "&#10057;",
 ];
 
-const changeProfilePicButton =
+export const changeProfilePicButton =
 	document.getElementById("change_profilepic_button") as HTMLButtonElement;
 
-const profilePicModal =
+export const profilePicModal =
 	document.getElementById("profilepic_modal") as HTMLDivElement;
 
 const profilePicGrid =
 	document.getElementById("profilepic_grid") as HTMLDivElement;
 
-const profilePicCancelButton =
+export const profilePicCancelButton =
 	document.getElementById("profilepic_cancel_button") as HTMLButtonElement;
 
 const selfProfileImage =
 	document.getElementById("self_profile_image") as HTMLDivElement;
 
-function renderProfilePicGrid(): void {
+export function renderProfilePicGrid(): void {
     profilePicGrid.innerHTML = "";
 
     for (const symbol of avatarSymbols) {
@@ -751,7 +750,7 @@ function renderProfilePicGrid(): void {
         btn.onclick = async () => {
             const result = await changeAvatar(symbol);
             
-            if (result.status === 0) {
+            if (result.status === 200) {
                 selfProfileImage.innerHTML = symbol;
                 showNotification("Avatar guardado!");
                 hide(profilePicModal);
@@ -765,14 +764,7 @@ function renderProfilePicGrid(): void {
     }
 }
 
-changeProfilePicButton.onclick = () => {
-	renderProfilePicGrid();
-	show(profilePicModal);
-};
 
-profilePicCancelButton.onclick = () => {
-	hide(profilePicModal);
-};
 
 function truncateText(value: string | null, max: number): string {
 	if (!value)
@@ -913,7 +905,6 @@ if (boardThemeApplyButton) {
     };
 }
 
-// --- ELEMENTOS DE MODO LOCAL / IA ---
 export const aiEasyButton = 
     document.getElementById("ai_easy") as HTMLButtonElement;
 
@@ -925,54 +916,72 @@ export const aiHardButton =
 
 export const local2PlayerButton = 
     document.getElementById("2player") as HTMLButtonElement;
-
+	
 // --- DISPLAY NAME, USERNAME, EMAIL, PASSWORD ELEMENTS ---
 
 export const changeDisplayNameButton =
     document.getElementById("change_displayname_button") as HTMLButtonElement;
+
 export const changeDisplayNameModal =
     document.getElementById("change_displayname_modal") as HTMLDivElement;
+
 export const closeChangeDisplayNameButton =
     document.getElementById("close_change_displayname") as HTMLButtonElement;
+
 export const newDisplayNameInput =
     document.getElementById("new_displayname_input") as HTMLInputElement;
+
 export const submitNewDisplayNameButton =
     document.getElementById("submit_new_displayname") as HTMLButtonElement;
 
 export const changeUsernameButton =
     document.getElementById("change_username_button") as HTMLButtonElement;
+
 export const changeUsernameModal =
     document.getElementById("change_username_modal") as HTMLDivElement;
+
 export const closeChangeUsernameButton =
     document.getElementById("close_change_username") as HTMLButtonElement;
+
 export const newUsernameInput =
     document.getElementById("new_username_input") as HTMLInputElement;
+
 export const submitNewUsernameButton =
     document.getElementById("submit_new_username") as HTMLButtonElement;
 
 export const changeEmailButton =
     document.getElementById("change_email_button") as HTMLButtonElement;
+
 export const changeEmailModal =
     document.getElementById("change_email_modal") as HTMLDivElement;
+
 export const closeChangeEmailButton =
     document.getElementById("close_change_email") as HTMLButtonElement;
+
 export const newEmailInput =
     document.getElementById("new_email_input") as HTMLInputElement;
+
 export const submitNewEmailButton =
     document.getElementById("submit_new_email") as HTMLButtonElement;
 
 export const changePasswordButton =
     document.getElementById("change_password_button") as HTMLButtonElement;
+
 export const changePasswordModal =
     document.getElementById("change_password_modal") as HTMLDivElement;
+
 export const closeChangePasswordButton =
     document.getElementById("close_change_password") as HTMLButtonElement;
+
 export const oldPasswordInput =
     document.getElementById("old_password_input") as HTMLInputElement;
+
 export const newPasswordInput =
     document.getElementById("new_password_input") as HTMLInputElement;
+
 export const confirmPasswordInput =
     document.getElementById("confirm_password_input") as HTMLInputElement;
+
 export const submitNewPasswordButton =
     document.getElementById("submit_new_password") as HTMLButtonElement;
 

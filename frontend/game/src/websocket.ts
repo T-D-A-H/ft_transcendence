@@ -1,6 +1,5 @@
 
-import { logoutButton, show, hide} from "./ui.js";
-import { ProfileInfo } from "./vars.js";
+import { updateSessionButtons} from "./ui.js";
 import { getProfileInfo } from "./main.js";
 import { receiveMessages, registerEvents} from "./events.js";
 
@@ -16,7 +15,7 @@ export function initializeWebSocket() {
         const ws = new WebSocket(`wss://localhost:4000/api/games/`);
         setUserSocket(ws);
         ws.onopen = () => {
-            show(logoutButton);
+            updateSessionButtons(true);
             receiveMessages(ws);
             registerEvents();
             userSocket = ws;
@@ -34,11 +33,10 @@ export function initializeWebSocket() {
 
             console.error("WebSocket error:", err);
             setUserSocket(null);
-            hide(logoutButton);
+            updateSessionButtons(false);
             try { ws.close(); } catch(e) {}
             reject(err);
         };
-        
 
         ws.onclose = async (event) => {
             console.log("WebSocket disconnected");
@@ -49,8 +47,8 @@ export function initializeWebSocket() {
                 
                 alert("Tu sesión se ha cerrado porque has entrado desde otro dispositivo o pestaña.");
                 try {
-                    await fetch('/api/logout?soft=true', { 
-                        method: "POST",
+                    await fetch('/api/sessions/current?soft=true', { 
+                        method: "DELETE",
                         credentials: "include" 
                     });
                 } catch (e) {
@@ -68,6 +66,7 @@ export async function restoreSession(): Promise<boolean> {
 
         await getProfileInfo(false);
         
+        updateSessionButtons(true);
         return true;
     }
     catch (err) {

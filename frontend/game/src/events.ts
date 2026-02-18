@@ -1,12 +1,11 @@
-import { showMenu, updateOpponentUI,  showCanvas, mirrorCanvas, updateTournamentUI, savedDisplayName, updateProfileUI, updateCurrentGame } from "./ui.js"
+import { showMenu, updateOpponentUI,  showCanvas, mirrorCanvas, updateTournamentUI, savedDisplayName, updateProfileUI } from "./ui.js"
 import { setCurrentMatchId,  setCurrentTournamentId, setSCORES, setDisplaySide, getDisplaySide, getMatchMode } from "./vars.js";
 import {GameStatus, setGameStatus, getGameStatus, setMatchMode, GameType, setGameType, getGameType} from "./vars.js";
 import { drawGame, clearBackground } from "./draw.js"
 import { userSocket } from "./websocket.js";
-import { showNotification } from "./main.js";
+import { showNotification, updateCurrentGame } from "./main.js";
 import {MatchData, currentGameButton, hide, startMatchButton, show} from "./ui.js";
 import { onFriendWebSocketMessage } from "./friends.js";
-
 
 export async function httpEvent(method: string, endpoint: string, body?: Record<string, any>) {
 
@@ -89,7 +88,6 @@ export async function registerEvents() {
 	registerHandler("FRIEND_UPDATE", (data) => {
 		onFriendWebSocketMessage(data);
 	});
-
 	registerHandler("TOURNAMENT_ELIMINATED", (data) => {
 		showNotification(data.msg);
 		setGameType(GameType.NONE);
@@ -132,14 +130,17 @@ export async function registerEvents() {
 
 		showCanvas();
 	});
-	
 	registerHandler("UPDATE", (data) => {
-		if ((data.msg === "match" || data.msg === "tournament") && data.info) {
-			updateCurrentGame(data.info as MatchData);
-			if (data.info.status === "Ready") {
-				show(startMatchButton);
-			}
+
+    	if (data.msg === "matches") {
+			setGameType(GameType.MATCH);
+			updateCurrentGame();
 		}
+		else if (data.msg === "tournaments") {
+			setGameType(GameType.TOURNAMENT);
+    	    updateCurrentGame();
+    	}
+
 	});
 	registerHandler("MIRROR", (data) => {
 
@@ -157,13 +158,12 @@ export async function registerEvents() {
 	});
 	registerHandler("WIN", (data) => {
 		if (getGameType() === GameType.TOURNAMENT)
-			updateProfileUI(savedDisplayName);
+			updateProfileUI("", savedDisplayName);
 		setGameType(GameType.NONE)
 		setGameStatus(GameStatus.NOT_IN_GAME);
 		showNotification(data.msg);
 		setSCORES(0, 0);
 		clearBackground();
-		hide(currentGameButton);
 		showMenu();
 	});
 	registerHandler("DRAW", (data) => {
@@ -182,20 +182,20 @@ function onKeyDown(e: KeyboardEvent): void {
 
 	if (getMatchMode() === "single") {
 
-		if (e.key === "w")
+		if (e.key === "ArrowUp")
 			sendMoves("MOVE", { move: "UP" });
-		else if (e.key === "s")
+		else if (e.key === "ArrowDown")
 			sendMoves("MOVE", { move: "DOWN" });
 	}
 	else {
 
-		if (e.key === "w")
+		if (e.key === "ArrowUp")
 			sendMoves("MOVE2", { move: "UP1" });
-		else if (e.key === "s")
-			sendMoves("MOVE2", { move: "DOWN1" });
-		else if (e.key === "ArrowUp")
-			sendMoves("MOVE2", { move: "UP2" });
 		else if (e.key === "ArrowDown")
+			sendMoves("MOVE2", { move: "DOWN1" });
+		else if (e.key === "w")
+			sendMoves("MOVE2", { move: "UP2" });
+		else if (e.key === "s")
 			sendMoves("MOVE2", { move: "DOWN2" });
 	}
 }
@@ -204,14 +204,14 @@ function onKeyUp(e: KeyboardEvent): void {
 
 	if (getMatchMode() === "single") {
 
-		if (e.key === "w" || e.key === "s")
+		if (e.key === "ArrowUp" || e.key === "ArrowDown")
 			sendMoves("MOVE", { move: "STOP" });
 	}
 	else {
 
-		if (e.key === "w" || e.key === "s")
+		if (e.key === "ArrowUp" || e.key === "ArrowDown")
 			sendMoves("MOVE2", { move: "STOP1" });
-		else if (e.key === "ArrowUp" || e.key === "ArrowDown")
+		else if (e.key === "w" || e.key === "s")
 			sendMoves("MOVE2", { move: "STOP2" });
 	}
 }

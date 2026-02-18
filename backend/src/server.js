@@ -10,8 +10,9 @@ const db          			   = require("./init_db.js");
 const saltRounds			   = 12;
 
 const UserManager              = require("./Classes/UserManager.js");
-const userManager = new UserManager(db);
-const oauthPlugin = require("@fastify/oauth2");
+const userManager			   = new UserManager(db);
+const oauthPlugin			   = require("@fastify/oauth2");
+const googleCallback = require("./api/google/googleCallback.js");
 
 const FRAMES = 1000/60;
 
@@ -71,74 +72,21 @@ async function startServer() {
 	
 	await fastify.register(websocket);
 
-	// ✅ Registro de usuarios
-	const signupHandler  = require("./endpoints/auth/signup.js");
-	fastify.post("/api/sign-up", signupHandler(db, bcrypt, saltRounds, fastify));
+	
+	fastify.register(require('./api/users/users.js'), { prefix: '/api/users', db, saltRounds, bcrypt, fastify, authFromCookie, userManager});
 
-	// ✅  Login de usuarios
-	const loginHandler = require("./endpoints/auth/login.js");;
-	fastify.post("/api/login", loginHandler(db, bcrypt, userManager, fastify, setTokenCookie));
+    fastify.register(require('./api/sessions/sessions.js'), { prefix: '/api/sessions', db, bcrypt, fastify, setTokenCookie, userManager});
 
-	// ✅ Logout del usuario
-	const buildLogoutHandler = require('./endpoints/auth/logout.js');
-	fastify.post("/api/logout", buildLogoutHandler(userManager, fastify));
-
-	// ✅ Verificación de código 2FA
-	const verify2FAhandle = require("./endpoints/auth/verify2FA.js");
-	fastify.post("/api/verify-2fa", verify2FAhandle(userManager, fastify, setTokenCookie));
-
-	// ✅ SET 2FA de usuarios
-	const buildSet2FAHandler = require('./endpoints/auth/set2FA.js');
-	fastify.post("/api/set-2fa", buildSet2FAHandler(db, fastify));
-
-	// ✅ Google OAuth - ahora setea cookies
-	const googleCallback = require("./endpoints/auth/googleCallback.js");
 	fastify.get("/auth/google/callback", googleCallback(userManager, fastify, db, setTokenCookie));
 
-	// ✅ Cambiar Display Name
-	const changeDisplayName = require("./endpoints/user/change_displayName.js");
-	fastify.post("/api/change-display-name", changeDisplayName(userManager, fastify, db));
+    fastify.register(require('./api/matches/matches.js'), { prefix: '/api/matches', authFromCookie, fastify, userManager});
 
-	// ✅ Cambiar username
-	const changeUserName = require("./endpoints/user/change_userName.js");
-	fastify.post("/api/change-username", changeUserName(userManager, fastify, db));
+	fastify.register(require('./api/tournaments/tournaments.js'), { prefix: '/api/tournaments', authFromCookie, fastify, userManager});
 
-	// ✅ Cambiar email
-	const changeEmail = require("./endpoints/user/change_Email.js");
-	fastify.post("/api/change-email", changeEmail(fastify, db));
+	fastify.register(require('./api/games/games.js'), { prefix: '/api/games', db, fastify, authFromCookie, userManager});
 
-	// ✅ Cambiar pass
-	const changePass = require("./endpoints/user/change_Pass.js");
-	fastify.post("/api/change-pass", changePass(fastify, db,bcrypt, saltRounds));
+	fastify.register(require('./api/friends/friends.js'), { prefix: '/api/friends', db, fastify, authFromCookie, userManager});
 
-	// ✅ Cambiar avatar
-	const changeAvatar = require("./endpoints/user/change_avatar.js");
-	fastify.post("/api/change-avatar", changeAvatar(userManager, fastify, db));
-
-	// ✅ Guardar partida (cualquier tipo)
-	const buildMatchResultHandler = require("./endpoints/user/matchResult.js");
-	fastify.post("/api/match-result", buildMatchResultHandler(db, fastify));
-
-
-	// API para websocket
-	const websocketHandler = require("./endpoints/user/websocket.js");
-	fastify.register(websocketHandler, {prefix: '/api/games', userManager, authFromCookie});
-
-	// API para torneos
-	const tournamentsHandler = require("./endpoints/user/tournaments.js");
-	fastify.register(tournamentsHandler, {prefix: '/api/tournaments', userManager, authFromCookie});
-
-	// API para partidas
-	const matchesHandler = require("./endpoints/user/matches.js");
-	fastify.register(matchesHandler, {prefix: '/api/matches', userManager, authFromCookie});
-
-	// API para info de perfiles
-	const infoHandler = require("./endpoints/user/info.js");
-	fastify.register(infoHandler, {prefix: '/api/users', userManager, authFromCookie});
-
-	// API para friends
-	const friendsHandler = require("./endpoints/user/friends.js");
-	fastify.register(friendsHandler, {prefix: '/api/friends', userManager, authFromCookie});
 
 	setInterval(() => {
 

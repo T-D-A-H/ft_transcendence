@@ -118,14 +118,14 @@ export enum GameType {
     TOURNAMENT
 }
 
-export let currentGameType: GameType = GameType.NONE;
+let currentGameTypeVar: GameType = GameType.NONE;
 
 export function setGameType(type: GameType): void {
-    currentGameType = type;
+    currentGameTypeVar = type;
 }
 
 export function getGameType(): GameType {
-    return (currentGameType);
+    return (currentGameTypeVar);
 }
 
 export enum GameStatus {
@@ -153,7 +153,6 @@ export interface TournamentInfo {
   full: boolean;
 }
 
-// export type MatchMode = "local" | "online" | "tournament";
 
 export interface UserStats {
   userId: string;

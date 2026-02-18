@@ -336,6 +336,12 @@ body {
 				text-[12px] text-[color:var(--pong-black)]
 				hover:text-[color:var(--pong-white)] hover:bg-[color:var(--pong-black)];
 	}
+	.pong-exit-button {
+		@apply	flex justify-center items-center absolute top-[2px] right-[6px]
+				cursor-pointer
+				text-[8px] text-[color:var(--pong-black)]
+				hover:text-[color:var(--pong-white)] hover:bg-[color:var(--pong-black)];
+	}
 	.pong-submit-button {
 
 		@apply  text-[color:var(--pong-black)] bg-[color:var(--pong-white)] font-['PressStart2P',monospace] hover:text-[color:var(--pong-white)] hover:bg-[color:var(--pong-black)] text-[12px] px-3 py-1;
@@ -441,6 +447,9 @@ body {
 		@apply pong-button text-[8px] px-2.5 py-1
 	}
 	.pong-suboptions2 {
+		@apply flex justify-center w-full;
+	}
+	.pong-suboptions3 {
 		@apply flex justify-center w-full;
 	}
 }

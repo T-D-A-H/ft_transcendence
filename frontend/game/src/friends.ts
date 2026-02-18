@@ -368,7 +368,7 @@ export async function renderInviteFriendsList(container: HTMLUListElement): Prom
     }
 }
 
-async function sendInviteToFriend(username: string, btn?: HTMLButtonElement): Promise<void> {
+export async function sendInviteToFriend(username: string, btn?: HTMLButtonElement): Promise<void> {
     if (!inviteContext) {
         showNotification("No active game to invite to.");
         return;
@@ -438,7 +438,7 @@ export function onFriendWebSocketMessage(data: any): void {
 // UTILS
 // ─────────────────────────────────────────────
 
-function escapeHtml(text: string): string {
+export function escapeHtml(text: string): string {
     const div = document.createElement("div");
     div.textContent = text;
     return div.innerHTML;

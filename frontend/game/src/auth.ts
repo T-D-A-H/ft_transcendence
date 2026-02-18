@@ -1,4 +1,4 @@
-import { show, hide, updateProfileUI} from "./ui.js";
+import { show, hide, updateProfileUI, updateSessionButtons} from "./ui.js";
 import { getUserSocket, closeUserSocket, setUserSocket} from "./websocket.js";
 
 export async function registerUser(usernameInput: HTMLInputElement, displaynameInput: HTMLInputElement, emailInput: HTMLInputElement, passwordInput: HTMLInputElement): 
@@ -52,7 +52,7 @@ Promise<{ status: number; userId?: string; setupToken?: string; error?: string }
 
 	try {
 
-		const res = await fetch("/api/sign-up", {
+		const res = await fetch("/api/users/", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(body),
@@ -85,7 +85,7 @@ Promise<{ status: number | string; token?: string; tempToken?: string; method?: 
 
 	try {
 
-		const res = await fetch("/api/login", {
+		const res = await fetch("/api/sessions/", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(body),
@@ -98,6 +98,7 @@ Promise<{ status: number | string; token?: string; tempToken?: string; method?: 
 		if (result.status === "ok") {
 			return { 
 				status: 0
+				// ✅ Token está en httpOnly cookie, NO lo enviamos al frontend
 			};
 		}
 
@@ -105,7 +106,8 @@ Promise<{ status: number | string; token?: string; tempToken?: string; method?: 
 		if (result.status === "requires_2fa") {
 			return { 
 				status: "requires_2fa",
-				method: result.method
+				method: result.method // "email"
+				// ✅ Cookie temporal en el servidor, no aquí
 			};
 		}
 
@@ -129,26 +131,25 @@ export async function logoutUser(logoutButton?: HTMLButtonElement) {
     setUserSocket(null);
 
     try {
-        const res = await fetch("/api/logout", {
-            method: "POST",
+        const res = await fetch("/api/sessions/current", {
+            method: "DELETE",
             credentials: "include" 
         });
 
-        updateProfileUI("PONG", "ft_transcendence.pong.com");
+        updateProfileUI("", "PONG", "ft_transcendence.pong.com");
+		updateSessionButtons(false);
 
     } catch (err) {
         console.error("Logout error (network):", err);
-        updateProfileUI("PONG", "ft_transcendence.pong.com");
+        updateProfileUI("", "PONG", "ft_transcendence.pong.com");
     }
-    if (logoutButton) {
-   		hide(logoutButton);
-	}
+    updateSessionButtons(false);
 }
 
 export async function configure2FA(setupToken: string, method: "2FAmail" | "skip", twoFAOptionModal: HTMLElement, loginModal: HTMLElement, registerModal: HTMLElement) {
 
-	const res = await fetch("/api/set-2fa", {
-		method: "POST",
+	const res = await fetch("/api/users/2FA", {
+		method: "PATCH",
 		headers: { 
 			"Content-Type": "application/json",
 			"Authorization": `Bearer ${setupToken}`
@@ -178,8 +179,8 @@ export async function verify2FA(code: string, twoFAModal: HTMLElement, loginModa
 	}
 
 	try {
-		const res = await fetch("/api/verify-2fa", {
-			method: "POST",
+		const res = await fetch("/api/sessions/current", {
+			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ code }),
 			credentials: "include"
@@ -196,25 +197,5 @@ export async function verify2FA(code: string, twoFAModal: HTMLElement, loginModa
 	} catch (err) {
 		console.error(err);
 		alert("Error al verificar 2FA");
-	}
-}
-
-
-// Validar si el usuario tiene sesión activa
-export async function validateSession(): Promise<boolean> {
-	try {
-		const res = await fetch("/api/validate-token", {
-			method: "GET",
-			credentials: "include"
-		});
-
-		if (res.ok) {
-			const data = await res.json();
-			return data.valid === true;
-		}
-		return false;
-	} catch (err) {
-		console.error("Error validating session:", err);
-		return false;
 	}
 }
