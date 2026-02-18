@@ -338,12 +338,17 @@ export const requestsTypeOptions =
 
 	
 
-export function renderPendingRequests(UL: HTMLUListElement, requests: any): HTMLButtonElement[] {
+export function renderPendingRequests(UL: HTMLElement, requests: any): HTMLButtonElement[] {
 
 	UL.innerHTML = "";
 
 	const buttons: HTMLButtonElement[] = [];
 
+    const empty = document.createElement("p");
+    empty.className = "pong-font text-[7px] text-center";
+    empty.style.color = "var(--pong-gray)";
+    empty.textContent = "No pending games requests.";
+	UL.appendChild(empty);
 	for (const profile of requests) {
 
 		const li = document.createElement("li");

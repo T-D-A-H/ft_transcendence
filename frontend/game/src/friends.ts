@@ -1,4 +1,4 @@
-import { show, hide } from "./ui.js";
+import { show, hide ,requestGameModal} from "./ui.js";
 import { userSocket } from "./websocket.js";
 import { showNotification } from "./main.js";
 
@@ -116,7 +116,7 @@ export async function fetchFriends(): Promise<FriendData[]> {
 
 export async function fetchFriendRequests(): Promise<FriendRequest[]> {
     try {
-        const res = await fetch("/api/friends/requests", { credentials: "include" });
+        const res = await fetch("/api/friends/invites", { credentials: "include" });
         const data = await res.json();
         if (data.status === 200) return data.target as FriendRequest[];
         return [];
@@ -127,7 +127,7 @@ export async function fetchFriendRequests(): Promise<FriendRequest[]> {
 
 export async function sendFriendRequest(username: string): Promise<{ status: number; msg: string }> {
     try {
-        const res = await fetch("/api/friends/add", {
+        const res = await fetch("/api/friends/invites", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username }),
@@ -144,8 +144,8 @@ export async function respondFriendRequest(
     accept: boolean
 ): Promise<{ status: number; msg: string }> {
     try {
-        const res = await fetch(`/api/friends/respond/${requestId}`, {
-            method: "POST",
+        const res = await fetch(`/api/friends/invites/${requestId}`, {
+            method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ accept }),
             credentials: "include"
@@ -219,7 +219,7 @@ export async function renderFriendsList(): Promise<void> {
 
 export async function renderFriendRequestsList(container: HTMLElement): Promise<void> {
     container.innerHTML = "";
-
+    show(requestGameModal);
     const loading = document.createElement("p");
     loading.className = "pong-font text-[7px] text-center";
     loading.style.color = "var(--pong-gray)";
@@ -244,7 +244,8 @@ export async function renderFriendRequestsList(container: HTMLElement): Promise<
             async (requestId) => {
                 const result = await respondFriendRequest(requestId, true);
                 showNotification(result.msg);
-                if (result.status === 200) renderFriendRequestsList(container);
+                if (result.status === 200)
+                    renderFriendRequestsList(container);
             },
             async (requestId) => {
                 const result = await respondFriendRequest(requestId, false);

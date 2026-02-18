@@ -7,7 +7,7 @@ module.exports = function respondTournamentInvite(userManager, user, tournamentI
 
         return ({status: 400, msg: "Couldn't find tournament."});
     }
-    else if (user !== userManager.getUserByID(selfId)) {
+    else if (user.getId() != selfId) {
 
         return ({ status: 404, msg: "Cannot respond someone elses invite." });
     }

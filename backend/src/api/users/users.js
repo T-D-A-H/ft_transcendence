@@ -5,6 +5,8 @@ const changeUserName = require("./services/change-username.js");
 const changeEmail = require("./services/change-email.js");
 const changePass = require("./services/change-password.js");
 const changeAvatar = require("./services/change-avatar.js");
+const userInfo = require("./services/info.js");
+const LOGGER 	 = require("../../LOGGER.js");
 
 
 module.exports = async function usersRoutes(fastify, options) {
@@ -20,7 +22,7 @@ module.exports = async function usersRoutes(fastify, options) {
 	// GET STATS AND INFO
 	fastify.get('/me', { preHandler: authFromCookie }, async (req, reply) => { // CHANGE WHEN WE HAVE THE FUNCTION
         
-		const result = userManager.userInfo(reply.user);
+		const result = userInfo(req.user);
 
         LOGGER(result.status, "info.js", "/:user_id/info", result.msg);
         

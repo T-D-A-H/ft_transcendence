@@ -152,17 +152,17 @@ module.exports = async function friendsRoutes(fastify, options) {
     });
 
     // POST /api/friends/respond/:request_id - aceptar o rechazar solicitud
-    fastify.patch('/invites/:request_id', { preHandler: authFromCookie }, async (req, reply) => {
+    fastify.patch('/:friend_id/invites/:request_id', { preHandler: authFromCookie }, async (req, reply) => {
         try {
-            const userId = req.user.getId();
-            const { request_id } = req.params;
+            // const userId = req.user.getId();
+            const { request_id, friend_id } = req.params;
             const { accept } = req.body || {};
             const db = userManager.db;
 
             const request = await new Promise((resolve, reject) => {
                 db.get(
                     "SELECT * FROM relationships WHERE id = ? AND target_id = ? AND type = 'friend' AND status = 'PENDING'",
-                    [request_id, userId],
+                    [request_id, friend_id],
                     (err, row) => err ? reject(err) : resolve(row)
                 );
             });
@@ -181,7 +181,7 @@ module.exports = async function friendsRoutes(fastify, options) {
                 });
 
                 // Notificar a ambos via WebSocket para que recarguen la lista
-                userManager.broadcastFriendUpdate(request.user_id, userId);
+                userManager.broadcastFriendUpdate(request.user_id, friend_id);
 
                 LOGGER(200, "friends.js", "POST /respond", `Accepted request ${request_id}`);
                 return reply.code(200).send({ status: 200, msg: "Friend request accepted!" });
@@ -231,5 +231,3 @@ module.exports = async function friendsRoutes(fastify, options) {
         }
     });
 }
-
-module.exports = friendsHandler;

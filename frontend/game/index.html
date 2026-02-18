@@ -248,7 +248,7 @@
 				</div>
 
 				<!-- Friend Modal -->
-				<div id="add_friend_modal" class="pong-modal hidden">
+				<div id="add_friend_modal" class="pong-modal h-1/2 hidden">
 					<div class="pong-modal-header">
 						<button id="add_friend_cancel" class="pong-cancel-button">X</button>
 						<h2 class="pong-modal-top-text">Add Friend</h2>
@@ -411,7 +411,11 @@
 								
 								<div class="pong-modal-subobtions flex-col items-center mt-4">
 									<input id="play_request_username" type="text" class="pong-input-field text-[10px] placeholder:text-[10px] mb-0" placeholder="Enter Username Manually"/>
-									<span class="text-[8px] text-[color:var(--pong-gray)]">You can later invite friends from online list.</span>
+									<span class="text-[6px] text-[color:var(--pong-gray)]">-- OR --</span>
+									<button id="invite_players_match" class="pong-invite-button ">
+											<span>Invite Friends</span>
+											<span class="pong-icon pr-1">&#128386;</span>
+									</button>
 								</div>
 
 						</div>
@@ -427,7 +431,10 @@
 									<input id="tournament_size" type="number" min="4" max="64" step="2" class="pong-input-field text-center text-[12px] placeholder:text-[9px] h-[45px] w-28" placeholder="Party Size" />
 									<button type="button" id="increment" class="pong-button-small">+</button>
 								</div>
-								<span class="text-[8px] text-[color:var(--pong-gray)]">You can later invite friends from online list.</span>
+								<button id="invite_players_tournament" class="pong-invite-button">
+										<span>Invite Friends</span>
+										<span class="pong-icon pr-1">&#128386;</span>
+								</button>
 							</div>
 						</div>
 

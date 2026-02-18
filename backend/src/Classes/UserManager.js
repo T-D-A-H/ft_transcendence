@@ -2,7 +2,7 @@ const User = require("./User.js");
 const Match = require("./Match.js");
 const LOGGER = require("../LOGGER.js");
 const Tournament = require("./Tournament.js");
-const blockchainService = require("../BlockchainService.js");
+const blockchainService = require("./BlockchainService.js");
 const StatsManager = require("./StatsManager.js");
 
 class UserManager {
@@ -179,6 +179,11 @@ class UserManager {
 
         if (match) {
 
+
+            if (match.size !== 2) {
+                this.stopMatch(match);
+                return ;
+            }
             const loserIndex = match.players.indexOf(user);
             const winnerIndex = 1 - loserIndex;
             const loserAlias = user.getDisplayName();

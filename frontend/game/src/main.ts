@@ -29,29 +29,29 @@ import { userSocket, initializeWebSocket, restoreSession } from "./websocket.js"
 import {httpEvent, initKeyHandling} from "./events.js";
 import {drawGame} from "./draw.js";
 import { 
-    aiEasyButton, 
-    aiMediumButton, 
-    aiHardButton, 
-    local2PlayerButton
+		aiEasyButton, 
+		aiMediumButton, 
+		aiHardButton, 
+		local2PlayerButton
 } from "./ui.js";
 import {
-    initFriends,
-    renderFriendsList,
-    renderFriendRequestsList,
-    onFriendWebSocketMessage,
-    setInviteContext,         
-    clearInviteContext,        
-    sendInviteManual,
-    fetchFriends,
-    escapeHtml,
-    sendInviteToFriend       
+		initFriends,
+		renderFriendsList,
+		renderFriendRequestsList,
+		onFriendWebSocketMessage,
+		setInviteContext,         
+		clearInviteContext,        
+		sendInviteManual,
+		fetchFriends,
+		escapeHtml,
+		sendInviteToFriend       
 } from "./friends.js";
 
 import { 
-    startAiMode, 
-    setAiDifficulty, 
-    isAiModeActive, 
-    stopAiMode 
+		startAiMode, 
+		setAiDifficulty, 
+		isAiModeActive, 
+		stopAiMode 
 } from "./ai.js";
 
 
@@ -234,7 +234,7 @@ menuButtons.forEach(button => {
 			if (userSocket) {
 				renderFriendsList();
 			}
-    	}
+			}
 
 	});
 });
@@ -260,12 +260,13 @@ requestsTypeButtons.forEach((button): void => {
 				hide(div);
 		});
 
-		if (targetId === "requests_friends")
-			renderRequestLists(requestsListFriendsUL, "friends");
-		else if (targetId === "requests_games")
+		if (targetId === "requests_friends") {
+			renderFriendRequestsList(requestsListFriendsUL);
+		} else if (targetId === "requests_games") {
 			renderRequestLists(requestListMatchesUL, "matches");
-		else if (targetId === "requests_tournaments")
+		} else if (targetId === "requests_tournaments") {
 			renderRequestLists(requestListTournamentsUL, "tournaments");
+		}
 	};
 });
 
@@ -296,7 +297,8 @@ requestFriendsButton.onclick = async () => {
 		if (div.id === "requests_friends") show(div);
 		else hide(div);
 	});
-	renderRequestLists(requestsListFriendsUL, "friends");
+
+	renderFriendRequestsList(requestsListFriendsUL);
 };
 
 requestsCancelButton.onclick = () => {
@@ -305,47 +307,47 @@ requestsCancelButton.onclick = () => {
 
 async function respondToInviteRequest(TYPE_URL: string, targetId: string, accept: boolean) {
 
-		try {
+	try {
 
-			const response = await httpEvent("PATCH", `/api/${TYPE_URL}/${targetId}/invites/${getSelfId()}`, { accept });
+		const response = await httpEvent("PATCH", `/api/${TYPE_URL}/${targetId}/invites/${getSelfId()}`, { accept });
 
-			showNotification(response.msg);
-			if (response.status !== 200) {
-				return ;
-			}
-
-		} catch (err: any) {
-			console.error(err?.msg ?? "Request failed");
+		showNotification(response.msg);
+		if (response.status !== 200) {
+			return ;
 		}
+
+	} catch (err: any) {
+		console.error(err?.msg ?? "Request failed");
+	}
 }
 
-async function renderRequestLists(UL: HTMLUListElement, REQUEST_TYPE: string) {
+async function renderRequestLists(UL: HTMLElement, REQUEST_TYPE: string) {
 
-		try {
+	try {
 		show(requestGameModal);
 		const response = await httpEvent("GET", `/api/${REQUEST_TYPE}/invites`)
 		if (response.status !== 200) {
-				showNotification(response.msg);
-				return ;
-		}
 
-		const joinButtons = renderPendingRequests(UL, response.target);
-		for (let i = 0; i < joinButtons.length; i++) {
-			const btn = joinButtons[i];
-			const req = response.target[i];
-		
-			btn.onclick = async () => {
-				try {
-					const accept = btn.textContent!.trim() === "ACCEPT";
-					await respondToInviteRequest(req.type, req.id, accept);
-				} catch (err: any) {
-					console.error(err?.msg ?? "Request failed");
-				}
+        	return;
+    	}
+
+	const joinButtons = renderPendingRequests(UL, response.target);
+	for (let i = 0; i < joinButtons.length; i++) {
+		const btn = joinButtons[i];
+		const req = response.target[i];
+	
+		btn.onclick = async () => {
+			try {
+				const accept = btn.textContent!.trim() === "ACCEPT";
+				await respondToInviteRequest(req.type, req.id, accept);
+			} catch (err: any) {
+				console.error(err?.msg ?? "Request failed");
 			}
 		}
-		} catch (err: any) {
-				console.error(err?.msg ?? "Request failed");
-		}
+	}
+	} catch (err: any) {
+			console.error(err?.msg ?? "Request failed");
+	}
 }
 
 //-------------------------------------------------------------------------------------------------REQUESTS-FRIENDS-GAMES
@@ -412,29 +414,29 @@ localOptions.forEach((button): void => {
 
 //! ------------ AI ------------//
 if (aiEasyButton) {
-    aiEasyButton.onclick = () => {
-        setAiDifficulty(1);
-        hide(createGameModal);
-        startAiMode();
-    };
+		aiEasyButton.onclick = () => {
+				setAiDifficulty(1);
+				hide(createGameModal);
+				startAiMode();
+		};
 }
 
 // --- Lógica Botón Medium ---
 if (aiMediumButton) {
-    aiMediumButton.onclick = () => {
-        setAiDifficulty(3);
-        hide(createGameModal);
-        startAiMode();
-    };
+		aiMediumButton.onclick = () => {
+				setAiDifficulty(3);
+				hide(createGameModal);
+				startAiMode();
+		};
 }
 
 // --- Lógica Botón Hard ---
 if (aiHardButton) {
-    aiHardButton.onclick = () => {
-        setAiDifficulty(5);
-        hide(createGameModal);
-        startAiMode();
-    };
+		aiHardButton.onclick = () => {
+				setAiDifficulty(5);
+				hide(createGameModal);
+				startAiMode();
+		};
 }
 
 gameCreateSubmitButton.onclick = async () => {
@@ -449,10 +451,6 @@ createGameCancelButton.onclick = () => hide(createGameModal);
 
 async function createMatch(match_type: string) {
 
-	const targetUsername = playRequestUsernameInput.value.trim();
-	if (targetUsername.length === 0 && getGameVisibility() === false) {
-		return showNotification("Username field empty");
-	}
 	try {
 	
 		const response = await httpEvent("POST", `/api/matches/`, { type: match_type,  visibility: getGameVisibility() });
@@ -463,30 +461,34 @@ async function createMatch(match_type: string) {
 		if (match_type !== "online") {
 			return;
 		}
+		const targetUsername = playRequestUsernameInput.value.trim();
+		if (targetUsername.length === 0 && getGameVisibility() === false) {
+			return showNotification("Username field empty");
+		}
 
-        // Si escribió username manualmente, invitar directamente
-        if (targetUsername.length > 0) {
-            try {
-                const response2 = await httpEvent("POST", `/api/matches/${getCurrentMatchId()}/invites`, { username: targetUsername});
-                showNotification(response2.msg);
-                if (response2.status !== 200) {
-                  return ;
-                }
-            } catch (err: any) {
-                console.error(err?.msg ?? "Request failed");
-            }
-        } else {
-            hide(createGameModal);
-            const ul = document.getElementById("friends_list_invite_ul") as HTMLUListElement;
-            const onlineFriendsContainer = document.getElementById("online_friends");
-            
-            setInviteContext("match", getCurrentMatchId());
-            show(invitePlayersModal);
-            
-            // Asegurar que el contenedor de la lista es visible
-            if (onlineFriendsContainer) show(onlineFriendsContainer);
-            if (ul) renderInviteFriendsList(ul);
-        }
+		// Si escribió username manualmente, invitar directamente
+		if (targetUsername.length > 0) {
+			try {
+					const response2 = await httpEvent("POST", `/api/matches/${getCurrentMatchId()}/invites`, { username: targetUsername});
+					showNotification(response2.msg);
+					if (response2.status !== 200) {
+						return ;
+					}
+			} catch (err: any) {
+					console.error(err?.msg ?? "Request failed");
+			}
+		} else {
+			hide(createGameModal);
+			const ul = document.getElementById("friends_list_invite_ul") as HTMLUListElement;
+			const onlineFriendsContainer = document.getElementById("online_friends");
+			
+			setInviteContext("match", getCurrentMatchId());
+			show(invitePlayersModal);
+			
+			// Asegurar que el contenedor de la lista es visible
+			if (onlineFriendsContainer) show(onlineFriendsContainer);
+			if (ul) renderInviteFriendsList(ul);
+		}
 	}
 	catch (err: any) {
 		console.error(err?.msg ?? "Request failed");
@@ -494,177 +496,177 @@ async function createMatch(match_type: string) {
 }
 
 async function createTournament() {
-    const size = tournamentSizeInput.value;
-    if (size.length === 0) return;
+		const size = tournamentSizeInput.value;
+		if (size.length === 0) return;
 
-    const targetUsername = playRequestUsernameInput.value.trim();
-    try {
-        const response = await httpEvent("POST", `/api/tournaments/`, { size: size, visibility: getGameVisibility() });
-        showNotification(response.msg);
-        if (response.status !== 200) {
-          return ;
-        }
-        setCurrentTournamentId(response.tournament_id);
+		const targetUsername = playRequestUsernameInput.value.trim();
+		try {
+				const response = await httpEvent("POST", `/api/tournaments/`, { size: size, visibility: getGameVisibility() });
+				showNotification(response.msg);
+				if (response.status !== 200) {
+					return ;
+				}
+				setCurrentTournamentId(response.tournament_id);
 
-        if (targetUsername.length > 0) {
-            try {
+				if (targetUsername.length > 0) {
+						try {
 				// ! CAMBIAR 
-                const response2 = await httpEvent(
-                    POST,
-                    `/api/tournaments/${getCurrentTournamentId()}/invites`, // ← FIX: TOURNAMENT_URL
-                    { username: targetUsername }
-                );
-                showNotification(response2.msg);
-            } catch (err: any) {
-                console.error(err?.msg ?? "Request failed");
-            }
-        } else {
-            hide(createGameModal);
-            const ul = document.getElementById("friends_list_invite_ul") as HTMLUListElement;
-            const onlineFriendsContainer = document.getElementById("online_friends");
+								const response2 = await httpEvent(
+										POST,
+										`/api/tournaments/${getCurrentTournamentId()}/invites`, // ← FIX: TOURNAMENT_URL
+										{ username: targetUsername }
+								);
+								showNotification(response2.msg);
+						} catch (err: any) {
+								console.error(err?.msg ?? "Request failed");
+						}
+				} else {
+						hide(createGameModal);
+						const ul = document.getElementById("friends_list_invite_ul") as HTMLUListElement;
+						const onlineFriendsContainer = document.getElementById("online_friends");
 
-            setInviteContext("tournament", getCurrentTournamentId()); // ← FIX: "tournament"
-            show(invitePlayersModal);
-            if (onlineFriendsContainer) show(onlineFriendsContainer);
-            if (ul) renderInviteFriendsList(ul);
-        }
+						setInviteContext("tournament", getCurrentTournamentId()); // ← FIX: "tournament"
+						show(invitePlayersModal);
+						if (onlineFriendsContainer) show(onlineFriendsContainer);
+						if (ul) renderInviteFriendsList(ul);
+				}
 
-    } catch (err: any) {
-        console.error(err?.msg ?? "Request failed");
-    }
+		} catch (err: any) {
+				console.error(err?.msg ?? "Request failed");
+		}
 }
 
 //-------------------------------------------------------------------------------------------------CREATE-GAME
 //-------------------------------------------------------------------------------------------------INVITE-PLAYERS
 
 invitePlayersMatchButton.onclick = async () => {
-    const matchId = getCurrentMatchId();
-    if (!matchId) {
-        await createMatch(getSelectedMode());
-        return;
-    }
-    hide(createGameModal);
-    const ul = document.getElementById("friends_list_invite_ul") as HTMLUListElement;
-    const onlineFriendsContainer = document.getElementById("online_friends");
-    
-    setInviteContext("match", matchId);
-    show(invitePlayersModal);
-    if (onlineFriendsContainer) show(onlineFriendsContainer);
-    if (ul) renderInviteFriendsList(ul);
+		const matchId = getCurrentMatchId();
+		if (!matchId) {
+				await createMatch(getSelectedMode());
+				return;
+		}
+		hide(createGameModal);
+		const ul = document.getElementById("friends_list_invite_ul") as HTMLUListElement;
+		const onlineFriendsContainer = document.getElementById("online_friends");
+		
+		setInviteContext("match", matchId);
+		show(invitePlayersModal);
+		if (onlineFriendsContainer) show(onlineFriendsContainer);
+		if (ul) renderInviteFriendsList(ul);
 };
 
 invitePlayersTournamentButton.onclick = async () => {
-    const tournamentId = getCurrentTournamentId();
-    if (!tournamentId) {
-        showNotification("Create the tournament first (press SUBMIT).");
-        return;
-    }
-    hide(createGameModal);
-    const ul = document.getElementById("friends_list_invite_ul") as HTMLUListElement;
-    const onlineFriendsContainer = document.getElementById("online_friends");
+		const tournamentId = getCurrentTournamentId();
+		if (!tournamentId) {
+				showNotification("Create the tournament first (press SUBMIT).");
+				return;
+		}
+		hide(createGameModal);
+		const ul = document.getElementById("friends_list_invite_ul") as HTMLUListElement;
+		const onlineFriendsContainer = document.getElementById("online_friends");
 
-    setInviteContext("tournament", tournamentId);
-    show(invitePlayersModal);
-    if (onlineFriendsContainer) show(onlineFriendsContainer);
-    if (ul) renderInviteFriendsList(ul);
+		setInviteContext("tournament", tournamentId);
+		show(invitePlayersModal);
+		if (onlineFriendsContainer) show(onlineFriendsContainer);
+		if (ul) renderInviteFriendsList(ul);
 };
 
 const inviteManualSend = document.getElementById("invite_manual_send") as HTMLButtonElement;
 if (inviteManualSend) {
-    inviteManualSend.onclick = async () => {
-        const input = document.getElementById("play_request_username2") as HTMLInputElement;
-        const username = input?.value.trim();
-        if (!username) return showNotification("Enter a username.");
-        await sendInviteManual(username);
-        if (input) input.value = "";
-    };
+		inviteManualSend.onclick = async () => {
+				const input = document.getElementById("play_request_username2") as HTMLInputElement;
+				const username = input?.value.trim();
+				if (!username) return showNotification("Enter a username.");
+				await sendInviteManual(username);
+				if (input) input.value = "";
+		};
 }
 
 invitePlayersCurrentGameButton.onclick = async () => {
-    hide(currentGameModal);
-    const ul = document.getElementById("friends_list_invite_ul") as HTMLUListElement;
-    const onlineFriendsContainer = document.getElementById("online_friends");
-    
-    const tournamentId = getCurrentTournamentId();
-    const matchId = getCurrentMatchId();
+		hide(currentGameModal);
+		const ul = document.getElementById("friends_list_invite_ul") as HTMLUListElement;
+		const onlineFriendsContainer = document.getElementById("online_friends");
+		
+		const tournamentId = getCurrentTournamentId();
+		const matchId = getCurrentMatchId();
 
-    if (tournamentId) {
-        setInviteContext("tournament", tournamentId);
-    } else if (matchId) {
-        setInviteContext("match", matchId);
-    } else {
-        showNotification("No active game found.");
-        return;
-    }
-    show(invitePlayersModal);
-    if (onlineFriendsContainer) show(onlineFriendsContainer);
-    if (ul) renderInviteFriendsList(ul);
+		if (tournamentId) {
+				setInviteContext("tournament", tournamentId);
+		} else if (matchId) {
+				setInviteContext("match", matchId);
+		} else {
+				showNotification("No active game found.");
+				return;
+		}
+		show(invitePlayersModal);
+		if (onlineFriendsContainer) show(onlineFriendsContainer);
+		if (ul) renderInviteFriendsList(ul);
 };
 
 invitePlayersCancelButton.onclick = () => {
-    clearInviteContext();
-    hide(invitePlayersModal);
+		clearInviteContext();
+		hide(invitePlayersModal);
 };
 
 export async function renderInviteFriendsList(container: HTMLUListElement): Promise<void> {
-    container.innerHTML = "";
+		container.innerHTML = "";
 
-    const loading = document.createElement("li");
-    loading.className = "pong-font text-[7px] text-center";
-    loading.style.color = "var(--pong-gray)";
-    loading.textContent = "Loading...";
-    container.appendChild(loading);
+		const loading = document.createElement("li");
+		loading.className = "pong-font text-[7px] text-center";
+		loading.style.color = "var(--pong-gray)";
+		loading.textContent = "Loading...";
+		container.appendChild(loading);
 
-    const friends = await fetchFriends();
-    loading.remove();
+		const friends = await fetchFriends();
+		loading.remove();
 
-    if (friends.length === 0) {
-        const empty = document.createElement("li");
-        empty.className = "pong-font text-[7px] text-center";
-        empty.style.color = "var(--pong-gray)";
-        empty.textContent = "No friends yet. Add some!";
-        container.appendChild(empty);
-        return;
-    }
+		if (friends.length === 0) {
+				const empty = document.createElement("li");
+				empty.className = "pong-font text-[7px] text-center";
+				empty.style.color = "var(--pong-gray)";
+				empty.textContent = "No friends yet. Add some!";
+				container.appendChild(empty);
+				return;
+		}
 
-    // Online friends first
-    friends.sort((a, b) => (b.online ? 1 : 0) - (a.online ? 1 : 0));
+		// Online friends first
+		friends.sort((a, b) => (b.online ? 1 : 0) - (a.online ? 1 : 0));
 
-    for (const friend of friends) {
-        const li = document.createElement("li");
-        li.className = "pong-box flex items-center justify-between";
+		for (const friend of friends) {
+				const li = document.createElement("li");
+				li.className = "pong-box flex items-center justify-between";
 
-        // FIX 1: Use correct status color and text per friend
-        const statusColor = friend.online ? "#4ade80" : "var(--pong-gray)";
-        const statusText = friend.online ? "● ONLINE" : "● OFFLINE";
+				// FIX 1: Use correct status color and text per friend
+				const statusColor = friend.online ? "#4ade80" : "var(--pong-gray)";
+				const statusText = friend.online ? "● ONLINE" : "● OFFLINE";
 
-        li.innerHTML = `
-            <div class="flex items-center gap-2">
-                <div class="avatar-placeholder text-[12px] w-5 h-5 flex items-center justify-center">${friend.avatar}</div>
-                <div class="flex flex-col text-left">
-                    <span class="text-[9px]">${escapeHtml(friend.display_name)}</span>
-                    <span class="text-[7px]" style="color:${statusColor}">${statusText}</span>
-                </div>
-            </div>
-            <button class="invite-friend-btn pong-button active-border text-[7px] px-2 py-0.5">
-                ${friend.online ? 'INVITE' : 'OFFLINE'}
-            </button>
-        `;
+				li.innerHTML = `
+						<div class="flex items-center gap-2">
+								<div class="avatar-placeholder text-[12px] w-5 h-5 flex items-center justify-center">${friend.avatar}</div>
+								<div class="flex flex-col text-left">
+										<span class="text-[9px]">${escapeHtml(friend.display_name)}</span>
+										<span class="text-[7px]" style="color:${statusColor}">${statusText}</span>
+								</div>
+						</div>
+						<button class="invite-friend-btn pong-button active-border text-[7px] px-2 py-0.5">
+								${friend.online ? 'INVITE' : 'OFFLINE'}
+						</button>
+				`;
 
-        // FIX 2: Set disabled via JS after render, not inside the template string
-        const btn = li.querySelector(".invite-friend-btn") as HTMLButtonElement;
-        if (!friend.online) {
-            btn.disabled = true;
-            btn.style.opacity = "0.4";
-            btn.style.cursor = "not-allowed";
-        } else {
-            btn.onclick = async () => {
-                await sendInviteToFriend(friend.username, btn);
-            };
-        }
+				// FIX 2: Set disabled via JS after render, not inside the template string
+				const btn = li.querySelector(".invite-friend-btn") as HTMLButtonElement;
+				if (!friend.online) {
+						btn.disabled = true;
+						btn.style.opacity = "0.4";
+						btn.style.cursor = "not-allowed";
+				} else {
+						btn.onclick = async () => {
+								await sendInviteToFriend(friend.username, btn);
+						};
+				}
 
-        container.appendChild(li);
-    }
+				container.appendChild(li);
+		}
 }
 
 //-------------------------------------------------------------------------------------------------INVITE-PLAYERS
@@ -884,22 +886,29 @@ export function showNotification(text: string | any, type?: string, id?: string)
 //   };
 // }
  
-changeProfilePicButton.onclick = () => {
-	renderProfilePicGrid();
-	show(profilePicModal);
-};
 
-profilePicCancelButton.onclick = () => {
-	hide(profilePicModal);
-};
+if (changeProfilePicButton) {
+	changeProfilePicButton.onclick = () => {
+		renderProfilePicGrid();
+		show(profilePicModal);
+	};
+}
 
-nightModeButton.onclick = () => {
 
-	invertNightMode();
-	document.documentElement.classList.toggle("pong-night-mode", nightMode);
-	swapNightMode();
-	drawGame();
-};
+if (profilePicCancelButton) {
+	profilePicCancelButton.onclick = () => {
+		hide(profilePicModal);
+	};
+}
+
+if (nightModeButton) {
+	nightModeButton.onclick = () => {
+		invertNightMode();
+		document.documentElement.classList.toggle("pong-night-mode", nightMode);
+		swapNightMode();
+		drawGame();
+	};
+}
 
 // --- DISPLAY NAME ---
 if (changeDisplayNameButton) {
@@ -962,6 +971,7 @@ if (changeUsernameButton) {
 		}
 		hide(menuModal);
 		show(changeUsernameModal);
+		
 		newUsernameInput.value = "";
 	};
 	closeChangeUsernameButton.onclick = () => {
@@ -1088,11 +1098,11 @@ if (changePasswordButton) {
 }
 
 logoutButton.onclick = async () => {
-    await logoutUser(logoutButton);
-    const ul = document.getElementById("friends_list_ul") as HTMLElement;
-    if (ul) ul.innerHTML = "";
-    const friendsSection = document.getElementById("friends_list");
-    if (friendsSection) hide(friendsSection);
+		await logoutUser(logoutButton);
+		const ul = document.getElementById("friends_list_ul") as HTMLElement;
+		if (ul) ul.innerHTML = "";
+		const friendsSection = document.getElementById("friends_list");
+		if (friendsSection) hide(friendsSection);
 };
 
 //-------------------------------------------------------------------------------------------------SETTINGS

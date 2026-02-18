@@ -7,7 +7,7 @@ module.exports = function respondMatchInvite(userManager, user, matchId, selfId,
 
         return ({status: 400, msg: "Couldn't find match."});
     }
-    else if (user !== userManager.getUserByID(selfId)) {
+    else if (user.getId() != selfId) {
 
         return ({ status: 404, msg: "Cannot respond someone elses invite." });
     }
