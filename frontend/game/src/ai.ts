@@ -328,7 +328,7 @@ export function startAiMode(): void {
   if (aiDifficulty === 1) 
     updateOpponentUI("AI PERRY", "", "▥");
 	else if (aiDifficulty === 3)
-		updateOpponentUI("AI MORTY", "", "▦");db
+		updateOpponentUI("AI MORTY", "", "▦");
 	else if (aiDifficulty === 5)
 		updateOpponentUI("AI RICK", "", "▩");
 
