@@ -1,0 +1,819 @@
+export enum Language {
+	EN = 'en',
+	ES = 'es',
+	IT = 'it'
+}
+
+export interface Translations {
+	[key: string]: {
+		[lang: string]: string;
+	};
+}
+
+export const translations: Translations = {
+	'nav.home': {
+		en: 'Home',
+		es: 'Inicio',
+		it: 'Home'
+	},
+	'nav.game': {
+		en: 'Game',
+		es: 'Juego',
+		it: 'Gioco'
+	},
+	'nav.profile': {
+		en: 'Profile',
+		es: 'Perfil',
+		it: 'Profilo'
+	},
+	'nav.tournament': {
+		en: 'Tournament',
+		es: 'Torneo',
+		it: 'Torneo'
+	},
+	'nav.logout': {
+		en: 'Logout',
+		es: 'Cerrar Sesión',
+		it: 'Disconnetti'
+	},
+	'auth.login': {
+		en: 'Login',
+		es: 'Iniciar Sesión',
+		it: 'Accedi'
+	},
+	'auth.register': {
+		en: 'Register',
+		es: 'Registrarse',
+		it: 'Registrati'
+	},
+	'auth.username': {
+		en: 'Username',
+		es: 'Usuario',
+		it: 'Nome utente'
+	},
+	'auth.password': {
+		en: 'Password',
+		es: 'Contraseña',
+		it: 'Password'
+	},
+	'auth.email': {
+		en: 'Email',
+		es: 'Correo',
+		it: 'Email'
+	},
+	'game.start': {
+		en: 'Start Game',
+		es: 'Iniciar Juego',
+		it: 'Inizia Gioco'
+	},
+	'game.score': {
+		en: 'Score',
+		es: 'Puntuación',
+		it: 'Punteggio'
+	},
+	'game.player': {
+		en: 'Player',
+		es: 'Jugador',
+		it: 'Giocatore'
+	},
+	'game.winner': {
+		en: 'Winner',
+		es: 'Ganador',
+		it: 'Vincitore'
+	},
+	'settings.language': {
+		en: 'Language',
+		es: 'Idioma',
+		it: 'Lingua'
+	},
+	'settings.change_language': {
+		en: 'Change Language',
+		es: 'Cambiar Idioma',
+		it: 'Cambia Lingua'
+	},
+	'common.welcome': {
+		en: 'Welcome',
+		es: 'Bienvenido',
+		it: 'Benvenuto'
+	},
+	'common.loading': {
+		en: 'Loading...',
+		es: 'Cargando...',
+		it: 'Caricamento...'
+	},
+	'common.error': {
+		en: 'Error',
+		es: 'Error',
+		it: 'Errore'
+	},
+	'common.success': {
+		en: 'Success',
+		es: 'Éxito',
+		it: 'Successo'
+	},
+	'common.cancel': {
+		en: 'Cancel',
+		es: 'Cancelar',
+		it: 'Annulla'
+	},
+	'common.confirm': {
+		en: 'Confirm',
+		es: 'Confirmar',
+		it: 'Conferma'
+	},
+	'common.save': {
+		en: 'Save',
+		es: 'Guardar',
+		it: 'Salva'
+	}
+,
+	'app.title': {
+		en: 'Mini Pong',
+		es: 'Mini Pong',
+		it: 'Mini Pong'
+	},
+	'menu.stats': {
+		en: 'Stats',
+		es: 'Estadísticas',
+		it: 'Statistiche'
+	},
+	'menu.requests': {
+		en: 'Requests',
+		es: 'Solicitudes',
+		it: 'Richieste'
+	},
+	'menu.play': {
+		en: 'Play',
+		es: 'Jugar',
+		it: 'Gioca'
+	},
+	'settings.day_mode': {
+		en: 'Night/Day Mode',
+		es: 'Modo Noche/Día',
+		it: 'Modalità Notte/Giorno'
+	},
+	'settings.change_board_theme': {
+		en: 'Change Board Theme',
+		es: 'Cambiar tema del tablero',
+		it: 'Cambia tema della schermata'
+	},
+	'settings.change_displayname': {
+		en: 'Change Display Name',
+		es: 'Cambiar nombre para mostrar',
+		it: 'Cambia nome visualizzato'
+	},
+	'settings.change_username': {
+		en: 'Change Username',
+		es: 'Cambiar nombre de usuario',
+		it: 'Cambia nome utente'
+	},
+	'settings.change_email': {
+		en: 'Change Email',
+		es: 'Cambiar correo',
+		it: 'Cambia email'
+	},
+	'settings.change_password': {
+		en: 'Change Password',
+		es: 'Cambiar contraseña',
+		it: 'Cambia password'
+	},
+	'settings.change_avatar': {
+		en: 'Change Avatar',
+		es: 'Cambiar avatar',
+		it: 'Cambia avatar'
+	},
+	'play.play_locally': {
+		en: 'Play Locally',
+		es: 'Jugar localmente',
+		it: 'Gioca localmente'
+	},
+	'play.play_ai': {
+		en: 'Play Against AI',
+		es: 'Jugar contra la IA',
+		it: 'Gioca contro l\'IA'
+	},
+	'play.play_online': {
+		en: 'Play Online',
+		es: 'Jugar en línea',
+		it: 'Gioca online'
+	},
+	'tournament.create': {
+		en: 'Create Tournament',
+		es: 'Crear Torneo',
+		it: 'Crea Torneo'
+	},
+	'tournament.find': {
+		en: 'Find Tournament',
+		es: 'Buscar Torneo',
+		it: 'Cerca Torneo'
+	},
+	'modal.select_avatar': {
+		en: 'Select Avatar',
+		es: 'Seleccionar avatar',
+		it: 'Seleziona avatar'
+	},
+	'theme.board': {
+		en: 'Board Theme',
+		es: 'Tema del tablero',
+		it: 'Tema della schermata'
+	},
+	'theme.apply': {
+		en: 'Apply',
+		es: 'Aplicar',
+		it: 'Applica'
+	},
+	'theme.classic': {
+		en: 'Classic',
+		es: 'Clásico',
+		it: 'Classico'
+	},
+	'auth.dont_have_account': {
+		en: "Don't have an account?",
+		es: '¿No tienes una cuenta?',
+		it: 'Non hai un account?'
+	},
+	'auth.already_have_account': {
+		en: 'Already have an account?',
+		es: '¿Ya tienes una cuenta?',
+		it: 'Hai già un account?'
+	},
+	'auth.login_with_google': {
+		en: 'Login with Google',
+		es: 'Iniciar sesión con Google',
+		it: 'Accedi con Google'
+	},
+	'form.submit': {
+		en: 'Submit',
+		es: 'Enviar',
+		it: 'Invia'
+	},
+	'common.or': {
+		en: '- OR -',
+		es: '- O -',
+		it: '- O -'
+	},
+	'request.send_match_request': {
+		en: 'Send Match Request',
+		es: 'Enviar solicitud de partida',
+		it: 'Invia richiesta di partita'
+	},
+	'request.match_request': {
+		en: 'Match Request',
+		es: 'Solicitud de partida',
+		it: 'Richiesta di partita'
+	},
+	'request.player_wants': {
+		en: 'Player wants to play against you.',
+		es: 'El jugador quiere jugar contra ti.',
+		it: 'Il giocatore vuole giocare contro di te.'
+	},
+	'twofa.choose_method': {
+		en: 'Choose 2FA Method',
+		es: 'Elige método 2FA',
+		it: 'Scegli metodo 2FA'
+	},
+	'twofa.email': {
+		en: 'Email',
+		es: 'Correo',
+		it: 'Email'
+	},
+	'twofa.skip': {
+		en: 'Skip For Now',
+		es: 'Omitir por ahora',
+		it: 'Salta per ora'
+	},
+	'twofa.title': {
+		en: 'Two-Factor Authentication',
+		es: 'Autenticación de dos factores',
+		it: 'Autenticazione a due fattori'
+	},
+	'twofa.enter_code': {
+		en: 'Enter 2FA code',
+		es: 'Introduce el código 2FA',
+		it: 'Inserisci il codice 2FA'
+	},
+	'form.update': {
+		en: 'Update',
+		es: 'Actualizar',
+		it: 'Aggiorna'
+	},
+	'common.close': {
+		en: 'Close',
+		es: 'Cerrar',
+		it: 'Chiudi'
+	},
+	'common.accept': {
+		en: 'Accept',
+		es: 'Aceptar',
+		it: 'Accetta'
+	},
+	'common.exit': {
+		en: 'Exit',
+		es: 'Salir',
+		it: 'Esci'
+	},
+	'dashboard.title': {
+		en: 'Dashboard',
+		es: 'Panel',
+		it: 'Cruscotto'
+	},
+	'dashboard.refresh': {
+		en: 'Refresh',
+		es: 'Refrescar',
+		it: 'Aggiorna'
+	},
+	'stats.general_summary': {
+		en: 'General Summary',
+		es: 'Resumen general',
+		it: 'Riepilogo generale'
+	},
+	'stats.game_modes': {
+		en: 'Game Modes Details',
+		es: 'Detalles de modos de juego',
+		it: 'Dettagli modalità di gioco'
+	},
+	'stats.wins_losses': {
+		en: 'Wins vs losses Chart',
+		es: 'Gráfico de victorias vs derrotas',
+		it: 'Grafico vittorie vs sconfitte'
+	},
+	'stats.match_history': {
+		en: 'Match history',
+		es: 'Historial de partidas',
+		it: 'Cronologia partite'
+	},
+	'stats.matches': {
+		en: 'Matches',
+		es: 'Partidas',
+		it: 'Partite'
+	},
+	'stats.win_rate': {
+		en: 'Win rate',
+		es: 'Tasa de victorias',
+		it: 'Percentuale vittorie'
+	},
+	'stats.current_streak': {
+		en: 'Current streak',
+		es: 'Racha actual',
+		it: 'Serie attuale'
+	},
+	'stats.best_streak': {
+		en: 'Best streak',
+		es: 'Mejor racha',
+		it: 'Migliore serie'
+	},
+	'stats.local_played': {
+		en: 'Local Played',
+		es: 'Jugadas locales',
+		it: 'Giocate locali'
+	},
+	'stats.local_won': {
+		en: 'Local Won',
+		es: 'Ganadas locales',
+		it: 'Vinte locali'
+	},
+	'stats.online_played': {
+		en: 'Online Played',
+		es: 'Jugadas en línea',
+		it: 'Giocate online'
+	},
+	'stats.online_won': {
+		en: 'Online Won',
+		es: 'Ganadas en línea',
+		it: 'Vinte online'
+	},
+	'stats.tourn_played': {
+		en: 'Tourn. Played',
+		es: 'Torn. jugados',
+		it: 'Torn. giocate'
+	},
+	'stats.tourn_won': {
+		en: 'Tourn. Won',
+		es: 'Torn. ganados',
+		it: 'Torn. vinte'
+	}
+};
+
+const LANGUAGE_STORAGE_KEY = 'preferred_language';
+
+let currentLanguage: Language = Language.EN;
+
+export function initializeLanguage(): Language {
+	const storedLang = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+	if (storedLang && Object.values(Language).includes(storedLang as Language)) {
+		currentLanguage = storedLang as Language;
+	} else {
+		const browserLang = navigator.language.split('-')[0];
+		if (Object.values(Language).includes(browserLang as Language)) {
+			currentLanguage = browserLang as Language;
+		}
+	}
+	
+	document.documentElement.lang = currentLanguage;
+	return currentLanguage;
+}
+
+export function getCurrentLanguage(): Language {
+	return currentLanguage;
+}
+
+export function changeLanguage(lang: Language): void {
+	currentLanguage = lang;
+	localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+	document.documentElement.lang = lang;
+	
+	const event = new CustomEvent('languageChanged', { detail: { language: lang } });
+	window.dispatchEvent(event);
+	
+	updateTranslations();
+}
+
+export function translate(key: string, lang?: Language): string {
+	let targetLang: Language;
+	if (lang) {
+		targetLang = lang;
+	} else {
+		targetLang = currentLanguage;
+	}
+	
+	if (translations[key] && translations[key][targetLang]) {
+		return translations[key][targetLang];
+	}
+	
+	if (translations[key] && translations[key][Language.EN]) {
+		return translations[key][Language.EN];
+	}
+	
+	return key;
+}
+
+export function updateTranslations(): void {
+	const elements = document.querySelectorAll('[data-i18n]');
+	elements.forEach((element) => {
+		const key = element.getAttribute('data-i18n');
+		if (key) {
+			element.textContent = translate(key);
+		}
+	});
+	
+	const placeholderElements = document.querySelectorAll('[data-i18n-placeholder]');
+	placeholderElements.forEach((element) => {
+		const key = element.getAttribute('data-i18n-placeholder');
+		if (key && element instanceof HTMLInputElement) {
+			element.placeholder = translate(key);
+		}
+	});
+}
+
+export function addTranslation(key: string, newTranslations: { [lang: string]: string }): void {
+	if (!translations[key]) {
+		translations[key] = newTranslations;
+	} else {
+		Object.assign(translations[key], newTranslations);
+	}
+}
+
+export interface LanguageButtonConfig {
+	container?: HTMLElement;
+	position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+	style?: 'dropdown' | 'flags' | 'text';
+	className?: string;
+}
+
+const languageFlags: { [key in Language]: string } = {
+	[Language.EN]: '🇬🇧',
+	[Language.ES]: '🇪🇸',
+	[Language.IT]: '🇮🇹'
+};
+
+const languageNames: { [key in Language]: string } = {
+	[Language.EN]: 'English',
+	[Language.ES]: 'Español',
+	[Language.IT]: 'Italiano'
+};
+
+export function createLanguageButton(config: LanguageButtonConfig = {}): HTMLElement {
+	const {
+		container,
+		position = 'top-right',
+		style = 'dropdown',
+		className = ''
+	} = config;
+	
+	const wrapper = document.createElement('div');
+	wrapper.className = `language-switcher ${position} ${className}`;
+	wrapper.style.cssText = getPositionStyles(position);
+	
+	if (style === 'dropdown') {
+		createDropdownButton(wrapper);
+	} else if (style === 'flags') {
+		createFlagsButton(wrapper);
+	} else {
+		createTextButton(wrapper);
+	}
+	
+	if (container) {
+		container.appendChild(wrapper);
+	} else {
+		document.body.appendChild(wrapper);
+	}
+	
+	return wrapper;
+}
+
+function createDropdownButton(wrapper: HTMLElement): void {
+	const button = document.createElement('button');
+	button.className = 'language-btn';
+	button.innerHTML = `${languageFlags[currentLanguage]} ${languageNames[currentLanguage]}`;
+	button.style.cssText = `
+		padding: 8px 16px;
+		border: 2px solid #333;
+		background: #fff;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 14px;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		transition: all 0.3s ease;
+	`;
+	
+	const dropdown = document.createElement('div');
+	dropdown.className = 'language-dropdown';
+	dropdown.style.cssText = `
+		position: absolute;
+		top: 100%;
+		right: 0;
+		margin-top: 8px;
+		background: #fff;
+		border: 2px solid #333;
+		border-radius: 4px;
+		display: none;
+		min-width: 150px;
+		box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+		z-index: 1000;
+	`;
+	
+	Object.values(Language).forEach((lang) => {
+		const option = document.createElement('button');
+		option.className = 'language-option';
+		option.innerHTML = `${languageFlags[lang]} ${languageNames[lang]}`;
+		
+		let optionBg: string;
+		if (lang === currentLanguage) {
+			optionBg = '#f0f0f0';
+		} else {
+			optionBg = '#fff';
+		}
+		
+		option.style.cssText = `
+			width: 100%;
+			padding: 10px 16px;
+			border: none;
+			background: ${optionBg};
+			text-align: left;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			transition: background 0.2s;
+		`;
+		
+		option.addEventListener('mouseenter', () => {
+			option.style.background = '#f0f0f0';
+		});
+		
+		option.addEventListener('mouseleave', () => {
+			if (lang === currentLanguage) {
+				option.style.background = '#f0f0f0';
+			} else {
+				option.style.background = '#fff';
+			}
+		});
+		
+		option.addEventListener('click', () => {
+			changeLanguage(lang);
+			button.innerHTML = `${languageFlags[lang]} ${languageNames[lang]}`;
+			dropdown.style.display = 'none';
+			
+			dropdown.querySelectorAll('.language-option').forEach((opt, idx) => {
+				const optLang = Object.values(Language)[idx];
+				if (optLang === lang) {
+					(opt as HTMLElement).style.background = '#f0f0f0';
+				} else {
+					(opt as HTMLElement).style.background = '#fff';
+				}
+			});
+		});
+		
+		dropdown.appendChild(option);
+	});
+	
+	button.addEventListener('click', (e) => {
+		e.stopPropagation();
+		if (dropdown.style.display === 'none') {
+			dropdown.style.display = 'block';
+		} else {
+			dropdown.style.display = 'none';
+		}
+	});
+	
+	document.addEventListener('click', () => {
+		dropdown.style.display = 'none';
+	});
+	
+	wrapper.style.position = 'relative';
+	wrapper.appendChild(button);
+	wrapper.appendChild(dropdown);
+}
+
+function createFlagsButton(wrapper: HTMLElement): void {
+	wrapper.style.cssText += 'display: flex; gap: 8px;';
+	
+	Object.values(Language).forEach((lang) => {
+		const button = document.createElement('button');
+		button.className = 'language-flag-btn';
+		button.innerHTML = languageFlags[lang];
+		button.title = languageNames[lang];
+		
+		let borderColor: string;
+		let opacity: string;
+		if (lang === currentLanguage) {
+			borderColor = '#333';
+			opacity = '1';
+		} else {
+			borderColor = '#ccc';
+			opacity = '0.6';
+		}
+		
+		button.style.cssText = `
+			padding: 8px;
+			border: 2px solid ${borderColor};
+			background: #fff;
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 20px;
+			transition: all 0.3s ease;
+			opacity: ${opacity};
+		`;
+		
+		button.addEventListener('mouseenter', () => {
+			button.style.opacity = '1';
+			button.style.transform = 'scale(1.1)';
+		});
+		
+		button.addEventListener('mouseleave', () => {
+			if (lang === currentLanguage) {
+				button.style.opacity = '1';
+			} else {
+				button.style.opacity = '0.6';
+			}
+			button.style.transform = 'scale(1)';
+		});
+		
+		button.addEventListener('click', () => {
+			changeLanguage(lang);
+			
+			wrapper.querySelectorAll('.language-flag-btn').forEach((btn, idx) => {
+				const btnLang = Object.values(Language)[idx];
+				if (btnLang === lang) {
+					(btn as HTMLElement).style.borderColor = '#333';
+					(btn as HTMLElement).style.opacity = '1';
+				} else {
+					(btn as HTMLElement).style.borderColor = '#ccc';
+					(btn as HTMLElement).style.opacity = '0.6';
+				}
+			});
+		});
+		
+		wrapper.appendChild(button);
+	});
+}
+
+function createTextButton(wrapper: HTMLElement): void {
+	wrapper.style.cssText += 'display: flex; gap: 8px;';
+	
+	Object.values(Language).forEach((lang) => {
+		const button = document.createElement('button');
+		button.className = 'language-text-btn';
+		button.textContent = lang.toUpperCase();
+		
+		let bgColor: string;
+		let textColor: string;
+		if (lang === currentLanguage) {
+			bgColor = '#333';
+			textColor = '#fff';
+		} else {
+			bgColor = 'transparent';
+			textColor = '#333';
+		}
+		
+		button.style.cssText = `
+			padding: 6px 12px;
+			border: none;
+			background: ${bgColor};
+			color: ${textColor};
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 12px;
+			font-weight: bold;
+			transition: all 0.3s ease;
+		`;
+		
+		button.addEventListener('mouseenter', () => {
+			if (lang !== currentLanguage) {
+				button.style.background = '#f0f0f0';
+			}
+		});
+		
+		button.addEventListener('mouseleave', () => {
+			if (lang === currentLanguage) {
+				button.style.background = '#333';
+			} else {
+				button.style.background = 'transparent';
+			}
+		});
+		
+		button.addEventListener('click', () => {
+			changeLanguage(lang);
+			
+			wrapper.querySelectorAll('.language-text-btn').forEach((btn, idx) => {
+				const isActive = Object.values(Language)[idx] === lang;
+				if (isActive) {
+					(btn as HTMLElement).style.background = '#333';
+					(btn as HTMLElement).style.color = '#fff';
+				} else {
+					(btn as HTMLElement).style.background = 'transparent';
+					(btn as HTMLElement).style.color = '#333';
+				}
+			});
+		});
+		
+		wrapper.appendChild(button);
+	});
+}
+
+function getPositionStyles(position: string): string {
+	const base = 'position: fixed; z-index: 9999;';
+	
+	switch (position) {
+		case 'top-left':
+			return `${base} top: 20px; left: 20px;`;
+		case 'top-right':
+			return `${base} top: 20px; right: 20px;`;
+		case 'bottom-left':
+			return `${base} bottom: 20px; left: 20px;`;
+		case 'bottom-right':
+			return `${base} bottom: 20px; right: 20px;`;
+		default:
+			return `${base} top: 20px; right: 20px;`;
+	}
+}
+
+initializeLanguage();
+
+class LanguageButtonElement extends HTMLElement {
+	constructor() {
+		super();
+	}
+
+	connectedCallback() {
+		let style = this.getAttribute('style-type');
+		if (!style) {
+			style = 'dropdown';
+		}
+		
+		let position = this.getAttribute('position');
+		if (!position) {
+			position = 'top-right';
+		}
+		
+		let className = this.getAttribute('class');
+		if (!className) {
+			className = '';
+		}
+
+		const config: LanguageButtonConfig = {
+			container: this,
+			style: style as 'dropdown' | 'flags' | 'text',
+			position: position as 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
+			className: className
+		};
+
+		createLanguageButton(config);
+	}
+}
+
+customElements.define('lang-button', LanguageButtonElement);
+
+export default {
+	Language,
+	initializeLanguage,
+	getCurrentLanguage,
+	changeLanguage,
+	translate,
+	updateTranslations,
+	addTranslation,
+	createLanguageButton,
+	translations
+};

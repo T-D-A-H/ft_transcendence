@@ -126,12 +126,29 @@ import { oneTimeEvent, setMatchMode, initKeyHandling } from "./events.js";
 
 import { startAiMode, stopAiMode, isAiModeActive } from "./ai.js";
 import { initStatsDashboard, loadDashboard } from "./stats.js";
+import languageModule from "./language-button.js";
 
 googleLoginButton.onclick = () => {
   window.location.href = "/auth/google";
 };
 
 initStatsDashboard();
+
+// language button implementation on the settings menu
+const settingsListEl = document.getElementById("settings_list");
+if (settingsListEl) {
+  try {
+    languageModule.createLanguageButton({
+      container: settingsListEl as HTMLElement,
+      style: 'dropdown',
+      position: 'top-right',
+      className: 'mb-2'
+    });
+    languageModule.updateTranslations();
+  } catch (e) {
+    console.warn('Language button initialization failed', e);
+  }
+}
 
 menuButtons.forEach((button) => {
   button.addEventListener("click", () => {
