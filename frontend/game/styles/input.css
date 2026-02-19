@@ -265,7 +265,7 @@ body {
 				w-[5.5rem] h-10
 				border-4 rounded-none border-[var(--pong-black)]
 				text-[30px] text-[color:var(--pong-black)]
-				pong-font-hover;
+				pong-font-hover pb-0;
 
 	}
 	.pong-top-bar-notification {

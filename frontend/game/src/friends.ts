@@ -54,7 +54,9 @@ function renderFriendItem(friend: FriendData, onRemove: (id: number) => void): H
 
     li.innerHTML = `
         <div class="flex items-center gap-2">
-            <div class="avatar-placeholder text-[14px] w-6 h-6 flex items-center justify-center">${friend.avatar}</div>
+            <div class="avatar-placeholder text-[8px] w-6 h-6 flex items-center justify-center">
+                <span class="pong-icon -top-[6px]">${friend.avatar}</span>
+            </div>
             <div class="flex flex-col text-left">
                 <span class="text-[9px]">${escapeHtml(friend.display_name)}</span>
                 <span class="text-[7px]" style="color:var(--pong-gray)">@${escapeHtml(friend.username)}</span>
@@ -368,8 +370,8 @@ export async function renderInviteFriendsList(container: HTMLUListElement): Prom
         container.appendChild(li);
     }
 }
-
-export async function sendInviteToFriend(username: string, btn?: HTMLButtonElement): Promise<void> {
+import {invitePlayersModal, currentGameModal} from "./ui.js";
+export async function sendInviteToFriend(userName: string, btn?: HTMLButtonElement): Promise<void> {
     if (!inviteContext) {
         showNotification("No active game to invite to.");
         return;
@@ -382,21 +384,28 @@ export async function sendInviteToFriend(username: string, btn?: HTMLButtonEleme
 
     try {
         const endpoint = inviteContext.type === "match"
-            ? `/api/matches/${inviteContext.id}/invite`
-            : `/api/tournaments/${inviteContext.id}/invite`;
+            ? `/api/matches/${inviteContext.id}/invites`
+            : `/api/tournaments/${inviteContext.id}/invites`;
 
         const res = await fetch(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username }),
+            body: JSON.stringify({ username:  userName}),
             credentials: "include"
         });
         const data = await res.json();
+
         showNotification(data.msg);
+        if (data.status !== 200)
+            return ;
 
         if (btn) {
             btn.textContent = data.status === 200 ? "SENT ✓" : "INVITE";
             btn.disabled = data.status === 200;
+        }
+        if (inviteContext.type === "match") {
+            hide(invitePlayersModal);
+	        show(currentGameModal);
         }
     } catch {
         showNotification("Connection error.");

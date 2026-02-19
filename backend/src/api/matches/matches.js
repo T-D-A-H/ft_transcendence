@@ -45,7 +45,7 @@ module.exports = async function matchesRoutes(fastify, options) {
 			}
 			else {
 				const match = createMatch(userManager, usr, false, "online");
-				req.user.addPendingRequest("match", match.id, usr.getId());
+				req.user.addPendingRequest("matches", match.id, usr.getId());
 			}
 			i++;
 		}

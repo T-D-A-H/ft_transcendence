@@ -1,4 +1,4 @@
-import { showMenu, updateOpponentUI,  showCanvas, mirrorCanvas, updateTournamentUI, savedDisplayName, updateProfileUI } from "./ui.js"
+import { showMenu, updateOpponentUI,  showCanvas, mirrorCanvas, savedDisplayName, updateProfileUI } from "./ui.js"
 import { setCurrentMatchId,  setCurrentTournamentId, setSCORES, setDisplaySide, getDisplaySide, getMatchMode } from "./vars.js";
 import {GameStatus, setGameStatus, getGameStatus, setMatchMode, GameType, setGameType, getGameType} from "./vars.js";
 import { drawGame, clearBackground } from "./draw.js"
@@ -103,48 +103,51 @@ export async function registerEvents() {
 		setGameStatus(GameStatus.READY_TO_START);
 		setCurrentMatchId(data.info?.match_id);
 		    
-		const inviteModal = document.getElementById("invite-game-modal");
-		const onlineFriendsContainer = document.getElementById("online_friends");
-		if (inviteModal) hide(inviteModal);
-		if (onlineFriendsContainer) hide(onlineFriendsContainer);
 		if (data.info?.type === "tournament") {
 
 			setGameType(GameType.TOURNAMENT);
 			setCurrentTournamentId(data.info?.tournament_id);
-			updateTournamentUI(data.info?.self_displayname, data.info?.opponent_display_name);
+			updateOpponentUI(data.info?.display_name, data.info?.id, data.info?.opponent_avatar);
 		}
-		else if (data.info?.type === "match") {
+		else if (data.info?.type === "online") {
 			setGameType(GameType.MATCH);
-			updateOpponentUI(data.info?.display_name, data.info?.id);
-		}
-		else if (data.info?.type === "ai") {
+			updateOpponentUI(data.info?.display_name, data.info?.id, data.info?.opponent_avatar);
+		}    
+		else if (data.info?.type === "ai_easy") {
 			setGameType(GameType.AI);
-			updateOpponentUI("AI BOT", "");
+			updateOpponentUI("AI PERRY", "", "▥");
+		}
+		else if (data.info?.type === "ai_medium") {
+			setGameType(GameType.AI);
+			updateOpponentUI("AI MORTY", "", "▦");
+		}
+		else if (data.info?.type === "ai_hard") {
+			setGameType(GameType.AI);
+			updateOpponentUI("AI RICK", "", "▩");
 		}
 		else if (data.info?.type === "2player") {
-			
+		
 			setGameType(GameType.TWO_PLAYER);
-			updateOpponentUI(data.info?.display_name + "(1)", data.info?.id);
+			updateOpponentUI("(1)" + data.info?.display_name, data.info?.id, data.info?.opponent_avatar);
 			setMatchMode("dual");
 		}
-
+		updateCurrentGame("matches");
 		showCanvas();
 	});
 	registerHandler("UPDATE", (data) => {
 
     	if (data.msg === "matches") {
 			setGameType(GameType.MATCH);
-			updateCurrentGame();
+			updateCurrentGame("matches");
 		}
 		else if (data.msg === "tournaments") {
 			setGameType(GameType.TOURNAMENT);
-    	    updateCurrentGame();
+    	    updateCurrentGame("tournaments");
     	}
 
 	});
 	registerHandler("MIRROR", (data) => {
 
-		if (getGameType() !== GameType.AI && getGameType() !== GameType.TWO_PLAYER)
 			mirrorCanvas();
 	});
 	registerHandler("NOTIFICATION", (data) => {
@@ -189,13 +192,13 @@ function onKeyDown(e: KeyboardEvent): void {
 	}
 	else {
 
-		if (e.key === "ArrowUp")
+		if (e.key === "w")
 			sendMoves("MOVE2", { move: "UP1" });
-		else if (e.key === "ArrowDown")
-			sendMoves("MOVE2", { move: "DOWN1" });
-		else if (e.key === "w")
-			sendMoves("MOVE2", { move: "UP2" });
 		else if (e.key === "s")
+			sendMoves("MOVE2", { move: "DOWN1" });
+		else if (e.key === "ArrowUp")
+			sendMoves("MOVE2", { move: "UP2" });
+		else if (e.key === "ArrowDown")
 			sendMoves("MOVE2", { move: "DOWN2" });
 	}
 }
@@ -209,9 +212,9 @@ function onKeyUp(e: KeyboardEvent): void {
 	}
 	else {
 
-		if (e.key === "ArrowUp" || e.key === "ArrowDown")
+		if (e.key ===  "w" || e.key === "s" )
 			sendMoves("MOVE2", { move: "STOP1" });
-		else if (e.key === "w" || e.key === "s")
+		else if (e.key === "ArrowUp" || e.key === "ArrowDown")
 			sendMoves("MOVE2", { move: "STOP2" });
 	}
 }

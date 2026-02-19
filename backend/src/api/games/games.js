@@ -63,6 +63,7 @@ module.exports = async function websocketHandler(fastify, options) {
                         friend.notify("FRIEND_UPDATE", "Friend went offline", null);
                     }
                 }
+                userManager.disconnectUser(user);
             } catch (err) {
                 console.error("Error notifying friends on disconnect:", err);
             }

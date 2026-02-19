@@ -30,7 +30,7 @@ module.exports = function sendMatchInvite(userManager, user, match_id, targetUse
         return { status: 400, msg: targetUser.getUsername() + " is not online." };
 	}
     
-	targetUser.addPendingRequest("match", match_id, user.getId());
+	targetUser.addPendingRequest("matches", match_id, user.getId());
 
 	targetUser.notify("REQUEST", `${user.getUsername()} sent you an invite request.`, {type: "matches", id: match_id});
 

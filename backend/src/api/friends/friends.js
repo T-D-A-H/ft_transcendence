@@ -15,7 +15,7 @@ module.exports = async function friendsRoutes(fastify, options) {
                     r.status, r.type
                 FROM relationships r
                 JOIN users u ON (
-                    CASE WHEN r.user_id = ? THEN r.target_id ELSE r.user_id END = u.id
+                    CASE WHEN r.user_id = ? THEN r.target_id ELSE r.user_id END = u.id 
                 )
                 WHERE (r.user_id = ? OR r.target_id = ?)
                   AND r.type = 'friend'
@@ -152,17 +152,18 @@ module.exports = async function friendsRoutes(fastify, options) {
     });
 
     // POST /api/friends/respond/:request_id - aceptar o rechazar solicitud
-    fastify.patch('/:friend_id/invites/:request_id', { preHandler: authFromCookie }, async (req, reply) => {
+    fastify.patch('/invites/:request_id', { preHandler: authFromCookie }, async (req, reply) => {
         try {
             // const userId = req.user.getId();
-            const { request_id, friend_id } = req.params;
+            const { request_id } = req.params;
+            const  userId  = req.user.getId();
             const { accept } = req.body || {};
             const db = userManager.db;
 
             const request = await new Promise((resolve, reject) => {
                 db.get(
                     "SELECT * FROM relationships WHERE id = ? AND target_id = ? AND type = 'friend' AND status = 'PENDING'",
-                    [request_id, friend_id],
+                    [request_id, userId],
                     (err, row) => err ? reject(err) : resolve(row)
                 );
             });
@@ -181,7 +182,7 @@ module.exports = async function friendsRoutes(fastify, options) {
                 });
 
                 // Notificar a ambos via WebSocket para que recarguen la lista
-                userManager.broadcastFriendUpdate(request.user_id, friend_id);
+                userManager.broadcastFriendUpdate(request.user_id, userId);
 
                 LOGGER(200, "friends.js", "POST /respond", `Accepted request ${request_id}`);
                 return reply.code(200).send({ status: 200, msg: "Friend request accepted!" });

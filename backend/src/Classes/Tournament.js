@@ -28,7 +28,7 @@ class Tournament {
 		this.winners = new Map();
 	}
 
-	isPublicTournament() {
+	isPublic() {
 		return (this.visibility);
 	}
 

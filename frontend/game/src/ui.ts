@@ -97,6 +97,8 @@ export function updateSessionButtons(render: boolean) {
 	}
 }
 
+
+
 export 	function showCanvas() {
 
 	hide(createGameModal);
@@ -109,9 +111,8 @@ export 	function showCanvas() {
 		hide(currentGameCancel);
 		show(currentGameModal);
 		makeVisible(topBarOpponentButton);
-		show(topBarOpponentDisplayName);
-		makeVisible(topBarDisplayName);
 		show(topBarDisplayName);
+		makeVisible(topBarDisplayName);
 		makeVisible(exitMatchButton);
 		show(exitMatchButton);
 		if (getGameStatus() === GameStatus.READY_TO_START) {
@@ -131,9 +132,7 @@ export 	function showMenu() {
 	if (getGameStatus() !== GameStatus.READY_TO_START && getGameStatus() !== GameStatus.IN_GAME) {
 
 		makeInvisible(topBarOpponentButton);
-		hide(topBarOpponentDisplayName);
 		makeInvisible(topBarDisplayName);
-		hide(topBarDisplayName);
 	}
 }
 
@@ -160,24 +159,20 @@ export function getSelfId(): string {
 	return selfId;
 }
 
-export function updateTournamentUI(self_displayname: string, opponent_displayname: string): void {
 
-	savedDisplayName = topBarDisplayName.textContent as string;
-	if (topBarDisplayName) topBarDisplayName.textContent = truncateText(self_displayname, 16);
-	if (topBarOpponentDisplayName) topBarOpponentDisplayName.textContent =  truncateText(opponent_displayname, 16);
-}
 
 export function updateProfileUI(self_id: string, displayName: string | null, userName?: string): void {
 	selfId = self_id;
-	if (topBarDisplayName) topBarDisplayName.textContent = truncateText(displayName, 16);
+	if (topBarDisplayName) topBarDisplayName.textContent = truncateText(displayName, 12);
 	if (menuDisplayName) menuDisplayName.textContent = truncateText(displayName, 64);
 	if (menuUsername && userName !== undefined) menuUsername.textContent = "@" + truncateText(userName, 64);
 }
 
-export function updateOpponentUI(opponentDisplayName: string, id: string) {
+export function updateOpponentUI(opponentDisplayName: string, id: string, avatar: string) {
 
 	if (topBarOpponentDisplayName) topBarOpponentDisplayName.textContent =  truncateText(opponentDisplayName, 16);
 	if (topBarOpponentId) topBarOpponentId.textContent = id;
+	if (topBarOpponentPicture) topBarOpponentPicture.innerHTML = avatar;
 }
 
 //------------------------------------------------------------------------MANU
@@ -277,11 +272,6 @@ export const friendsListInviteUL =
 export const invitePlayersCurrentGameButton =
 	document.getElementById("invite_players_current") as HTMLButtonElement;
 
-export const invitePlayersMatchButton =
-	document.getElementById("invite_players_match") as HTMLButtonElement;
-
-export const invitePlayersTournamentButton =
-	document.getElementById("invite_players_tournament") as HTMLButtonElement;
 
 export function renderFriendsList( ul_list: HTMLUListElement, friends: any[], onSelect: (id: string) => void) {
 	ul_list.innerHTML = "";
@@ -441,7 +431,7 @@ export interface MatchData {
 	size: string;
 	creator: string;
 	players: string[];
-	status: "Waiting" | "Ready" | "Play";
+	status: "Waiting" | "Ready" | "In Game";
 }
 
 export let gameData: MatchData | null = null;
@@ -472,6 +462,10 @@ export let submitTournamentCreationButton: HTMLButtonElement;
 
 export const playRequestUsernameInput =
 	document.getElementById("play_request_username") as HTMLInputElement;
+
+
+export const InviteManualSubmitButton =
+	document.getElementById("invite_manual_submit") as HTMLButtonElement;
 
 export const gameCreateSubmitButton = 
 	document.getElementById("create_submit_button") as HTMLButtonElement;
@@ -771,7 +765,7 @@ export function renderProfilePicGrid(): void {
 
 
 
-function truncateText(value: string | null, max: number): string {
+export function truncateText(value: string | null, max: number): string {
 	if (!value)
 		return "";
 

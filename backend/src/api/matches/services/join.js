@@ -15,7 +15,7 @@ module.exports = function joinMatch(userManager, user, match_id) {
 		}
 		return { status: 400, msg: "You are already in a game/tournament." };
 	}
-    else if (!match.isPublic() && !user.hasPendingRequest("match", match_id, match.getCreator().getId())) {
+    else if (!match.isPublic() && !user.hasPendingRequest("matches", match_id, match.getCreator().getId())) {
 
         return ({status: 404, msg: "Cannot join private match."});
     }

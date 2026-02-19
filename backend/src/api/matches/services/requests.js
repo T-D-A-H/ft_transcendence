@@ -11,7 +11,7 @@ module.exports = function matchesRequests(userManager, user) {
 
 	for (const req of request_list.values()) {
 
-        if (req.type !== "match")
+        if (req.type !== "matches")
             continue ;
 
         const targetUser = userManager.getUserByID(req.user);

@@ -37,7 +37,7 @@ async function tournamentsHandler(fastify, options) {
         if (!targetTournament) {
             return reply.code(404).send({ msg: "Tournament not found." });
         }
-        if (targetTournament.isPublicTournament() === false)
+        if (targetTournament.isPublic()) === false)
             return reply.code(404).send({ msg: "Tournament is private." });
             
         const result = userManager.joinTournamentRequest(req.user, targetTournament);

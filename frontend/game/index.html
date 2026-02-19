@@ -16,18 +16,16 @@
 			<div class="pong-panel relative z-10">
 				
 				<!-- TOP bar: BUTTON STACK -->
-				<div class="pong-top-bar">
+				<div class="pong-top-bar flex items-center justify-between">
 
 
 					<!-- Right: Opponent -->
-					<div id="opponent_profile_button" class="pong-top-bar-profiles items-start invisible-slot">
-						<div>
-							<span id="opponent_id" class="pong-top-bar-names hidden"></span>
-							<span id="opponent_displayname" class="pong-top-bar-names hidden">@player_2</span>
-							<div id="opponent_profile_image" class="avatar-placeholder">&#9863;</div>
-						</div>
+					<div id="opponent_profile_button" class="w-32 shrink-0 flex flex-col items-start invisible-slot">
+			
+						<span id="opponent_displayname" class="pong-top-bar-names truncate w-full text-left"></span>
+						<div id="opponent_profile_image"class="avatar-placeholder">&#9863;</div>
+					
 					</div>
-
 					<!-- Center: notifications -->
 					<div class="pong-top-bar-notification hidden opacity-0 pointer-events-none" id="notify-box">
 						<div id="notify-content" class="flex items-center gap-3">
@@ -39,11 +37,9 @@
 
 
 					<!-- Right: Profile -->
-					<button id="menu_button" class="pong-top-bar-profiles items-end">
-						<div>
-							<span id="self_displayname" class="pong-top-bar-names hidden">Valhallao</span>
-							<div id="self_profile_image" class="avatar-placeholder">&#9865;</div>
-						</div>
+					<button id="menu_button" class="w-32 shrink-0 flex flex-col items-end">
+						<span id="self_displayname" class="pong-top-bar-names truncate w-full text-right invisible-slot"></span>
+						<div id="self_profile_image" class="avatar-placeholder">&#9865;</div>
 					</button>
 
 				</div>
@@ -276,6 +272,10 @@
 						<h2 class="pong-modal-top-text">Invite Friends</h2>
 					</div>
 					<div id="online_friends" class="pong-suboptions">
+						<div class="pong-box flex flex-row gap-2 pb-0 pt-2 mb-2 items-center justify-center">
+							<input id="play_request_username" type="text" class="pong-input-field text-[10px] placeholder:text-[10px]" placeholder="Manual Invite"/>
+							<button id="invite_manual_submit" class="pong-submit-button h-1/2 text-[7px]  active-border ml-auto">INVITE</button>
+						</div>
 						<ul id="friends_list_invite_ul" class="pong-tournament-list"></ul>
 					</div>
 				</div>
@@ -368,7 +368,6 @@
 				    </div>
 				</div>
 
-
 				<!-- Create Game Modal -->
 				<div id="create-game-modal" class="pong-modal hidden">
 
@@ -409,13 +408,8 @@
 								Post a match online for anyone to join and/or invite player or friend to play directly with them.
 							</p>
 								
-								<div class="pong-modal-subobtions flex-col items-center mt-4">
-									<input id="play_request_username" type="text" class="pong-input-field text-[10px] placeholder:text-[10px] mb-0" placeholder="Enter Username Manually"/>
-									<span class="text-[6px] text-[color:var(--pong-gray)]">-- OR --</span>
-									<button id="invite_players_match" class="pong-invite-button ">
-											<span>Invite Friends</span>
-											<span class="pong-icon pr-1">&#128386;</span>
-									</button>
+								<div class="pong-modal-subobtions items-center mt-12 text-center">
+									<span class="text-[8px] text-[color:var(--pong-gray)]">You can later invite friends from search or online friends list.</span>
 								</div>
 
 						</div>
@@ -431,10 +425,9 @@
 									<input id="tournament_size" type="number" min="4" max="64" step="2" class="pong-input-field text-center text-[12px] placeholder:text-[9px] h-[45px] w-28" placeholder="Party Size" />
 									<button type="button" id="increment" class="pong-button-small">+</button>
 								</div>
-								<button id="invite_players_tournament" class="pong-invite-button">
-										<span>Invite Friends</span>
-										<span class="pong-icon pr-1">&#128386;</span>
-								</button>
+								<div class="pong-modal-subobtions flex-col items-center text-center">
+									<span class="text-[8px] text-[color:var(--pong-gray)]">You can later invite friends from search or online friends list.</span>
+								</div>
 							</div>
 						</div>
 

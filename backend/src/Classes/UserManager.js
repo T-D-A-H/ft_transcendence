@@ -164,7 +164,7 @@ class UserManager {
         if (user) { LOGGER(200, "UserManager.js", "logoutUser", user.getUsername());
 
             user.setConnected(false);
-            this.disconnectUser(user)
+            this.disconnectUser(user);
             return true;
         }
         LOGGER(400, "UserManager.js", "logoutUser", userId + "already logged out.");
@@ -215,6 +215,7 @@ class UserManager {
     }
 
     sendMirror(match) {
+
         match.players.forEach(user => {
             if (user && typeof user !== 'string' && user.getDisplaySide) {
                 if (user.getDisplaySide() === match.getPlayerSides(user)) {
@@ -239,6 +240,7 @@ class UserManager {
                 match_id: match.getId(),
                 self_displayname: tournament.getPlayerAlias(user1.getId()), 
                 opponent_display_name: tournament.getPlayerAlias(user2.getId()),
+                opponent_avatar: user2.getAvatar()
                 
             });
             user2.notify("GAME_READY", "Game Starting", {
@@ -247,6 +249,7 @@ class UserManager {
                 match_id: match.getId(),
                 self_displayname: tournament.getPlayerAlias(user2.getId()), 
                 opponent_display_name: tournament.getPlayerAlias(user1.getId()), 
+                opponent_avatar: user1.getAvatar()
             });
         }
         else {
@@ -256,7 +259,8 @@ class UserManager {
                 match_id: match.getId(),
                 id: user2.getId(), 
                 display_name: user2.getDisplayName(), 
-                username: user2.getUsername()
+                username: user2.getUsername(),
+                opponent_avatar: user2.getAvatar()
                 
             });
             user2.notify("GAME_READY", "Game Starting", {
@@ -265,6 +269,7 @@ class UserManager {
                 id: user1.getId(), 
                 display_name: user1.getDisplayName(), 
                 username: user1.getUsername(), 
+                opponent_avatar: user1.getAvatar()
             });
         }
     }
@@ -363,8 +368,8 @@ class UserManager {
                 p.setIsPlaying(false);
             }
         });
-
-        this.sendMirror(match);
+        if (match.getType() !== "2player")
+            this.sendMirror(match);
         this.removeMatch(match);
     }
 
@@ -383,7 +388,8 @@ class UserManager {
                 else if (match.playersReady()) {
 
                     match.setSTARTED(true);
-                    this.sendMirror(match);
+                    if (match.getType() !== "2player")
+                        this.sendMirror(match);
                 }
             }
             else {
@@ -570,6 +576,7 @@ class UserManager {
 
                 tournament.setReady();
     			this.createNewTournamentMatches(tournament.getPlayers(), tournament);
+                tournament.inGame = true;
     		}
     		else if (tournament.isRoundFinished()) {
 

@@ -31,7 +31,7 @@ module.exports = function sendTournamentInvite(userManager, user, tournamentId, 
         return { status: 400, msg: targetUser.getUsername() + " is not online." };
 	}
     
-	targetUser.addPendingRequest("tournament", tournamentId, user.getId());
+	targetUser.addPendingRequest("tournaments", tournamentId, user.getId());
 
 	targetUser.notify("REQUEST", `${user.getUsername()} sent you an invite request.`, {type: "tournaments", id: tournamentId});
 

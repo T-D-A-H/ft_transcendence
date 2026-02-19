@@ -11,7 +11,7 @@ module.exports = function tournamentsRequests(userManager, user) {
 
 	for (const req of request_list.values()) {
 
-        if (req.type !== "tournament")
+        if (req.type !== "tournaments")
             continue ;
 
         const targetUser = userManager.getUserByID(req.user);

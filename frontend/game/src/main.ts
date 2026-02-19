@@ -7,12 +7,12 @@ import { loginModal, closeLoginButton, logoutButton, updateSessionButtons, usern
 import { registerModal, closeRegisterButton, submitRegisterButton, regUsernameInput, regDisplaynameInput, regEmailInput, regPasswordInput, alreadyHaveAnAccountButton} from "./ui.js";
 import { twoFAOptionCancelButton, twoFAModal, twoFAOptionModal, twoFAEmailButton, twoFASubmitButton, twoFASkipButton, twoFAAuthButton, twoFAInput, twoFACancelButton} from "./ui.js";
 import { startMatchButton, exitMatchButton, currentGameButton, currentGameModal, currentGameCancel} from "./ui.js";
-import {setGameData, currentGameStatus, currentGameSize, currentGameCreator, currentGamePlayers, currentGameVisibility, findGameTypeOptions} from "./ui.js";
+import {setGameData, currentGameStatus, currentGameSize, truncateText, currentGameCreator, currentGamePlayers, currentGameVisibility, findGameTypeOptions} from "./ui.js";
 import { playRequestSendButton, playRequestUsernameInput, requestListMatchesUL, requestsListFriendsUL, requestListTournamentsUL, currentGameType, showCanvas, getSelfId, currentGameSubType} from "./ui.js";
 import { menuButtons, createGameModal, MatchData, requestsTypeButtons, requestsTypeOptions, requestGameModal,requestFriendsButton, currentGameExit} from "./ui.js";
-import { submitTournamentCreationButton, tournamentSizeInput} from "./ui.js";
-import { findGameButton, findGameCancelButton, findGameModal, findMatchesListUL, findTournamentsListUL, getSelectedMode} from "./ui.js";
-import { invitePlayersModal, invitePlayersCancelButton, invitePlayersCurrentGameButton, invitePlayersMatchButton, invitePlayersTournamentButton } from "./ui.js";
+import { submitTournamentCreationButton, tournamentSizeInput, InviteManualSubmitButton} from "./ui.js";
+import { findGameButton, findGameCancelButton, findGameModal, findMatchesListUL, findTournamentsListUL, getSelectedMode, canvas} from "./ui.js";
+import { invitePlayersModal, invitePlayersCancelButton, invitePlayersCurrentGameButton } from "./ui.js";
 import { renderGamesList, createGameButton, createGameCancelButton, gameCreateSubmitButton, requestsCancelButton} from "./ui.js";
 import { show, hide, showMenu, notificationBox, notificationBoxText, renderPendingRequests, requestPlayButton} from "./ui.js";
 import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisible, updateOpponentUI, updateProfileUI,  googleLoginButton } from "./ui.js";
@@ -454,41 +454,15 @@ async function createMatch(match_type: string) {
 	try {
 	
 		const response = await httpEvent("POST", `/api/matches/`, { type: match_type,  visibility: getGameVisibility() });
+		showNotification(response.msg)
 		if (response.status !== 200) {
-			return showNotification(response.msg);
+			return ;
 		}
 		setCurrentMatchId(response.match_id);
-		if (match_type !== "online") {
-			return;
-		}
-		const targetUsername = playRequestUsernameInput.value.trim();
-		if (targetUsername.length === 0 && getGameVisibility() === false) {
-			return showNotification("Username field empty");
-		}
-
-		// Si escribió username manualmente, invitar directamente
-		if (targetUsername.length > 0) {
-			try {
-					const response2 = await httpEvent("POST", `/api/matches/${getCurrentMatchId()}/invites`, { username: targetUsername});
-					showNotification(response2.msg);
-					if (response2.status !== 200) {
-						return ;
-					}
-			} catch (err: any) {
-					console.error(err?.msg ?? "Request failed");
-			}
-		} else {
-			hide(createGameModal);
-			const ul = document.getElementById("friends_list_invite_ul") as HTMLUListElement;
-			const onlineFriendsContainer = document.getElementById("online_friends");
-			
-			setInviteContext("match", getCurrentMatchId());
-			show(invitePlayersModal);
-			
-			// Asegurar que el contenedor de la lista es visible
-			if (onlineFriendsContainer) show(onlineFriendsContainer);
-			if (ul) renderInviteFriendsList(ul);
-		}
+		hide(createGameModal);
+		setGameType(GameType.MATCH);
+		updateCurrentGame("matches");
+		show(currentGameModal);
 	}
 	catch (err: any) {
 		console.error(err?.msg ?? "Request failed");
@@ -496,116 +470,71 @@ async function createMatch(match_type: string) {
 }
 
 async function createTournament() {
-		const size = tournamentSizeInput.value;
-		if (size.length === 0) return;
 
-		const targetUsername = playRequestUsernameInput.value.trim();
-		try {
-				const response = await httpEvent("POST", `/api/tournaments/`, { size: size, visibility: getGameVisibility() });
-				showNotification(response.msg);
-				if (response.status !== 200) {
-					return ;
-				}
-				setCurrentTournamentId(response.tournament_id);
+	const size = tournamentSizeInput.value;
 
-				if (targetUsername.length > 0) {
-						try {
-				// ! CAMBIAR 
-								const response2 = await httpEvent(
-										POST,
-										`/api/tournaments/${getCurrentTournamentId()}/invites`, // ← FIX: TOURNAMENT_URL
-										{ username: targetUsername }
-								);
-								showNotification(response2.msg);
-						} catch (err: any) {
-								console.error(err?.msg ?? "Request failed");
-						}
-				} else {
-						hide(createGameModal);
-						const ul = document.getElementById("friends_list_invite_ul") as HTMLUListElement;
-						const onlineFriendsContainer = document.getElementById("online_friends");
-
-						setInviteContext("tournament", getCurrentTournamentId()); // ← FIX: "tournament"
-						show(invitePlayersModal);
-						if (onlineFriendsContainer) show(onlineFriendsContainer);
-						if (ul) renderInviteFriendsList(ul);
-				}
-
-		} catch (err: any) {
-				console.error(err?.msg ?? "Request failed");
-		}
+	if (size.length === 0) {
+		showNotification("You must select a tournament size.");
+		return;
+	}
+	try {
+			const response = await httpEvent("POST", `/api/tournaments/`, { size: size, visibility: getGameVisibility() });
+			showNotification(response.msg);
+			if (response.status !== 200) {
+				return ;
+			}
+			setCurrentTournamentId(response.tournament_id);
+			hide(createGameModal);
+			setGameType(GameType.TOURNAMENT);
+			updateCurrentGame("tournaments");
+			show(currentGameModal);
+	} catch (err: any) {
+			console.error(err?.msg ?? "Request failed");
+	}
 }
 
 //-------------------------------------------------------------------------------------------------CREATE-GAME
 //-------------------------------------------------------------------------------------------------INVITE-PLAYERS
 
-invitePlayersMatchButton.onclick = async () => {
-		const matchId = getCurrentMatchId();
-		if (!matchId) {
-				await createMatch(getSelectedMode());
-				return;
-		}
-		hide(createGameModal);
-		const ul = document.getElementById("friends_list_invite_ul") as HTMLUListElement;
-		const onlineFriendsContainer = document.getElementById("online_friends");
-		
-		setInviteContext("match", matchId);
-		show(invitePlayersModal);
-		if (onlineFriendsContainer) show(onlineFriendsContainer);
-		if (ul) renderInviteFriendsList(ul);
-};
 
-invitePlayersTournamentButton.onclick = async () => {
-		const tournamentId = getCurrentTournamentId();
-		if (!tournamentId) {
-				showNotification("Create the tournament first (press SUBMIT).");
-				return;
-		}
-		hide(createGameModal);
-		const ul = document.getElementById("friends_list_invite_ul") as HTMLUListElement;
-		const onlineFriendsContainer = document.getElementById("online_friends");
-
-		setInviteContext("tournament", tournamentId);
-		show(invitePlayersModal);
-		if (onlineFriendsContainer) show(onlineFriendsContainer);
-		if (ul) renderInviteFriendsList(ul);
-};
-
-const inviteManualSend = document.getElementById("invite_manual_send") as HTMLButtonElement;
-if (inviteManualSend) {
-		inviteManualSend.onclick = async () => {
-				const input = document.getElementById("play_request_username2") as HTMLInputElement;
-				const username = input?.value.trim();
-				if (!username) return showNotification("Enter a username.");
-				await sendInviteManual(username);
-				if (input) input.value = "";
-		};
-}
 
 invitePlayersCurrentGameButton.onclick = async () => {
-		hide(currentGameModal);
-		const ul = document.getElementById("friends_list_invite_ul") as HTMLUListElement;
-		const onlineFriendsContainer = document.getElementById("online_friends");
-		
-		const tournamentId = getCurrentTournamentId();
-		const matchId = getCurrentMatchId();
 
-		if (tournamentId) {
-				setInviteContext("tournament", tournamentId);
-		} else if (matchId) {
-				setInviteContext("match", matchId);
-		} else {
-				showNotification("No active game found.");
-				return;
-		}
-		show(invitePlayersModal);
-		if (onlineFriendsContainer) show(onlineFriendsContainer);
-		if (ul) renderInviteFriendsList(ul);
+	hide(currentGameModal);
+	
+	const tournamentId = getCurrentTournamentId();
+	const matchId = getCurrentMatchId();
+	if (tournamentId) {
+			setInviteContext("tournament", tournamentId);
+	} else if (matchId) {
+			setInviteContext("match", matchId);
+	} else {
+			showNotification("No active game found.");
+			return;
+	}
+	const onlineFriendsContainer = document.getElementById("online_friends") as HTMLElement;
+	show(invitePlayersModal);
+	show(onlineFriendsContainer);
+	renderInviteFriendsList(friendsListInviteUL);
 };
 
+InviteManualSubmitButton.onclick = async () => {
+
+	
+	const username = playRequestUsernameInput.value.trim();
+
+	if (username.length === 0) {
+		showNotification("Enter Username to invite");
+		return;
+	}
+	await sendInviteManual(username);
+};
+
+
 invitePlayersCancelButton.onclick = () => {
-		clearInviteContext();
-		hide(invitePlayersModal);
+	clearInviteContext();
+	hide(invitePlayersModal);
+	show(currentGameModal);
 };
 
 export async function renderInviteFriendsList(container: HTMLUListElement): Promise<void> {
@@ -661,7 +590,7 @@ export async function renderInviteFriendsList(container: HTMLUListElement): Prom
 						btn.style.cursor = "not-allowed";
 				} else {
 						btn.onclick = async () => {
-								await sendInviteToFriend(friend.username, btn);
+							await sendInviteToFriend(friend.username, btn);
 						};
 				}
 
@@ -672,44 +601,35 @@ export async function renderInviteFriendsList(container: HTMLUListElement): Prom
 //-------------------------------------------------------------------------------------------------INVITE-PLAYERS
 //-------------------------------------------------------------------------------------------------CURRENT-GAME
 
-currentGameButton.onclick = async () => updateCurrentGame();
+currentGameButton.onclick = async () => updateCurrentGame("matches");
 
 currentGameCancel.onclick = () => hide(currentGameModal);
 
-export async function updateCurrentGame() {
+export async function updateCurrentGame(url_type: string) {
 
-	const type = getGameType();
-	let url_type = "tournaments";
-	if (type === GameType.AI || type === GameType.MATCH || type === GameType.TWO_PLAYER)
-		url_type = "matches";
-	else if (type === GameType.TOURNAMENT)
-		url_type = "tournaments";
 	
 	try {
 
-		let res = await httpEvent("GET", `/api/${url_type}/current`);
+		const res = await httpEvent("GET", `/api/${url_type}/current`);
 		
-		if (res.status === 302)
-			res = await httpEvent("GET", `/api/${res.target}/current`);
-		if (res.status !== 200)
-			return showNotification(res.msg);
 		show(currentGameModal);
 		const data = res!.target;
 		if (data.match_id)
 			setCurrentMatchId(data.match_id);
 		if (data.tournament_id)
 			setCurrentTournamentId(data.tournament_id);
-		currentGameType.textContent = data.type;
-		currentGameSubType.textContent = data.sub_type;
-		currentGameVisibility.textContent = data.visibility;
-		currentGameSize.textContent = data.size.toString();
-		currentGameStatus.textContent = data.status;
-		currentGameCreator.textContent = data.creator;
-		currentGamePlayers.innerHTML = data.players.join(', ');
+		currentGameType.textContent = truncateText(data.type, 12);
+		currentGameSubType.textContent = truncateText(data.sub_type, 12);
+		currentGameVisibility.textContent = truncateText(data.visibility, 12);
+		currentGameSize.textContent = truncateText(data.size.toString(), 12);
+		currentGameStatus.textContent = truncateText(data.status, 12);
+		currentGameCreator.textContent = truncateText(data.creator, 12);
+		currentGamePlayers.innerHTML = data.players.map((player: string) => truncateText(player, 12)).join(', ');
 
 	} catch (err: any) {
 
-		showNotification(err?.msg ?? "Request failed");
+		if (err?.status === 302)
+			await updateCurrentGame(err?.target);
 	}
 }
 
@@ -732,6 +652,7 @@ startMatchButton.onclick = async () => {
 					show(startMatchButton);
 					return showNotification(response.msg);
 				}
+				show(canvas);
 				hide(currentGameModal);
 				setGameStatus(GameStatus.IN_GAME);
 				initKeyHandling();

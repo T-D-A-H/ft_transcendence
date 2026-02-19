@@ -21,20 +21,20 @@ module.exports = function respondTournamentInvite(userManager, user, tournamentI
 
         return ({ status: 500, msg: "Couldn't find tournament creator." });
     }
-    if (!user.hasPendingRequest("tournament", tournamentId, creatorId)) {
+    if (!user.hasPendingRequest("tournaments", tournamentId, creatorId)) {
 
         return ({status: 404, msg: "Couldn't find tournament in pending requests."});
     }
     else if (accept === false) {
 
     	creator.notify("NOTIFICATION", `${user.getUsername()} declined your invite.`);
-    	user.removePendingRequest("tournament", tournamentId, creatorId);
+    	user.removePendingRequest("tournaments", tournamentId, creatorId);
 
         return { status: 404, msg: `You declined ${creator.getUsername()}'s invite.`};
     }
     else if (creator.getIsConnected() === false) {
 
-        user.removePendingRequest("tournament", tournamentId, creatorId);
+        user.removePendingRequest("tournaments", tournamentId, creatorId);
         return { status: 404, msg: `${creator.getUsername()} is not online.`};
     }
     else if (creator.getIsPlaying() === true) {
@@ -45,7 +45,7 @@ module.exports = function respondTournamentInvite(userManager, user, tournamentI
 
         userManager.addToTournament(user, tournament);
 
-        user.removePendingRequest("tournament", tournamentId, creatorId);
+        user.removePendingRequest("tournaments", tournamentId, creatorId);
 
         targetUser.notify("NOTIFICATION", `${user.getUsername()} accepted your tournament invite.`);
 

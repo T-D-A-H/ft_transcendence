@@ -9,10 +9,13 @@ import {
   updateOpponentUI,
   exitMatchButton,
   startMatchButton,
+  topBarOpponentButton, 
+  makeVisible, 
+  makeInvisible
 } from "./ui.js";
 
 import {showNotification} from "./main.js";
-import {getDisplaySide, getSCORES, setSCORES, setDisplaySide} from "./vars.js";
+import {getDisplaySide, getSCORES, setSCORES, setDisplaySide, GameType, setGameType} from "./vars.js";
 
 let aiDifficulty = 3; // Difficulty level from 1 (easiest) to 5 (hardest)
 const aiErrorLevels = [0.35, 0.25, 0.18, 0.1, 0.04];
@@ -320,7 +323,15 @@ export function startAiMode(): void {
   aiLastFrame = 0;
   aiNextDecisionAt = 0;
   setSCORES(0, 0);
-  updateOpponentUI("AI", "");
+  setGameType(GameType.AI);
+  makeVisible(topBarOpponentButton);
+  if (aiDifficulty === 1) 
+    updateOpponentUI("AI PERRY", "", "▥");
+	else if (aiDifficulty === 3)
+		updateOpponentUI("AI MORTY", "", "▦");
+	else if (aiDifficulty === 5)
+		updateOpponentUI("AI RICK", "", "▩");
+
 
   resetAiBall(1);
 
@@ -349,6 +360,7 @@ export function stopAiMode(): void {
   }
   document.removeEventListener("keydown", onAiKeyDown);
   document.removeEventListener("keyup", onAiKeyUp);
+  makeInvisible(topBarOpponentButton);
   showMenu();
 }
 
