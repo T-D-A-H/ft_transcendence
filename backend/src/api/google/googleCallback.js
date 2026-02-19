@@ -52,6 +52,12 @@ function googleCallback(userManager, fastify, db, setTokenCookie) {
                         }
                     );
                 })
+                await new Promise((resolve) => {
+                    db.run("INSERT OR IGNORE INTO stats (user_id) VALUES (?)", [userId], (err) => {
+                        if (err) console.error("Error creating stats for Google user:", err);
+                        resolve();
+                    });
+                });
             }
             else if (user.oauth_provider === "google" && user.oauth_id === userInfo.id) {
                 userId = user.id;
@@ -62,6 +68,28 @@ function googleCallback(userManager, fastify, db, setTokenCookie) {
                 return reply.redirect('/?error_google=email_exists_different_provider');
             }
 
+            const statsRow = await new Promise((resolve, reject) => {
+                db.get("SELECT * FROM stats WHERE user_id = ?", [userId], (err, row) => {
+                    err ? reject(err) : resolve(row);
+                });
+            });
+
+            const userStatsData = {
+                local_played: statsRow?.local_played || 0,
+                local_won: statsRow?.local_won || 0,
+                online_played: statsRow?.online_played || 0,
+                online_won: statsRow?.online_won || 0,
+                tournaments_played: statsRow?.tournaments_played || 0,
+                tournaments_won: statsRow?.tournaments_won || 0,
+                ai_played: statsRow?.ai_played || 0,
+                ai_won: statsRow?.ai_won || 0,
+                matches: statsRow?.matches || 0,
+                total_wins: statsRow?.total_wins || 0,
+                win_rate: statsRow?.win_rate || 0,
+                current_streak: statsRow?.current_streak || 0,
+                best_streak: statsRow?.best_streak || 0
+            };
+
             // UserManager
             let player = userManager.getUserByID(userId);
             if (!player) {
@@ -69,7 +97,8 @@ function googleCallback(userManager, fastify, db, setTokenCookie) {
                     id: userId,
                     username: finalUsername,
                     display_name: userInfo.email.split('@')[0],
-                    socket: null
+                    socket: null,
+                    stats: userStatsData  // ← ahora sí
                 });
                 userManager.addUser(player);
             }

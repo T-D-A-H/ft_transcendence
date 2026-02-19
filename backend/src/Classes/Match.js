@@ -73,7 +73,6 @@ class Match {
 		}
 	}
 
-
 	updateMatch() {
 
 		this.game.updatePlayerPaddle(this.YDir);

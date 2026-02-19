@@ -88,7 +88,6 @@ export async function getProfileInfo(reset: boolean) {
 		return;
 	}
 	try {
-
 		const response = await httpEvent(GET, `/api/users/me`);
 		if (response.status !== 200)
 			return ;

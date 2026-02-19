@@ -236,7 +236,7 @@ async function saveAiMatch(
   aiScore: number,
 ): Promise<void> {
   try {
-    await fetch("/api/match-result", {
+    await fetch("/api/matches/results", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -328,7 +328,7 @@ export function startAiMode(): void {
   if (aiDifficulty === 1) 
     updateOpponentUI("AI PERRY", "", "▥");
 	else if (aiDifficulty === 3)
-		updateOpponentUI("AI MORTY", "", "▦");
+		updateOpponentUI("AI MORTY", "", "▦");db
 	else if (aiDifficulty === 5)
 		updateOpponentUI("AI RICK", "", "▩");
 

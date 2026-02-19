@@ -72,14 +72,13 @@ async function startServer() {
 	
 	await fastify.register(websocket);
 
-	
 	fastify.register(require('./api/users/users.js'), { prefix: '/api/users', db, saltRounds, bcrypt, fastify, authFromCookie, userManager});
 
     fastify.register(require('./api/sessions/sessions.js'), { prefix: '/api/sessions', db, bcrypt, fastify, setTokenCookie, userManager});
 
 	fastify.get("/auth/google/callback", googleCallback(userManager, fastify, db, setTokenCookie));
 
-    fastify.register(require('./api/matches/matches.js'), { prefix: '/api/matches', authFromCookie, fastify, userManager});
+    fastify.register(require('./api/matches/matches.js'), { prefix: '/api/matches', authFromCookie, fastify, userManager, db});
 
 	fastify.register(require('./api/tournaments/tournaments.js'), { prefix: '/api/tournaments', authFromCookie, fastify, userManager});
 
