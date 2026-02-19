@@ -70,9 +70,9 @@ class UserManager {
         else if (resultType === "tournament") {
              query = `UPDATE stats SET tournaments_played = tournaments_played + 1, matches = matches + 1 ${isWin ? ", tournaments_won = tournaments_won + 1, total_wins = total_wins + 1" : ""} ${streakLogic} WHERE user_id = ?`;
         }
-        else if (resultType === "ai") {
-            query = `UPDATE stats SET ai_played = ai_played + 1, matches = matches + 1 ${isWin ? ", ai_won = ai_won + 1" : ""} WHERE user_id = ?`;
-        }
+        // else if (resultType === "ai") {
+        //     query = `UPDATE stats SET ai_played = ai_played + 1, matches = matches + 1 ${isWin ? ", ai_won = ai_won + 1" : ""} WHERE user_id = ?`;
+        // }
 
         if (query) {
             this.db.run(query, [userId], (err) => { 
@@ -184,9 +184,24 @@ class UserManager {
                 this.stopMatch(match);
                 return ;
             }
-            const loserIndex = match.players.indexOf(user);
-            const winnerIndex = 1 - loserIndex;
-            const loserAlias = user.getDisplayName();
+
+            if (match.getType() === "2player") {
+
+                // 4. Limpiar estado de jugadores
+                match.players[0].notify("WIN", ``);
+                match.players.forEach(p => {
+                    if (p) {
+                        p.setMatch(null);
+                        p.setIsPlaying(false);
+                    }
+                });
+                this.removeMatch(match);
+                return;
+            }
+
+            let loserIndex = match.players.indexOf(user);
+            let winnerIndex = 1 - loserIndex;
+            let loserAlias = user.getDisplayName();
 
             match.players[winnerIndex].notify("NOTIFICATION", `${loserAlias} disconnected.`);
             match.setWINNER(winnerIndex);
@@ -286,7 +301,6 @@ class UserManager {
     }
 
 	removeMatch(match) { LOGGER(200, "UserManager.js", "removeMatch", match.id);
-        
 		this.matches.delete(match.id);
 	}
 
@@ -306,14 +320,20 @@ class UserManager {
             const p2_id = (matchType === "2player" || matchType.startsWith("ai"))
                 ? null
                 : (players[1]?.getId() ?? null);
-            const w_id = winnerUser.getId();
-
+            let w_id = winnerUser.getId();
+			if (matchType === "2player") {
+                if (scores[1] > scores[0]) {
+                    w_id = p1_id;
+                }  else
+                    w_id = p2_id;
+            }
             this.db.run(
                 `INSERT INTO matches (player1_id, player2_id, score_p1, score_p2, winner_id, game_mode, played_at)
                 VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
                 [p1_id, p2_id, scores[0], scores[1], w_id, matchType],
                 (err) => { if (err) console.error("Error inserting match history:", err); }
             );
+            
         }
 
         // 2. Actualizar estadísticas según el tipo de partida
@@ -323,14 +343,6 @@ class UserManager {
             if (user) {
                 const userWon = this.stats._handleLocal(user, scores);
                 user.notify("WIN", userWon ? "You won the local match!" : "You lost the local match!");
-            }
-
-        } else if (matchType.startsWith("ai")) {
-            // IA
-            const user = players[0];
-            if (user) {
-                const userWon = this.stats._handleAI(user, scores);
-                user.notify("WIN", userWon ? "You beat the AI!" : "The AI defeated you.");
             }
 
         } else if (winnerUser && loserUser) {

@@ -7,11 +7,13 @@ const searchMatches = require("./services/search.js");
 const sendMatchInvite = require("./services/invite.js");
 const matchesRequests = require("./services/requests.js");
 const respondMatchInvite = require("./services/respond.js");
+const getMatchHistoryFromDB = require("./services/history.js"); 
+const matchResultHandler = require("./services/matchResult.js"); 
 const LOGGER = require("../../LOGGER.js");
 
 module.exports = async function matchesRoutes(fastify, options) {
 
-    const { userManager, authFromCookie} = options;
+    const { userManager, authFromCookie, db} = options;
 
     // create match
     fastify.post('/', { preHandler: authFromCookie }, async (req, reply) => {
@@ -61,7 +63,6 @@ module.exports = async function matchesRoutes(fastify, options) {
 
     // Get match details
     fastify.get('/current', { preHandler: authFromCookie }, async (req, reply) => {
-
 
     	const result = getMatchDetails(userManager, req.user);
 
@@ -164,6 +165,16 @@ module.exports = async function matchesRoutes(fastify, options) {
                 msg: "History fetched", 
                 target: history 
             });
+        } catch (err) {
+            console.error("Error fetching history:", err);
+            return reply.code(500).send({ status: 500, msg: "Database error" });
+        }
+    });
+
+	fastify.post('/results', { preHandler: authFromCookie }, async (req, reply) => {
+        try {
+        const handler = matchResultHandler(db, fastify, userManager); 
+        return await handler(req, reply);
         } catch (err) {
             console.error("Error fetching history:", err);
             return reply.code(500).send({ status: 500, msg: "Database error" });

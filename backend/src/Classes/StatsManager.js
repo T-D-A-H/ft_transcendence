@@ -50,7 +50,7 @@ class StatsManager {
             online_played: 1,
             online_won: 1,
             total_wins: 1,
-            streak: true   // incrementar streak
+            streak: true
         });
         this._updateDB(winnerUser.getId(), `
             UPDATE stats SET
@@ -131,6 +131,7 @@ class StatsManager {
             local_played: 1,
             local_won: userWon ? 1 : 0
         });
+
         this._updateDB(realUser.getId(), `
             UPDATE stats SET
                 matches      = matches + 1,
@@ -154,14 +155,14 @@ class StatsManager {
 
         this._updateMemory(realUser, {
             matches: 1,
-            ai_played: 1,
-            ai_won: userWon ? 1 : 0
+            local_played: 1,
+            local_won: userWon ? 1 : 0
         });
         this._updateDB(realUser.getId(), `
             UPDATE stats SET
                 matches   = matches + 1,
-                ai_played = ai_played + 1
-                ${userWon ? ", ai_won = ai_won + 1" : ""}
+                local_played = local_played + 1
+                ${userWon ? ", local_won = local_won + 1" : ""}
             WHERE user_id = ?
         `);
 

@@ -1,5 +1,3 @@
-
-
 function signupHandler(db, bcrypt, saltRounds, fastify) {
 	return async function registerHandler(req, reply) {
 		const body = req.body || {};
@@ -68,6 +66,21 @@ function signupHandler(db, bcrypt, saltRounds, fastify) {
 					}
 				);
 			});
+
+			await new Promise((resolve, reject) => {
+                db.run(
+                    "INSERT INTO stats (user_id) VALUES (?)", 
+                    [userId], 
+                    function(err) {
+                        if (err) {
+                            console.error("Error creating stats for user:", err);
+                            resolve(); 
+                        } else {
+                            resolve();
+                        }
+                    }
+                );
+            });
 
 			//  Generar token JWT temporal para configurar 2FA
 			const setupToken = fastify.jwt.sign(

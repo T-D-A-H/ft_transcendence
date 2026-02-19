@@ -233,7 +233,7 @@ async function saveAiMatch(
   aiScore: number,
 ): Promise<void> {
   try {
-    await fetch("/api/match-result", {
+    await fetch("/api/matches/results", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },

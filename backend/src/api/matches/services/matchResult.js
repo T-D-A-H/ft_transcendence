@@ -1,0 +1,68 @@
+module.exports = function buildMatchResultHandler(db, fastify, userManager) {
+    return async function matchResultHandler(request, reply) {
+        const token = request.cookies?.accessToken;
+        if (!token) {
+            return reply.code(401).send({ error: "Unauthorized" });
+        }
+        
+        let decoded;
+        try {
+            decoded = fastify.jwt.verify(token);
+        } catch {
+            return reply.code(401).send({ error: "Invalid token" });
+        }
+        
+        const { scorePlayer, scoreOpponent, opponentId } = request.body || {};
+        const playerScore = Number(scorePlayer);
+        const oppScore = Number(scoreOpponent);
+        let oppId = (opponentId && opponentId > 0) ? Number(opponentId) : null;
+        
+        const isAi = !oppId; 
+
+        if (!Number.isFinite(playerScore) || !Number.isFinite(oppScore)) {
+            return reply.code(400).send({ error: "Invalid scores" });
+        }
+        
+        const userId = decoded.id;
+        
+        const realUser = userManager.getUserByID(userId);
+        if (!realUser) {
+            return reply.code(404).send({ error: "User not found" });
+        }
+
+        let winnerId = null;
+        if (playerScore > oppScore) {
+            winnerId = userId;
+        } else if (oppScore > playerScore) {
+            winnerId = oppId ? oppId : null;
+        }
+        
+        const scores = [oppScore, playerScore]; 
+        
+        const runQuery = (query, params) => {
+            return new Promise((resolve, reject) => {
+                db.run(query, params, function(err) {
+                    if (err) reject(err);
+                    else resolve(this);
+                });
+            });
+        };
+
+        try {
+            await runQuery(
+                `INSERT INTO matches (player1_id, player2_id, score_p1, score_p2, winner_id, game_mode, is_ai_match)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [userId, oppId, playerScore, oppScore, winnerId, "CLASSIC", isAi ? 1 : 0]
+            );
+            if (isAi) {
+                userManager.stats._handleLocal(realUser, scores);
+            }
+
+            return reply.code(200).send({ status: 200, msg: "Match saved successfully" });
+
+        } catch (err) {
+            fastify.log.error(err);
+            return reply.code(500).send({ error: "Database error" });
+        }
+    };
+};

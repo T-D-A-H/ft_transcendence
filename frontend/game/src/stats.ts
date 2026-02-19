@@ -52,7 +52,9 @@ function formatDate(timestamp: number): string {
  * Renders the top-left "Player Summary" box
  */
 export function renderSummary(stats: UserStats): void {
-    const winRate = stats.totalGames > 0 ? (stats.totalWins / stats.totalGames) * 100 : 0;
+    let total_games = (stats.online_played + stats.tournaments_played);
+    let total_wins = (stats.online_won + stats.tournaments_won);
+    const winRate = total_games > 0 ? (total_wins / total_games) * 100 : 0;
 
     if (totalGamesEl) totalGamesEl.textContent = String(stats.totalGames);
     if (winRateEl) winRateEl.textContent = formatPercent(winRate);
@@ -172,7 +174,7 @@ export async function loadDashboard(): Promise<void> {
 
     try {
         // 1. Pedir Stats Generales (Perfil)
-        const statsResponse = await httpEvent(GET, `/${BASE_URL}/${USER_URL}/me/${INFO_URL}`);
+        const statsResponse = await httpEvent(GET, `/${BASE_URL}/${USER_URL}/me`);
 
         // 2. Pedir Historial de Partidas
         const historyResponse = await httpEvent(GET, `/${BASE_URL}/${MATCH_URL}/history`);

@@ -40,6 +40,7 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 				error: "Credenciales incorrectas" 
 			});
 		}
+		
 		// 3. Validar contraseña
 		const match = await bcrypt.compare(password, user.password);
 		if (!match) {
