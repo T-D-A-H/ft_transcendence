@@ -160,8 +160,6 @@ export async function registerEvents() {
 		setSCORES(data.info?.scores[0], data.info?.scores[1]);
 	});
 	registerHandler("WIN", (data) => {
-		if (getGameType() === GameType.TOURNAMENT)
-			updateProfileUI("", savedDisplayName);
 		setGameType(GameType.NONE)
 		setGameStatus(GameStatus.NOT_IN_GAME);
 		showNotification(data.msg);

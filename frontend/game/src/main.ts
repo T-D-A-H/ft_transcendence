@@ -12,7 +12,7 @@ import { playRequestSendButton, playRequestUsernameInput, requestListMatchesUL, 
 import { menuButtons, createGameModal, MatchData, requestsTypeButtons, requestsTypeOptions, requestGameModal,requestFriendsButton, currentGameExit} from "./ui.js";
 import { submitTournamentCreationButton, tournamentSizeInput, InviteManualSubmitButton} from "./ui.js";
 import { findGameButton, findGameCancelButton, findGameModal, findMatchesListUL, findTournamentsListUL, getSelectedMode, canvas} from "./ui.js";
-import { invitePlayersModal, invitePlayersCancelButton, invitePlayersCurrentGameButton } from "./ui.js";
+import { invitePlayersModal, invitePlayersCancelButton, invitePlayersCurrentGameButton, setSelfId } from "./ui.js";
 import { renderGamesList, createGameButton, createGameCancelButton, gameCreateSubmitButton, requestsCancelButton} from "./ui.js";
 import { show, hide, showMenu, notificationBox, notificationBoxText, renderPendingRequests, requestPlayButton} from "./ui.js";
 import { openMenuButton, notificationAcceptButton, topBarDisplayName, makeVisible, updateOpponentUI, updateProfileUI,  googleLoginButton } from "./ui.js";
@@ -94,7 +94,9 @@ export async function getProfileInfo(reset: boolean) {
 		updateSessionButtons(true);
 
 		const info = response.target;
+		setSelfId(info.user_id);
 		updateProfileUI(info.user_id, info.display_name, info.username);
+
 		if (info.avatar) {
 			topBarProfilePicture.innerHTML = info.avatar;
 		}

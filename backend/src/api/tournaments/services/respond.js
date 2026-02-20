@@ -47,9 +47,14 @@ module.exports = function respondTournamentInvite(userManager, user, tournamentI
 
         user.removePendingRequest("tournaments", tournamentId, creatorId);
 
-        targetUser.notify("NOTIFICATION", `${user.getUsername()} accepted your tournament invite.`);
+        creator.notify("NOTIFICATION", `${user.getUsername()} accepted your tournament invite.`);
 
-        targetMatch.broadcast("UPDATE", "tournaments");
+        let ids = tournament.getPlayers();
+        for (const id of ids.keys()) {
+            const userX = userManager.getUserByID(id);
+            userX.notify("NOTIFICATION", `${user.getUsername()} joined the tournament`)
+            userX.notify("UPDATE", "tournaments");
+        }
     }
     return {status: 200, msg: `You accepted ${targetUser.getUsername()}'s tournament invite.`};
 }

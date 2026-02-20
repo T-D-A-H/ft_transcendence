@@ -29,10 +29,12 @@ module.exports = function joinTournament(userManager, user, tournamentId) {
 
 		return { status: 500, msg: "Could not join tournament." };
 	}
-    
-    tournament.broadcast("UPDATE", "tournaments");
-	tournament.broadcast(userManager, "NOTIFICATION",`${user.getDisplayName()} joined the tournament. ${tournament.getCurrentSize()}/${tournament.getTournamentSize()}`, null, [user.getId()]);
-
+    let ids = tournament.getPlayers();
+    for (const id of ids.keys()) {
+        const userX = this.getUserByID(id);
+        userX.notify("NOTIFICATION", `${user.getDisplayName()} joined the tournament. ${tournament.getCurrentSize()}/${tournament.getTournamentSize()}`);
+		userX.notify("UPDATE", "tournaments");
+    }
 
 	return { status: 200, msg: `Joined ${tournament.getCreatorAlias()}'s tournament.` };
 }

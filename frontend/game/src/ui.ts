@@ -159,7 +159,9 @@ export function getSelfId(): string {
 	return selfId;
 }
 
-
+export function setSelfId(id: string) {
+	selfId = id;
+}
 
 export function updateProfileUI(self_id: string, displayName: string | null, userName?: string): void {
 	selfId = self_id;

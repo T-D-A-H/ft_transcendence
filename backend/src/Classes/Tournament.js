@@ -32,14 +32,6 @@ class Tournament {
 		return (this.visibility);
 	}
 
-	broadcast(UserManager, type, msg, info, excludedUserIds = []) {
-
-	    for (const [userId] of this.players) {
-
-	        if (excludedUserIds !== null && !excludedUserIds.includes(userId))
-	            UserManager.getUserByID(userId).notify(type, msg, info);
-	    }
-	}
 
 	addUser(requestingUserId, user_alias) {
 		LOGGER(200, "Tournament.js", "addUser", "Added user: " + user_alias);

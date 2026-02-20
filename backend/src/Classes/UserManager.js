@@ -170,7 +170,69 @@ class UserManager {
         LOGGER(400, "UserManager.js", "logoutUser", userId + "already logged out.");
         return false;
     }
+//    disconnectUser(user) {
 
+//         const match = user.getCurrentMatch();
+//         const tournament = user.getCurrentTournament();
+//         const userId = user.getId();
+
+//         if (match) {
+
+
+//             if (match.size !== 2) {
+//                 this.stopMatch(match);
+//                 return ;
+//             }
+
+//             if (match.getType() === "2player") {
+
+//                 // 4. Limpiar estado de jugadores
+//                 match.players[0].notify("WIN", ``);
+//                 match.players.forEach(p => {
+//                     if (p) {
+//                         p.setMatch(null);
+//                         p.setIsPlaying(false);
+//                     }
+//                 });
+//                 this.removeMatch(match);
+//                 return;
+//             }
+
+//             let loserIndex = match.players.indexOf(user);
+//             let winnerIndex = 1 - loserIndex;
+//             let loserAlias = user.getDisplayName();
+
+//             match.players[winnerIndex].notify("NOTIFICATION", `${loserAlias} disconnected.`);
+//             match.setWINNER(winnerIndex);
+//             match.setLOSER(loserIndex);
+//             this.stopMatch(match);
+//         }
+//         if (tournament) {
+
+
+//             if (tournament.getCreator() === userId) {
+
+    
+//                 let ids = tournament.getPlayers();
+//                 for (const id of ids.keys()) {
+//                     const user = this.getUserByID(id);
+//                     user.setTournament(null);
+//                     user.setCurrentMatch(null);
+//                     user.setIsPlaying(false);
+//                     user.notify("WIN", "Creator Disconnected");
+//                     tournament.removePlayer(id);
+//                 }
+//                 this.removeTournament(tournament.getId());
+//             }
+//             else if (tournament.getWinners().has(userId)) {
+//                 tournament.deleteWinner(userId);
+//             } else {
+//                 tournament.removePlayer(userId);
+//             }
+
+//         }
+//         user.setTournament(null);
+//     }
     disconnectUser(user) {
 
         const match = user.getCurrentMatch();
@@ -214,14 +276,20 @@ class UserManager {
 
                 tournament.deleteWinner(userId);
             }
-            if (tournament.getCreator() === userId) {
+            console.log(tournament.getCreator());
+            if (tournament.getCreator() == userId && tournament.getIsWaiting() === true) {
 
-                tournament.creator = null;
-                if (tournament.getIsWaiting() === true && tournament.getCurrentSize() === 1) {
-
-                    this.removeTournament(tournament.getId());
+                tournament.creatorId = null;
+                this.removeTournament(tournament.getId());
+                let ids = tournament.getPlayers();
+                for (const id of ids.keys()) {
+                    const user = this.getUserByID(id);
+                    user.setTournament(null);
+                    user.setMatch(null);
+                    user.setIsPlaying(false);
+                    user.notify("WIN", "Creator Disbanded the Tournament.");
+                    tournament.removePlayer(id);
                 }
-
             }
             tournament.removePlayer(userId);
         }
@@ -356,13 +424,11 @@ class UserManager {
         // 3. Lógica de torneo: actualizar ronda
         if (tournament && winnerUser && loserUser) {
             tournament.updateWinner(match.getId(), winnerUser.getId());
-            tournament.broadcast(
-                this,
-                "NOTIFICATION",
-                `${winnerUser.getDisplayName()} won round against ${loserUser.getDisplayName()}`,
-                null,
-                [winnerUser.getId(), loserUser.getId()]
-            );
+            let ids = tournament.getPlayers();
+            for (const id of ids.keys()) {
+                const userX = this.getUserByID(id);
+                userX.notify("NOTIFICATION", `${winnerUser.getDisplayName()} won round against ${loserUser.getDisplayName()}`)
+            }
             tournament.sendLose(loserUser, winnerUser);
             loserUser.unsetTournament();
         }
@@ -555,11 +621,11 @@ class UserManager {
         this.stats.handleTournamentWin(winner_user);
 
         // Notificar a todos
-        tournament.broadcast(
-            this,
-            "NOTIFICATION",
-            `${tournament.getPlayerAlias(winner_id)} won the Tournament!`
-        );
+        let ids = tournament.getPlayers();
+        for (const id of ids.keys()) {
+            const userX = this.getUserByID(id);
+            userX.notify("NOTIFICATION", `${tournament.getPlayerAlias(winner_id)} won the Tournament!`)
+        }
 
         // Limpieza
         this.removeTournament(tournament.getId());

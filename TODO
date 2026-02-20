@@ -13,6 +13,5 @@ ft_backend   |     at WebSocket.<anonymous> (/app/src/api/games/games.js:66:29)
 
 
 - CHECAR QUE TE SALGAS DEL TORNEO cuando sales
-- cuado creas una parida online publica funciona pero si vas otra vez a
-a buscas partidas se queda al anteior paryida ahi no te dej aunirte (eso bine) pero no deberi ade estar
--ft_backend   | {"level":50,"time":1771592732520,"pid":1,"hostname":"cf0aec07fb41","reqId":"req-gx","req":{"method":"PATCH","url":"/api/tournaments/mluwk1rxzbg/invites/3","hostname":"localhost","remoteAddress":"172.18.0.5","remotePort":60102},"res":{"statusCode":500},"err":{"type":"ReferenceError","message":"targetUser is not defined","stack":"ReferenceError: targetUser is not defined\n    at respondTournamentInvite (/app/src/api/tournaments/services/respond.js:50:9)\n    at Object.<anonymous> (/app/src/api/tournaments/tournaments.js:88:21)\n    at routeOptions.handler (/app/node_modules/@fastify/websocket/index.js:150:24)\n    at preHandlerCallback (/app/node_modules/fastify/lib/handleRequest.js:139:37)\n    at next (/app/node_modules/fastify/lib/hooks.js:233:9)\n    at handleResolve (/app/node_modules/fastify/lib/hooks.js:250:7)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)"},"msg":"targetUser is not defined"}
+- Si cierra partida ia que se elimine
+- 
