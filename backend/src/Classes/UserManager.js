@@ -164,7 +164,7 @@ class UserManager {
         if (user) { LOGGER(200, "UserManager.js", "logoutUser", user.getUsername());
 
             user.setConnected(false);
-            this.disconnectUser(user);
+            this.disconnectUser(user)
             return true;
         }
         LOGGER(400, "UserManager.js", "logoutUser", userId + "already logged out.");
@@ -226,11 +226,9 @@ class UserManager {
             tournament.removePlayer(userId);
         }
         user.setTournament(null);
-        user.setConnected(false);
     }
 
     sendMirror(match) {
-
         match.players.forEach(user => {
             if (user && typeof user !== 'string' && user.getDisplaySide) {
                 if (user.getDisplaySide() === match.getPlayerSides(user)) {
@@ -255,7 +253,6 @@ class UserManager {
                 match_id: match.getId(),
                 self_displayname: tournament.getPlayerAlias(user1.getId()), 
                 opponent_display_name: tournament.getPlayerAlias(user2.getId()),
-                opponent_avatar: user2.getAvatar()
                 
             });
             user2.notify("GAME_READY", "Game Starting", {
@@ -264,7 +261,6 @@ class UserManager {
                 match_id: match.getId(),
                 self_displayname: tournament.getPlayerAlias(user2.getId()), 
                 opponent_display_name: tournament.getPlayerAlias(user1.getId()), 
-                opponent_avatar: user1.getAvatar()
             });
         }
         else {
@@ -274,8 +270,7 @@ class UserManager {
                 match_id: match.getId(),
                 id: user2.getId(), 
                 display_name: user2.getDisplayName(), 
-                username: user2.getUsername(),
-                opponent_avatar: user2.getAvatar()
+                username: user2.getUsername()
                 
             });
             user2.notify("GAME_READY", "Game Starting", {
@@ -284,7 +279,6 @@ class UserManager {
                 id: user1.getId(), 
                 display_name: user1.getDisplayName(), 
                 username: user1.getUsername(), 
-                opponent_avatar: user1.getAvatar()
             });
         }
     }
@@ -380,8 +374,8 @@ class UserManager {
                 p.setIsPlaying(false);
             }
         });
-        if (match.getType() !== "2player")
-            this.sendMirror(match);
+
+        this.sendMirror(match);
         this.removeMatch(match);
     }
 
@@ -400,8 +394,7 @@ class UserManager {
                 else if (match.playersReady()) {
 
                     match.setSTARTED(true);
-                    if (match.getType() !== "2player")
-                        this.sendMirror(match);
+                    this.sendMirror(match);
                 }
             }
             else {
@@ -456,13 +449,11 @@ class UserManager {
             return (false);
         }
         
-        this.incrementTournamentPlayedDB(user.getId());
-        
         user.setTournament(tournament);
 
-        if (user.stats) {
+/*         if (user.stats) {
             user.stats.tournaments_played = (user.stats.tournaments_played || 0) + 1;
-        }
+        } */
         
         return (true);
     }
@@ -587,8 +578,14 @@ class UserManager {
     		if (tournament.isWaitingAndFull()) { LOGGER(200, "UserManager.js", "updateTournaments", "Tournament is waiting and full");
 
                 tournament.setReady();
+                for (const [userId] of tournament.getPlayers()) {
+                    this.incrementTournamentPlayedDB(userId);
+                    const playerUser = this.getUserByID(userId);
+                    if (playerUser && playerUser.stats) {
+                        playerUser.stats.tournaments_played = (playerUser.stats.tournaments_played || 0) + 1;
+                    }
+                }
     			this.createNewTournamentMatches(tournament.getPlayers(), tournament);
-                tournament.inGame = true;
     		}
     		else if (tournament.isRoundFinished()) {
 

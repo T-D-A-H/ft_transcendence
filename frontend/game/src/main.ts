@@ -316,7 +316,7 @@ async function respondToInviteRequest(TYPE_URL: string, targetId: string, accept
 		}
 
 	} catch (err: any) {
-		console.error(err?.msg ?? "Request failed");
+		console.error(err?.msg || "Request failed222222");
 	}
 }
 
@@ -326,26 +326,42 @@ async function renderRequestLists(UL: HTMLElement, REQUEST_TYPE: string) {
 		show(requestGameModal);
 		const response = await httpEvent("GET", `/api/${REQUEST_TYPE}/invites`)
 		if (response.status !== 200) {
-
         	return;
     	}
 
 	const joinButtons = renderPendingRequests(UL, response.target);
-	for (let i = 0; i < joinButtons.length; i++) {
-		const btn = joinButtons[i];
-		const req = response.target[i];
-	
-		btn.onclick = async () => {
-			try {
-				const accept = btn.textContent!.trim() === "ACCEPT";
-				await respondToInviteRequest(req.type, req.id, accept);
-			} catch (err: any) {
-				console.error(err?.msg ?? "Request failed");
+	for (let i = 0; i < response.target.length; i++) {
+		for (let j = 0; j < joinButtons.length; j++) {
+
+			const btn = joinButtons[j];
+			const req = response.target[i];
+
+			btn.onclick = async () => {
+				try {
+
+					let accept: boolean = false;
+
+					if (btn.textContent!.trim() === "ACCEPT") {
+						accept = true;
+					}
+					else if (btn.textContent!.trim() === "X") {
+						accept = false;
+					}
+
+					await respondToInviteRequest(req.type, req.id, accept);
+					hide(requestGameModal); 
+					if (accept === false)
+						await renderRequestLists(UL, REQUEST_TYPE);
+					
+				} catch (err: any) {
+					console.error(err?.msg ?? "Request failed11111");
+				}
 			}
 		}
 	}
+	
 	} catch (err: any) {
-			console.error(err?.msg ?? "Request failed");
+			console.error(err?.msg ?? "Request failed3333");
 	}
 }
 
@@ -606,11 +622,12 @@ currentGameCancel.onclick = () => hide(currentGameModal);
 
 export async function updateCurrentGame(url_type: string) {
 
-	
 	try {
-
 		const res = await httpEvent("GET", `/api/${url_type}/current`);
-		
+		hide(invitePlayersModal);
+		hide(requestGameModal);
+		show(currentGameCancel); 
+        show(currentGameExit);
 		show(currentGameModal);
 		const data = res!.target;
 		if (data.match_id)
@@ -624,7 +641,6 @@ export async function updateCurrentGame(url_type: string) {
 		currentGameStatus.textContent = truncateText(data.status, 12);
 		currentGameCreator.textContent = truncateText(data.creator, 12);
 		currentGamePlayers.innerHTML = data.players.map((player: string) => truncateText(player, 12)).join(', ');
-
 	} catch (err: any) {
 
 		if (err?.status === 302)
@@ -633,33 +649,31 @@ export async function updateCurrentGame(url_type: string) {
 }
 
 startMatchButton.onclick = async () => {
-
 	showCanvas();
 	hide(startMatchButton);
 	if (getGameType() !== GameType.TWO_PLAYER && getGameType() !== GameType.AI)
 			showNotification("Waiting for player...");
 
-		try {
-
+	try {
 		let URL = `/api/matches/${getCurrentMatchId()}/start`;
 		if (getGameType() === GameType.TOURNAMENT)
-				URL = `/api/tournaments/${getCurrentTournamentId()}/matches/${getCurrentMatchId()}/start`;
+			URL = `/api/tournaments/${getCurrentTournamentId()}/matches/${getCurrentMatchId()}/start`;
 
-				const response = await httpEvent(POST, URL);
+			const response = await httpEvent(POST, URL);
 
-				if (response.status !== 200 && response.status !== 202){
-					show(startMatchButton);
-					return showNotification(response.msg);
-				}
-				show(canvas);
-				hide(currentGameModal);
-				setGameStatus(GameStatus.IN_GAME);
-				initKeyHandling();
+			if (response.status !== 200 && response.status !== 202){
+				show(startMatchButton);
+			return showNotification(response.msg);
 		}
-		catch (err: any) {
-			show(startMatchButton);
-			console.log(err?.msg ?? "Request failed");
-		}
+		show(canvas);
+		hide(currentGameModal);
+		setGameStatus(GameStatus.IN_GAME);
+		initKeyHandling();
+	}
+	catch (err: any) {
+		show(startMatchButton);
+		console.log(err?.msg ?? "Request failed");
+	}
 };
 
 currentGameExit.onclick = async () => exitGame();
@@ -667,22 +681,25 @@ currentGameExit.onclick = async () => exitGame();
 exitMatchButton.onclick = async () => exitGame();
 
 async function exitGame() {
-	hide(exitMatchButton);
+    hide(currentGameModal);
+	hide(startMatchButton);
 	try {
 
 		let URL = `/api/matches/${getCurrentMatchId()}/participants/me`;
 		if (getGameType() === GameType.TOURNAMENT)
 			URL = `/api/tournaments/${getCurrentTournamentId()}/participants/me`;
 
-			const response = await httpEvent("DELETE", URL);
+		const response = await httpEvent("DELETE", URL);
 
-			showNotification(response.msg);
-			if (response.status !== 200)
-				return ;
-			showMenu();
+		showNotification(response.msg);
+		if (response.status !== 200) {
+			return;
+		}
+		showMenu();
 	}
 	catch (err: any) {
 		console.log(err?.msg ?? "Request failed");
+		showMenu();
 	}
 }
 
@@ -696,6 +713,7 @@ findGameButton.onclick = () => {
 	}
 	show(findGameModal);
 	searchAvailableGames("tournaments", findTournamentsListUL);
+	searchAvailableGames("matches", findMatchesListUL);
 };
 	
 findGameCancelButton.onclick = () => hide(findGameModal);
@@ -712,16 +730,17 @@ findGameTypeButtons.forEach((button): void => {
 		button.classList.add('invert-colors');
 
 		findGameTypeOptions.forEach(div => {
-			if (div.id === targetId)
+			if (div.id === targetId) {
+				if (targetId === "matches")
+					searchAvailableGames("matches", findMatchesListUL);
+				else if (targetId === "tournaments")
+					searchAvailableGames("tournaments", findTournamentsListUL);
 				show(div);
+			}
 			else
 				hide(div);
 		});
 
-		if (targetId === "matches")
-			searchAvailableGames("matches", findMatchesListUL);
-		else if (targetId === "tournaments")
-			searchAvailableGames("tournaments", findTournamentsListUL);
 	};
 });
 
@@ -769,6 +788,7 @@ export function showNotification(text: string | any, type?: string, id?: string)
 	
 	let TIME = NOTIFICATION_TIME;
 
+	hide(notificationAcceptButton);
 	notificationBoxText.textContent = text;
 	show(notificationBox);
 	notificationBox.classList.remove("opacity-0", "pointer-events-none");

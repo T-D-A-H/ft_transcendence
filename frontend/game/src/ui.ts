@@ -97,17 +97,17 @@ export function updateSessionButtons(render: boolean) {
 	}
 }
 
-
-
 export 	function showCanvas() {
-
 	hide(createGameModal);
 	hide(findGameModal);
 	hide(menuModal);
+	hide(invitePlayersModal);
+	hide(requestGameModal);
 	show(canvas);
 	drawGame();
 	if (getGameStatus() === GameStatus.READY_TO_START || getGameStatus() === GameStatus.IN_GAME) {
 
+		
 		hide(currentGameCancel);
 		show(currentGameModal);
 		makeVisible(topBarOpponentButton);
@@ -118,13 +118,13 @@ export 	function showCanvas() {
 		if (getGameStatus() === GameStatus.READY_TO_START) {
 			makeVisible(startMatchButton);
 			show(startMatchButton);
+			hide(currentGameCancel);
 		}
 	}
 
 }
 
 export 	function showMenu() {
-	
 	hide(canvas);
 	show(menuModal);
 	hide(exitMatchButton);
@@ -607,7 +607,8 @@ export function renderGamesList(ul_list: HTMLUListElement, games: any[], onJoin:
 	
 
 	ul_list.innerHTML = "";
-
+	if (games === undefined || games.length == 0)
+		return;
 	for (const game of games) {
 		const li = document.createElement("li");
 		li.style.marginBottom = "6px";

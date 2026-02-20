@@ -1,6 +1,4 @@
-
 module.exports = function exitMatch(userManager, user, matchId) {
-
 
     const match = userManager.getMatchById(matchId);
 

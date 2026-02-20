@@ -19,7 +19,7 @@ module.exports = function searchTournaments(userManager) {
 
     if (available_tournaments.length === 0) {
 
-        return { status: 400, msg: "Found No tournaments.", target: {creator: "Couldnt find any games."} };
+        return { status: 200, msg: "Found No tournaments.", target: {creator: "Couldnt find any games."} };
     }
 	return { status: 200, msg: "Found Open Tournaments.", target: available_tournaments };
 }

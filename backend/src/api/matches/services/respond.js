@@ -4,7 +4,6 @@ module.exports = function respondMatchInvite(userManager, user, matchId, selfId,
     const match = userManager.getMatchById(matchId);
 
     if (!match) {
-
         return ({status: 400, msg: "Couldn't find match."});
     }
     else if (user.getId() != selfId) {
@@ -13,7 +12,6 @@ module.exports = function respondMatchInvite(userManager, user, matchId, selfId,
     }
     const creator = match.getCreatorUser();
     if (!creator) {
-
         return ({ status: 500, msg: "Couldn't find match creator." });
     }
     const creatorId = creator.getId();
@@ -21,12 +19,12 @@ module.exports = function respondMatchInvite(userManager, user, matchId, selfId,
 
         return ({status: 404, msg: "Couldn't find match in pending requests."});
     }
-    else if (accept === false) {
+    if (accept === false) {
 
     	creator.notify("NOTIFICATION", `${user.getUsername()} declined your invite.`);
     	user.removePendingRequest("matches", matchId, creatorId);
 
-        return { status: 404, msg: `You declined ${creator.getUsername()}'s invite.`};
+        return { status: 200, msg: `You declined ${creator.getUsername()}'s invite.`};
     }
     else if (creator.getIsConnected() === false) {
 
@@ -45,7 +43,7 @@ module.exports = function respondMatchInvite(userManager, user, matchId, selfId,
 
         creator.notify("NOTIFICATION", `${user.getUsername()} accepted your match invite.`);
 
-        targetMatch.broadcast("UPDATE", "matches");
+        match.broadcast("UPDATE", "matches");
     }
     return {status: 200, msg: `You accepted ${creator.getUsername()}'s match invite.`};
 }

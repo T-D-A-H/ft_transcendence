@@ -41,9 +41,8 @@ class Tournament {
 	    }
 	}
 
-	addUser(requestingUserId, user_alias) { LOGGER(200, "Tournament.js", "addUser", "Added user: " + user_alias);
-
-		
+	addUser(requestingUserId, user_alias) {
+		LOGGER(200, "Tournament.js", "addUser", "Added user: " + user_alias);
 		if (this.players.size >= this.maxPlayers) { LOGGER(400, "Tournament.js", "addUser", "Tournament already full.");
 			return (false);
 		}
@@ -52,7 +51,8 @@ class Tournament {
 		return (true);
 	}
 
-	removePlayer(requestingUserId) { LOGGER(200, "Tournament.js", "removePlayer", "Removed user: " + this.players.values(requestingUser));
+	removePlayer(requestingUserId) {
+		LOGGER(200, "Tournament.js", "removePlayer", "Removed user: " + this.players.values(requestingUserId));
 		this.currentPlayerCount--;
 		this.players.delete(requestingUserId);
 	}

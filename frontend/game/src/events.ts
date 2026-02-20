@@ -131,8 +131,8 @@ export async function registerEvents() {
 			updateOpponentUI("(1)" + data.info?.display_name, data.info?.id, data.info?.opponent_avatar);
 			setMatchMode("dual");
 		}
-		updateCurrentGame("matches");
 		showCanvas();
+		updateCurrentGame("matches");
 	});
 	registerHandler("UPDATE", (data) => {
 
