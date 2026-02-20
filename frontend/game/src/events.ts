@@ -115,15 +115,15 @@ export async function registerEvents() {
 		}    
 		else if (data.info?.type === "ai_easy") {
 			setGameType(GameType.AI);
-			updateOpponentUI("AI PERRY", "", "▥");
+			updateOpponentUI("AI PERRY", "", "☹");
 		}
 		else if (data.info?.type === "ai_medium") {
 			setGameType(GameType.AI);
-			updateOpponentUI("AI MORTY", "", "▦");
+			updateOpponentUI("AI MORTY", "", "☹");
 		}
 		else if (data.info?.type === "ai_hard") {
 			setGameType(GameType.AI);
-			updateOpponentUI("AI RICK", "", "▩");
+			updateOpponentUI("AI RICK", "", "☹");
 		}
 		else if (data.info?.type === "2player") {
 		

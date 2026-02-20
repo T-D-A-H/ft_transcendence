@@ -51,7 +51,8 @@ import {
 		startAiMode, 
 		setAiDifficulty, 
 		isAiModeActive, 
-		stopAiMode 
+		stopAiMode,
+		startAiMovements
 } from "./ai.js";
 
 
@@ -433,6 +434,7 @@ localOptions.forEach((button): void => {
 if (aiEasyButton) {
 		aiEasyButton.onclick = () => {
 				setAiDifficulty(1);
+				setGameType(GameType.AI);
 				hide(createGameModal);
 				startAiMode();
 		};
@@ -442,6 +444,7 @@ if (aiEasyButton) {
 if (aiMediumButton) {
 		aiMediumButton.onclick = () => {
 				setAiDifficulty(3);
+				setGameType(GameType.AI);
 				hide(createGameModal);
 				startAiMode();
 		};
@@ -451,6 +454,7 @@ if (aiMediumButton) {
 if (aiHardButton) {
 		aiHardButton.onclick = () => {
 				setAiDifficulty(5);
+				setGameType(GameType.AI);
 				hide(createGameModal);
 				startAiMode();
 		};
@@ -517,6 +521,8 @@ async function createTournament() {
 
 invitePlayersCurrentGameButton.onclick = async () => {
 
+	if (getGameType() === GameType.AI)
+		return ;
 	hide(currentGameModal);
 	
 	const tournamentId = getCurrentTournamentId();
@@ -653,6 +659,11 @@ export async function updateCurrentGame(url_type: string) {
 startMatchButton.onclick = async () => {
 	showCanvas();
 	hide(startMatchButton);
+	if (getGameType() === GameType.AI) {
+		hide(currentGameModal);
+		startAiMovements();
+		return ;
+	}
 	if (getGameType() !== GameType.TWO_PLAYER && getGameType() !== GameType.AI)
 			showNotification("Waiting for player...");
 
@@ -685,6 +696,11 @@ exitMatchButton.onclick = async () => exitGame();
 async function exitGame() {
     hide(currentGameModal);
 	hide(startMatchButton);
+
+	if (getGameType() === GameType.AI) {
+		stopAiMode();
+		return ;
+	}
 	try {
 
 		let URL = `/api/matches/${getCurrentMatchId()}/participants/me`;
@@ -822,11 +838,7 @@ export function showNotification(text: string | any, type?: string, id?: string)
 
 //-------------------------------------------------------------------------------------------------NOTIFICATIONS
 //-------------------------------------------------------------------------------------------------SETTINGS
-// if (playAgainstAIButton) {
-//   playAgainstAIButton.onclick = () => {
-//     startAiMode();
-//   };
-// }
+
  
 
 if (changeProfilePicButton) {

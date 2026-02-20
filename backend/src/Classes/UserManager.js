@@ -316,19 +316,21 @@ class UserManager {
 
 
             user1.notify("GAME_READY", "Game Starting", {
-                type: match.getType(),
+                type: "tournament",
                 tournament_id: tournament.getId(),
                 match_id: match.getId(),
                 self_displayname: tournament.getPlayerAlias(user1.getId()), 
                 opponent_display_name: tournament.getPlayerAlias(user2.getId()),
+                opponent_avatar: user2.getAvatar()
                 
             });
             user2.notify("GAME_READY", "Game Starting", {
-                type: match.getType(),
+                type: "tournament",
                 tournament_id: tournament.getId(),
                 match_id: match.getId(),
                 self_displayname: tournament.getPlayerAlias(user2.getId()), 
                 opponent_display_name: tournament.getPlayerAlias(user1.getId()), 
+                opponent_avatar: user1.getAvatar()
             });
         }
         else {
@@ -338,7 +340,8 @@ class UserManager {
                 match_id: match.getId(),
                 id: user2.getId(), 
                 display_name: user2.getDisplayName(), 
-                username: user2.getUsername()
+                username: user2.getUsername(),
+                opponent_avatar: user2.getAvatar()
                 
             });
             user2.notify("GAME_READY", "Game Starting", {
@@ -347,6 +350,7 @@ class UserManager {
                 id: user1.getId(), 
                 display_name: user1.getDisplayName(), 
                 username: user1.getUsername(), 
+                opponent_avatar: user1.getAvatar()
             });
         }
     }

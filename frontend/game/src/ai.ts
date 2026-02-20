@@ -11,11 +11,13 @@ import {
   startMatchButton,
   topBarOpponentButton, 
   makeVisible, 
-  makeInvisible
-} from "./ui.js";
+  makeInvisible, topBarDisplayName, invitePlayersCurrentGameButton,
+ currentGameCancel, currentGameExit, currentGameModal, currentGameType, currentGameSubType, currentGameVisibility, currentGameSize, currentGameStatus, currentGameCreator, currentGamePlayers
 
+} from "./ui.js";
+import {  clearBackground} from "./draw.js";
 import {showNotification} from "./main.js";
-import {getDisplaySide, getSCORES, setSCORES, setDisplaySide, GameType, setGameType} from "./vars.js";
+import {getDisplaySide, getSCORES, setSCORES, setDisplaySide, GameType, setGameType, setGameStatus, GameStatus} from "./vars.js";
 
 let aiDifficulty = 3; // Difficulty level from 1 (easiest) to 5 (hardest)
 const aiErrorLevels = [0.35, 0.25, 0.18, 0.1, 0.04];
@@ -312,6 +314,30 @@ export function setAiDifficulty(level: number): void {
   aiDifficulty = Math.max(1, Math.min(5, Math.round(level)));
 }
 
+function updateCurrentAiGame(Difficulty: number) {
+
+
+    makeInvisible(invitePlayersCurrentGameButton);
+		show(currentGameCancel); 
+    show(currentGameExit);
+		show(currentGameModal);
+    let bot_name: string = "AI PERRY";
+
+    if (Difficulty === 3)
+      bot_name = "AI MORTY";
+    else if (Difficulty === 5)
+      bot_name = "AI RICK";
+
+		currentGameType.textContent = "match";
+		currentGameSubType.textContent = "AI";
+		currentGameVisibility.textContent = "private";
+		currentGameSize.textContent = "2/2";
+		currentGameStatus.textContent = "Ready";
+		currentGameCreator.textContent = topBarDisplayName.textContent;
+		currentGamePlayers.innerHTML = topBarDisplayName.textContent + ", " + bot_name;
+
+}
+
 export function startAiMode(): void {
   aiModeActive = true;
   aiPlayerKeys.up = false;
@@ -324,13 +350,14 @@ export function startAiMode(): void {
   aiNextDecisionAt = 0;
   setSCORES(0, 0);
   setGameType(GameType.AI);
+  setGameStatus(GameStatus.READY_TO_START);
   makeVisible(topBarOpponentButton);
   if (aiDifficulty === 1) 
-    updateOpponentUI("AI PERRY", "", "▥");
+    updateOpponentUI("AI PERRY", "", "☹");
 	else if (aiDifficulty === 3)
-		updateOpponentUI("AI MORTY", "", "▦");
+		updateOpponentUI("AI MORTY", "", "☹");
 	else if (aiDifficulty === 5)
-		updateOpponentUI("AI RICK", "", "▩");
+		updateOpponentUI("AI RICK", "", "☹");
 
 
   resetAiBall(1);
@@ -341,12 +368,15 @@ export function startAiMode(): void {
   }
 
   showCanvas();
-  hide(startMatchButton);
-  show(exitMatchButton);
 
+  updateCurrentAiGame(aiDifficulty);
   document.addEventListener("keydown", onAiKeyDown);
   document.addEventListener("keyup", onAiKeyUp);
 
+
+}
+
+export function startAiMovements(): void {
   if (aiAnimationId !== null) cancelAnimationFrame(aiAnimationId);
   aiAnimationId = requestAnimationFrame(aiRenderFrame);
 }
@@ -360,7 +390,11 @@ export function stopAiMode(): void {
   }
   document.removeEventListener("keydown", onAiKeyDown);
   document.removeEventListener("keyup", onAiKeyUp);
-  makeInvisible(topBarOpponentButton);
+  setGameType(GameType.NONE);
+  setGameStatus(GameStatus.NOT_IN_GAME);
+  showNotification("Exited Ai Match");
+  setSCORES(0, 0);
+	clearBackground();
   showMenu();
 }
 
