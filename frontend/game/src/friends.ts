@@ -1,4 +1,11 @@
 import { show, hide ,requestGameModal} from "./ui.js";
+import { translate } from "./language-button.js";
+
+declare global {
+    interface Window {
+        translate?: (key: string) => string;
+    }
+}
 import { userSocket } from "./websocket.js";
 import { showNotification } from "./main.js";
 
@@ -181,11 +188,9 @@ export async function renderFriendsList(): Promise<void> {
         return;
     }
 
-    // Keep the header buttons, clear only the dynamic friend items
     const existingDynamic = friendsListUL.querySelectorAll("li[data-friend-id]");
     existingDynamic.forEach(el => el.remove());
 
-    // Also remove any loading/empty state
     const existingState = friendsListUL.querySelector(".friends-state");
     if (existingState) existingState.remove();
 
@@ -202,7 +207,7 @@ export async function renderFriendsList(): Promise<void> {
         const empty = document.createElement("li");
         empty.className = "friends-state pong-font text-[7px] text-center";
         empty.style.color = "var(--pong-gray)";
-        empty.textContent = "No friends yet. Add some!";
+        empty.textContent = translate('friends.no_friends');
         friendsListUL.appendChild(empty);
         return;
     }
@@ -326,19 +331,17 @@ export async function renderInviteFriendsList(container: HTMLUListElement): Prom
         const empty = document.createElement("li");
         empty.className = "pong-font text-[7px] text-center";
         empty.style.color = "var(--pong-gray)";
-        empty.textContent = "No friends yet. Add some!";
+        empty.textContent = translate('friends.no_friends');
         container.appendChild(empty);
         return;
     }
 
-    // Online friends first
     friends.sort((a, b) => (b.online ? 1 : 0) - (a.online ? 1 : 0));
 
     for (const friend of friends) {
         const li = document.createElement("li");
         li.className = "pong-box flex items-center justify-between";
 
-        // FIX 1: Use correct status color and text per friend
         const statusColor = friend.online ? "#4ade80" : "var(--pong-gray)";
         const statusText = friend.online ? "● ONLINE" : "● OFFLINE";
 
@@ -355,7 +358,6 @@ export async function renderInviteFriendsList(container: HTMLUListElement): Prom
             </button>
         `;
 
-        // FIX 2: Set disabled via JS after render, not inside the template string
         const btn = li.querySelector(".invite-friend-btn") as HTMLButtonElement;
         if (!friend.online) {
             btn.disabled = true;

@@ -62,10 +62,10 @@
 					
 						<!-- Actions -->
 						<div class="pong-menu-buttons">
-							<button class="pong-button" data-target="settings_list"><span class="pong-icon -top-[6px]">&#9881;</span></button>
-							<button class="pong-button" data-target="stats_list">Stats</button>
-							<button class="pong-button" data-target="friends_list">Friends</button>
-							<button class="pong-button active-border" data-target="play_list">Play</button>
+													<button class="pong-button" data-target="settings_list"><span class="pong-icon -top-[6px]">&#9881;</span></button>
+													<button class="pong-button" data-target="stats_list" data-i18n="menu.stats">Estadísticas</button>
+													<button class="pong-button" data-target="friends_list" data-i18n="menu.requests">Solicitudes</button>
+													<button class="pong-button active-border" data-target="play_list" data-i18n="menu.play">Jugar</button>
 						</div>
 					
 						<div class="flex justify-center mt-2.5">
@@ -74,44 +74,54 @@
 							<div class="pong-menu-list-container">
 
 								<div id="settings_list" class="pong-list w-full mx-auto no-scrollbar overflow-y-auto  hidden">
-                                    <button id="day_mode"
-                                        class="pong-button active-border  full-width flex justify-between items-center">
-                                        <span>NIGHT/DAY MODE</span><span class="pong-icon">&#9680;</span>
-                                    </button>
-                                    
-                                    <button id="board_theme_button"
-                                        class="pong-button active-border full-width flex justify-between items-center">
-                                        <span>CHANGE BOARD THEME</span>
-                                    </button>
+										<button id="day_mode"
+											class="pong-button active-border  full-width flex justify-between items-center">
+											<span data-i18n="settings.day_mode">NIGHT/DAY MODE</span><span class="pong-icon">&#9680;</span>
+										</button>
+
+										<button id="board_theme_button"
+											class="pong-button active-border full-width flex justify-between items-center">
+											<span data-i18n="settings.change_board_theme">CHANGE BOARD THEME</span>
+										</button>
+
+										<button id="change_language_button" class="pong-button active-border full-width flex justify-between items-center"><span data-i18n="settings.change_language">Change Language</span></button>
+
+										<!-- Language Modal Overlay -->
+										<div id="language_modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 hidden">
+											<div class="relative bg-white border-4 border-black rounded-xl shadow-2xl min-w-[160px] max-w-[90vw] flex flex-col items-center pt-8 pb-2 px-2">
+												<button id="language_close" class="absolute top-4 right-4 text-3xl font-bold leading-none hover:text-red-600">&times;</button>
+												<div id="language_options" class="flex flex-col gap-4 w-full mt-2"></div>
+											</div>
+										</div>
 
                                     <button id="change_displayname_button"
                                         class="pong-button active-border full-width flex justify-between items-center">
-                                        <span>CHANGE DISPLAY NAME</span>
+										<span data-i18n="settings.change_displayname">CHANGE DISPLAY NAME</span>
                                     </button>
 
                                     <button id="change_username_button"
                                         class="pong-button active-border full-width flex justify-between items-center">
-                                        <span>CHANGE USERNAME</span>
+										<span data-i18n="settings.change_username">CHANGE USERNAME</span>
                                     </button>
 
                                     <button id="change_email_button"
                                         class="pong-button active-border full-width flex justify-between items-center">
-                                        <span>CHANGE EMAIL</span>
+										<span data-i18n="settings.change_email">CHANGE EMAIL</span>
                                     </button>
 
                                     <button id="change_password_button"
                                         class="pong-button active-border full-width flex justify-between items-center">
-                                        <span>CHANGE PASSWORD</span>
+										<span data-i18n="settings.change_password">CHANGE PASSWORD</span>
                                     </button>
 
                                     <button id="change_profilepic_button"
                                         class="pong-button active-border full-width flex justify-between items-center">
-                                        <span>CHANGE AVATAR</span>
+										<span data-i18n="settings.change_avatar">CHANGE AVATAR</span>
                                     </button>
 
                                     <button id="logout_button"
                                         class="pong-button active-border hidden full-width flex justify-between items-center">
-                                        <span>LOG OUT</span>
+										<span data-i18n="settings.logout">LOG OUT</span>
                                     </button>
 								</div>
 
@@ -120,92 +130,92 @@
 								
                                     <div class="grid grid-cols-3 items-center mb-2 w-full">
                                         <div></div>
-                                        <div class="pong-font text-[10px] text-center">
-                                            DASHBOARD
-                                        </div>
+										<div class="pong-font text-[10px] text-center" data-i18n="dashboard.title">
+											DASHBOARD
+										</div>
                                         <div class="flex justify-end">
-                                            <button id="stats_refresh_button" class="pong-button active-border px-2 py-0.5 text-[7px]">
-                                                REFRESH
-                                            </button>
+											<button id="stats_refresh_button" class="pong-button active-border px-2 py-0.5 text-[7px]" data-i18n="dashboard.refresh">
+												REFRESH
+											</button>
                                         </div>
                                     </div>
 
                                     <div class="grid gap-2 w-full">
                                         
                                         <div class="pong-box w-full">
-                                            <div class="pong-list-box-name-msg text-center w-full">
-                                                <span>General Summary</span>
-                                            </div>
+											<div class="pong-list-box-name-msg text-center w-full">
+												<span data-i18n="stats.general_summary">General Summary</span>
+											</div>
                                             <div class="grid grid-cols-2 gap-2 mt-2 text-[8px] leading-tight text-[color:var(--pong-white)]">
                                                 <div class="flex items-center justify-between gap-2 min-w-0">
-                                                    <span class="truncate pong-font text-[5px]">Matches</span>
+													<span class="truncate pong-font text-[5px]" data-i18n="stats.matches">Matches</span>
                                                     <span id="stats_total_games" class="pong-font">0</span>
                                                 </div>
                                                 <div class="flex items-center justify-between gap-2 min-w-0">
-                                                    <span class="truncate pong-font text-[5px]">Win rate</span>
+													<span class="truncate pong-font text-[5px]" data-i18n="stats.win_rate">Win rate</span>
                                                     <span id="stats_win_rate" class="pong-font">0%</span>
                                                 </div>
                                                 <div class="flex items-center justify-between gap-2 min-w-0">
-                                                    <span class="truncate pong-font text-[5px]">Current streak</span>
+													<span class="truncate pong-font text-[5px]" data-i18n="stats.current_streak">Current streak</span>
                                                     <span id="stats_streak" class="pong-font">0</span>
                                                 </div>
                                                 <div class="flex items-center justify-between gap-2 min-w-0">
-                                                    <span class="truncate pong-font text-[5px]">Best streak</span>
+													<span class="truncate pong-font text-[5px]" data-i18n="stats.best_streak">Best streak</span>
                                                     <span id="stats_best_streak" class="pong-font">0</span>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div class="pong-box w-full">
-                                            <div class="pong-list-box-name-msg text-center w-full">
-                                                <span>Game Modes Details</span>
-                                            </div>
+											<div class="pong-list-box-name-msg text-center w-full">
+												<span data-i18n="stats.game_modes">Game Modes Details</span>
+											</div>
                                             <div class="grid grid-cols-2 gap-2 mt-2 text-[8px] leading-tight text-[color:var(--pong-white)]">
                                                 
                                                 <div class="flex items-center justify-between gap-2 min-w-0">
-                                                    <span class="truncate pong-font text-[5px] opacity-70">Local Played</span>
+													<span class="truncate pong-font text-[5px] opacity-70" data-i18n="stats.local_played">Local Played</span>
                                                     <span id="stat_local_played" class="pong-font">0</span>
                                                 </div>
                                                 <div class="flex items-center justify-between gap-2 min-w-0">
-                                                    <span class="truncate pong-font text-[5px] text-[#4ade80]">Local Won</span>
+													<span class="truncate pong-font text-[5px] text-[#4ade80]" data-i18n="stats.local_won">Local Won</span>
                                                     <span id="stat_local_won" class="pong-font">0</span>
                                                 </div>
 
                                                 <div class="flex items-center justify-between gap-2 min-w-0">
-                                                    <span class="truncate pong-font text-[5px] opacity-70">Online Played</span>
+													<span class="truncate pong-font text-[5px] opacity-70" data-i18n="stats.online_played">Online Played</span>
                                                     <span id="stat_online_played" class="pong-font">0</span>
                                                 </div>
                                                 <div class="flex items-center justify-between gap-2 min-w-0">
-                                                    <span class="truncate pong-font text-[5px] text-[#4ade80]">Online Won</span>
+													<span class="truncate pong-font text-[5px] text-[#4ade80]" data-i18n="stats.online_won">Online Won</span>
                                                     <span id="stat_online_won" class="pong-font">0</span>
                                                 </div>
 
                                                 <div class="flex items-center justify-between gap-2 min-w-0">
-                                                    <span class="truncate pong-font text-[5px] opacity-70">Tourn. Played</span>
+													<span class="truncate pong-font text-[5px] opacity-70" data-i18n="stats.tourn_played">Tourn. Played</span>
                                                     <span id="stat_tournaments_played" class="pong-font">0</span>
                                                 </div>
                                                 <div class="flex items-center justify-between gap-2 min-w-0">
-                                                    <span class="truncate pong-font text-[5px] text-[#4ade80]">Tourn. Won</span>
+													<span class="truncate pong-font text-[5px] text-[#4ade80]" data-i18n="stats.tourn_won">Tourn. Won</span>
                                                     <span id="stat_tournaments_won" class="pong-font">0</span>
                                                 </div>
                                             </div>
                                         </div>
 										<div class="pong-box w-full flex-col items-start">
 											<div class="pong-list-box-name-msg w-full">
-												<span>Wins vs losses Chart</span>
+												<span data-i18n="stats.wins_losses">Wins vs losses Chart</span>
 											</div>
 											<canvas id="stats_winloss_chart" width="320" height="115" class="w-full"></canvas>
 											<!-- Etiquetas fuera del canvas -->
 											<div class="w-full flex justify-around" style="margin-top: 2px;">
-												<span class="pong-font" style="font-size: 5px;">LOCAL</span>
-												<span class="pong-font" style="font-size: 5px;">ONLINE</span>
-												<span class="pong-font" style="font-size: 5px;">TOURN</span>
+												<span class="pong-font" style="font-size: 5px;" data-i18n="stats.local">LOCAL</span>
+												<span class="pong-font" style="font-size: 5px;" data-i18n="stats.online">ONLINE</span>
+												<span class="pong-font" style="font-size: 5px;" data-i18n="stats.tourn">TOURN</span>
 											</div>
 										</div>
 
                                         <div class="pong-box w-full">
                                             <div class="pong-list-box-name-msg">
-                                                <span>Match history</span>
+												<span data-i18n="stats.match_history">Match history</span>
                                             </div>
                                             <div id="stats_history_list" class="flex flex-col gap-1 max-h-40 overflow-y-auto pong-scrollbar-hidden text-[8px] text-[color:var(--pong-white)]">
                                                 </div>
@@ -218,8 +228,8 @@
 
 									<!-- Header row: requests button + add button -->
 									<div class="flex gap-2 w-full">
-										<button id="requests_friend_button" class="pong-button-gray shrink-0">requests</button>
-										<button id="add_friend_button" class="pong-button active-border border-2 ml-auto">ADD +</button>
+										<button id="requests_friend_button" class="pong-button-gray shrink-0" data-i18n="menu.requests">requests</button>
+										<button id="add_friend_button" class="pong-button active-border border-2 ml-auto" data-i18n="friends.add">ADD +</button>
 									</div>
 
 									<!-- Dynamic friends rendered by friends.ts -->
@@ -230,11 +240,11 @@
 								<!-- play -->
 								<div id="play_list" class="pong-list">
 									<div class="flex gap-2 w-full">
-										<button id="requests_game_button" class="pong-button-gray shrink-0 ">requests</button>
-										<button id="current_game" class="pong-button-gray ml-auto">Current Game</button>
+										<button id="requests_game_button" class="pong-button-gray shrink-0" data-i18n="menu.requests">Solicitudes</button>
+										<button id="current_game" class="pong-button-gray ml-auto" data-i18n="current_game.title">Current Game</button>
 									</div>
-									<button id="create_game" class="pong-button active-border full-width">CREATE GAME</button>									
-									<button id="find_game" class="pong-button active-border full-width">FIND GAME</button>								
+									<button id="create_game" class="pong-button active-border full-width" data-i18n="game.create">CREAR PARTIDA</button>
+									<button id="find_game" class="pong-button active-border full-width" data-i18n="game.find">BUSCAR PARTIDA</button>
 								</div>
 
 							</div>
@@ -247,7 +257,7 @@
 				<div id="add_friend_modal" class="pong-modal h-1/2 hidden">
 					<div class="pong-modal-header">
 						<button id="add_friend_cancel" class="pong-cancel-button">X</button>
-						<h2 class="pong-modal-top-text">Add Friend</h2>
+						<h2 class="pong-modal-top-text" data-i18n="add_friend.title">Add Friend</h2>
 					</div>
 					<div class="flex flex-col gap-3 mt-4">
 						<input
@@ -255,11 +265,12 @@
 							type="text"
 							class="pong-input-field"
 							placeholder="Enter username"
+							data-i18n-placeholder="add_friend.enter_username"
 						/>
 					</div>
 					<div class="pong-modal-bottom-buttons">
 						<button id="add_friend_submit" class="pong-submit-button active-border ml-auto">
-							SEND REQUEST
+							<span data-i18n="add_friend.send_request">SEND REQUEST</span>
 						</button>
 					</div>
 				</div>
@@ -269,12 +280,12 @@
 
 					<div class="pong-modal-header">
 						<button id="invite-game-cancel" class="pong-cancel-button">X</button>
-						<h2 class="pong-modal-top-text">Invite Friends</h2>
+						<h2 class="pong-modal-top-text" data-i18n="invite_game.title">Invite Friends</h2>
 					</div>
 					<div id="online_friends" class="pong-suboptions">
 						<div class="pong-box flex flex-row gap-2 pb-0 pt-2 mb-2 items-center justify-center">
-							<input id="play_request_username" type="text" class="pong-input-field text-[10px] placeholder:text-[10px]" placeholder="Manual Invite"/>
-							<button id="invite_manual_submit" class="pong-submit-button h-1/2 text-[7px]  active-border ml-auto">INVITE</button>
+							<input id="play_request_username" type="text" class="pong-input-field text-[10px] placeholder:text-[10px]" placeholder="Manual Invite" data-i18n-placeholder="invite_game.manual_invite"/>
+							<button id="invite_manual_submit" class="pong-submit-button h-1/2 text-[7px]  active-border ml-auto"><span data-i18n="common.send">ENVIAR</span></button>
 						</div>
 						<ul id="friends_list_invite_ul" class="pong-tournament-list"></ul>
 					</div>
@@ -285,16 +296,16 @@
 
 					<div class="pong-modal-header">
 						<button id="requests-game-cancel" class="pong-cancel-button">X</button>
-						<h2 class="pong-modal-top-text">Requests</h2>
+						<h2 class="pong-modal-top-text" data-i18n="requests.title">Requests</h2>
 					</div>
 
 
 					<div id="requests_options" class="h-full w-full flex flex-col items-center gap-2">
 					
 						<div class="pong-modal-options">
-							<button data-target="requests_friends" class="pong-button border-[3px] text-[8px] active-border request-type">Friends</button>
-							<button data-target="requests_games" class="pong-button border-[3px] text-[8px] active-border request-type">Matches</button>
-							<button data-target="requests_tournaments" class="pong-button border-[3px] text-[8px] active-border request-type">Tournaments</button>
+							<button data-target="requests_friends" class="pong-button border-[3px] text-[8px] active-border request-type" data-i18n="requests.friends">Friends</button>
+							<button data-target="requests_games" class="pong-button border-[3px] text-[8px] active-border request-type" data-i18n="requests.matches">Matches</button>
+							<button data-target="requests_tournaments" class="pong-button border-[3px] text-[8px] active-border request-type" data-i18n="requests.tournaments">Tournaments</button>
 						</div>
 					
 						<div id="requests_tournaments" class="pong-suboptions2 hidden">
@@ -314,55 +325,55 @@
 				<!-- Create Game Modal -->
 				<div id="current-game-modal" class="pong-modal w-1/2 h-[60%] hidden">
 				
-				    <div class="pong-modal-header">
-				        <button id="current-game-cancel" class="pong-cancel-button">X</button>
-				        <h2 class="pong-modal-top-text">Current Game</h2>
-				        <button id="exit-match-button" class="pong-exit-button">Exit</button>
-				    </div>
+					<div class="pong-modal-header">
+						<button id="current-game-cancel" class="pong-cancel-button">X</button>
+						<h2 class="pong-modal-top-text" data-i18n="current_game.title">Current Game</h2>
+						<button id="exit-match-button" class="pong-exit-button" data-i18n="current_game.exit">Exit</button>
+					</div>
 				
 				    <div id="current_game_modal_body" class="h-full w-full flex flex-col items-start gap-2 text-[8px]">
 					
 						<div class="w-full flex justify-between text-[6px]">
-						    <div class="flex flex-col items-start w-1/3">
-						        <span class="text-[color:var(--pong-text-field)]">Type</span>
-						        <span id="current_game_type"></span>
-						    </div>
-						    <div class="flex flex-col items-start w-1/3">
-						        <span class="text-[color:var(--pong-text-field)]">Subtype</span>
-						        <span id="current_game_subtype"></span>
-						    </div>
-						    <div class="flex flex-col items-start w-1/3">
-						        <span class="text-[color:var(--pong-text-field)]">Visibility</span>
-						        <span id="current_game_visibility"></span>
-						    </div>
+							<div class="flex flex-col items-start w-1/3">
+								<span class="text-[color:var(--pong-text-field)]" data-i18n="current_game.type">Type</span>
+								<span id="current_game_type"></span>
+							</div>
+							<div class="flex flex-col items-start w-1/3">
+								<span class="text-[color:var(--pong-text-field)]" data-i18n="current_game.subtype">Subtype</span>
+								<span id="current_game_subtype"></span>
+							</div>
+							<div class="flex flex-col items-start w-1/3">
+								<span class="text-[color:var(--pong-text-field)]" data-i18n="current_game.visibility">Visibility</span>
+								<span id="current_game_visibility"></span>
+							</div>
 						</div>
 
 						<div class="w-full flex justify-between text-[6px] mt-1">
-						    <div class="flex flex-col items-start w-1/3">
-						        <span class="text-[color:var(--pong-text-field)]">Size</span>
-						        <span id="current_game_size"></span>
-						    </div>
-						    <div class="flex flex-col items-start w-1/3">
-						        <span class="text-[color:var(--pong-text-field)]">Creator</span>
-						        <span id="current_game_creator"></span>
-						    </div>
-						    <div class="flex flex-col items-start w-1/3">
-						        <span class="text-[color:var(--pong-text-field)]">Status</span>
-						        <span id="current_game_status"></span>
-						    </div>
+							<div class="flex flex-col items-start w-1/3">
+								<span class="text-[color:var(--pong-text-field)]" data-i18n="current_game.size">Size</span>
+								<span id="current_game_size"></span>
+							</div>
+							<div class="flex flex-col items-start w-1/3">
+								<span class="text-[color:var(--pong-text-field)]" data-i18n="current_game.creator">Creator</span>
+								<span id="current_game_creator"></span>
+							</div>
+							<div class="flex flex-col items-start w-1/3">
+								<span class="text-[color:var(--pong-text-field)]" data-i18n="current_game.status">Status</span>
+								<span id="current_game_status"></span>
+							</div>
 						</div>
 					
-				        <!-- Players -->
-				        <span class="mt-1 text-[color:var(--pong-text-field)]">Players:</span>
-				        <ul id="current_game_players" class="ml-2"></ul>
+						<!-- Players -->
+						<span class="mt-1 text-[color:var(--pong-text-field)]" data-i18n="current_game.players">Players:</span>
+						<ul id="current_game_players" class="ml-2"></ul>
 					
 				        <!-- Bottom buttons -->
 				        <div class="pong-modal-bottom-buttons mt-auto">
-				            <div id="invite_players_current" class="pong-invite-button">
-				                <span>Invite Friends</span>
-				                <span class="pong-icon pr-1">&#128386;</span>
-				            </div>
-				            <button id="start_match" class="pong-button active-border hidden text-[7px]">START MATCH</button>
+							<div id="invite_players_current" class="pong-invite-button">
+								<span data-i18n="current_game.invite">Invite Friends</span>
+								<span class="pong-icon pr-1">&#128386;</span>
+							</div>
+							<button id="start_match" class="pong-button active-border hidden text-[7px]" data-i18n="current_game.start">START MATCH</button>
 				        </div>
 					
 				    </div>
@@ -373,30 +384,30 @@
 
 					<div class="pong-modal-header">
 						<button id="create-game-cancel" class="pong-cancel-button">X</button>
-						<h2 class="pong-modal-top-text">Create Game</h2>
+						<h2 class="pong-modal-top-text" data-i18n="create_game.title">Create Game</h2>
 					</div>
 
 					<!-- Match options -->
 					<div id="match_options" class="h-full w-full flex flex-col items-center gap-2">
 					
 						<div class="pong-modal-options">
-							<button data-target="local" class="pong-button border-[3px] text-[8px] active-border invert-colors match-type">Local Match</button>
-							<button data-target="online" class="pong-button border-[3px] text-[8px] active-border match-type">Online Match</button>
-							<button data-target="tournament" class="pong-button border-[3px] text-[8px] active-border match-type">Tournament</button>
+							<button data-target="local" class="pong-button border-[3px] text-[8px] active-border invert-colors match-type" data-i18n="create_game.local">Local Match</button>
+							<button data-target="online" class="pong-button border-[3px] text-[8px] active-border match-type" data-i18n="create_game.online">Online Match</button>
+							<button data-target="tournament" class="pong-button border-[3px] text-[8px] active-border match-type" data-i18n="create_game.tournament">Tournament</button>
 						</div>
 					
 						<!-- Local -->
 						<div id="local" class="pong-suboptions">
-							<p class="pong-modal-options-text">
-								Play on the same screen using w,s & up, down or play against the computer using an A* algorithm.
+							<p class="pong-modal-options-text" data-i18n="create_game.local_desc">
+							Play on the same screen using w,s & up, down or play against the computer using an A* algorithm.
 							</p>
 							<div id="local_options" class="flex-col pong-modal-subobtions mt-6">
-								<button id="2player" class="pong-button active-border gap-2">Same Screen</button>
+								<button id="2player" class="pong-button active-border gap-2" data-i18n="create_game.same_screen">Same Screen</button>
 							
 								<div class="pong-modal-subobtions">
-									<button id="ai_easy" class="pong-button active-border flex-1">AI PERRY (Easy)</button>
-									<button id="ai_medium" class="pong-button active-border flex-1">AI MORTY (Medium)</button>
-									<button id="ai_hard" class="pong-button active-border flex-1">AI RICK (Hard)</button>
+									<button id="ai_easy" class="pong-button active-border flex-1" data-i18n="create_game.ai_perry">AI PERRY (Easy)</button>
+									<button id="ai_medium" class="pong-button active-border flex-1" data-i18n="create_game.ai_morty">AI MORTY (Medium)</button>
+									<button id="ai_hard" class="pong-button active-border flex-1" data-i18n="create_game.ai_rick">AI RICK (Hard)</button>
 								</div>
 							</div>
 
@@ -404,38 +415,38 @@
 				
 						<!-- Online -->
 						<div id="online" class="pong-suboptions hidden">
-							<p class="pong-modal-options-text">
+							<p class="pong-modal-options-text" data-i18n="create_game.online_desc">
 								Post a match online for anyone to join and/or invite player or friend to play directly with them.
 							</p>
 								
 								<div class="pong-modal-subobtions items-center mt-12 text-center">
-									<span class="text-[8px] text-[color:var(--pong-gray)]">You can later invite friends from search or online friends list.</span>
+									<span class="text-[8px] text-[color:var(--pong-gray)]" data-i18n="create_game.later_invite">You can later invite friends from search or online friends list.</span>
 								</div>
 
 						</div>
 
 						<!-- Tournament -->
 						<div id="tournament" class="pong-suboptions hidden ">
-							<p class="pong-modal-options-text">
+							<p class="pong-modal-options-text" data-i18n="create_game.tournament_desc">
 								Create a multiplayer tournament. King of the Hill style.
 							</p>
 							<div class="pong-modal-subobtions flex-col items-center mt-6">
 								<div>
 									<button type="button" id="decrement" class="pong-button-small">-</button>
-									<input id="tournament_size" type="number" min="4" max="64" step="2" class="pong-input-field text-center text-[12px] placeholder:text-[9px] h-[45px] w-28" placeholder="Party Size" />
-									<button type="button" id="increment" class="pong-button-small">+</button>
+									<input id="tournament_size" type="number" min="4" max="64" step="2" class="pong-input-field text-center text-[12px] placeholder:text-[9px] h-[45px] w-28" placeholder="Party Size" data-i18n-placeholder="create_game.party_size" />
+									<button type="button" id="increment" class="pong-button-small" data-i18n="create_game.plus">+</button>
 								</div>
 								<div class="pong-modal-subobtions flex-col items-center text-center">
-									<span class="text-[8px] text-[color:var(--pong-gray)]">You can later invite friends from search or online friends list.</span>
+									<span class="text-[8px] text-[color:var(--pong-gray)]" data-i18n="create_game.later_invite">You can later invite friends from search or online friends list.</span>
 								</div>
 							</div>
 						</div>
 
 					</div>
 					<div class="pong-modal-bottom-buttons">
-						<button id="online_toggle" class="pong-button active-border hidden"><span class="pong-icon -top-[6px]">&#8644;</span></button>
-						<div id="online_toggle_text" class="text-[7px] text-[color:var(--pong-gray)] text-center hidden">Anyone can join...</div>
-						<button id="create_submit_button" class="pong-submit-button active-border ml-auto">SUBMIT</button>
+						<button id="online_toggle" class="pong-button active-border hidden"><span class="pong-icon -top-[6px]" data-i18n="common.swap">&#8644;</span></button>
+						<div id="online_toggle_text" class="text-[7px] text-[color:var(--pong-gray)] text-center hidden" data-i18n="create_game.only_invite">create_game.only_invite</div>
+						<button id="create_submit_button" class="pong-submit-button active-border ml-auto" data-i18n="create_game.submit">SUBMIT</button>
 					</div>
 				</div>
 
@@ -443,13 +454,13 @@
 
 					<div class="pong-modal-header">
 						<button id="find-game-cancel" class="pong-cancel-button">X</button>
-						<h2 class="pong-modal-top-text">Find Game</h2>
+						<h2 class="pong-modal-top-text" data-i18n="find_game.title">Find Game</h2>
 					</div>
 					<div id="find_game_options" class="h-full w-full flex flex-col items-center gap-2">
 					
 						<div class="pong-modal-options">
-							<button data-target="matches" class="pong-button border-[3px] text-[8px] active-border find-type">Matches</button>
-							<button data-target="tournaments" class="pong-button border-[3px] text-[8px] active-border invert-colors find-type">Tournaments</button>
+							<button data-target="matches" class="pong-button border-[3px] text-[8px] active-border find-type" data-i18n="find_game.matches">Matches</button>
+							<button data-target="tournaments" class="pong-button border-[3px] text-[8px] active-border invert-colors find-type" data-i18n="find_game.tournaments">Tournaments</button>
 						</div>
 						<!-- Find Open Matches -->
 						<div id="matches" class="pong-suboptions3 gap-2 hidden">
@@ -468,7 +479,7 @@
 				
 					<div class="flex items-center justify-center w-full mb-4">
 						<button id="profilepic_cancel_button" class="pong-cancel-button">X</button>
-						<h2 class="pong-modal-top-text">Select Avatar</h2>
+						<h2 class="pong-modal-top-text" data-i18n="profilepic.select_avatar">Select Avatar</h2>
 					</div>
 				
 					<div id="profilepic_grid" class="profilepic-grid gap-2"></div>
@@ -486,17 +497,17 @@
 					
 					<div class="flex items-center justify-center">
 						<button id="close_login" class="pong-cancel-button">X</button>
-						<h2 class="pong-modal-top-text">LOG IN</h2>
+						<h2 class="pong-modal-top-text" data-i18n="login.title">LOG IN</h2>
 					</div>
 					<div class="h-full w-full flex flex-col items-center gap-1">
-						<input id="user_input" type="text" class="pong-input-field" placeholder="Username" />
-    			  		<input id="pass_input" type="password" class="pong-input-field" placeholder="Password" />
-						<span class="text-[8px] ">Don't have an account? <button id="donthaveanaccount_button" class="pong-button text-[6px] text-[color:var(--pong-gray)]">click here</button></span>
+						<input id="user_input" type="text" class="pong-input-field" placeholder="Username" data-i18n-placeholder="login.username" />
+						<input id="pass_input" type="password" class="pong-input-field" placeholder="Password" data-i18n-placeholder="login.password" />
+						<span class="text-[8px] "><span data-i18n="login.no_account">Don't have an account?</span> <button id="donthaveanaccount_button" class="pong-button text-[6px] text-[color:var(--pong-gray)]" data-i18n="login.click_here">click here</button></span>
 
 					</div>
     			  	<div class="pong-modal-bottom-buttons">
-						<button id="google_login" class="pong-button active-border "><span>LOGIN WITH GOOGLE</span></button>
-						<button id="login_submit_button" class="pong-submit-button active-border ml-auto">SUBMIT</button>
+						<button id="google_login" class="pong-button active-border "><span data-i18n="login.google">LOGIN WITH GOOGLE</span></button>
+						<button id="login_submit_button" class="pong-submit-button active-border ml-auto"><span data-i18n="login.submit">SUBMIT</span></button>
 					</div>
     			</div>
 
@@ -505,29 +516,29 @@
 
 					<div class="flex items-center justify-center">
 						<button id="close_register" class="pong-cancel-button">X</button>
-						<h2 class="pong-modal-top-text">REGISTER</h2>
+						<h2 class="pong-modal-top-text" data-i18n="register.title">REGISTER</h2>
 					</div>
 
 					<div class="h-full w-full flex flex-col items-center gap-0">
-						<input id="reg_username" type="text" class="pong-input-field" placeholder="Username" />
-						<input id="reg_displayname" type="text" class="pong-input-field" placeholder="Display Name" />
-						<input id="reg_email" type="email" class="pong-input-field" placeholder="Email" />
-						<input id="reg_password" type="password" class="pong-input-field" placeholder="Password" />
-						<span class="text-[8px] ">Already have an account?</span><button id="alreadyhaveanaccount_button" class="pong-button text-[6px] text-[color:var(--pong-gray)]">click here</button>
+						<input id="reg_username" type="text" class="pong-input-field" placeholder="Username" data-i18n-placeholder="register.username" />
+						<input id="reg_displayname" type="text" class="pong-input-field" placeholder="Display Name" data-i18n-placeholder="register.displayname" />
+						<input id="reg_email" type="email" class="pong-input-field" placeholder="Email" data-i18n-placeholder="register.email" />
+						<input id="reg_password" type="password" class="pong-input-field" placeholder="Password" data-i18n-placeholder="register.password" />
+						<span class="text-[8px] " data-i18n="register.have_account">Already have an account?</span><button id="alreadyhaveanaccount_button" class="pong-button text-[6px] text-[color:var(--pong-gray)]" data-i18n="register.click_here">click here</button>
 					</div>
     			  	<div class="pong-modal-bottom-buttons">
-						<button id="register_submit_button" class="pong-submit-button active-border ml-auto">SUBMIT</button>
+						<button id="register_submit_button" class="pong-submit-button active-border ml-auto" data-i18n="register.submit">SUBMIT</button>
 					</div>
 				</div>
 
                 <!-- Change Board Theme Modal -->
                 <div id="board_theme_modal" class="pong-modal hidden">
-                    <div class="flex items-center justify-center w-full mb-4">
-                    <button id="board_theme_cancel" class="pong-cancel-button">
-                        X
-                    </button>
-                    <h2 class="pong-modal-top-text">Board Theme</h2>
-                    </div>
+					<div class="flex items-center justify-center w-full mb-4">
+					<button id="board_theme_cancel" class="pong-cancel-button">
+						X
+					</button>
+					<h2 class="pong-modal-top-text" data-i18n="theme.board">Board Theme</h2>
+					</div>
         
                     <div class="pong-theme-carousel">
                     <button id="board_theme_prev" class="pong-button pong-theme-nav">
@@ -545,30 +556,30 @@
                     </div>
         
                     <div id="board_theme_name" class="pong-font text-[10px] mt-3">
-                    Classic
+					<span id="board_theme_name_text" data-i18n="theme.classic">Classic</span>
                     </div>
         
                     <div class="flex justify-center mt-4">
                     <button
-                        id="board_theme_apply"
-                        class="pong-submit-button active-border"
-                    >
-                        APPLY
-                    </button>
+						id="board_theme_apply"
+						class="pong-submit-button active-border"
+					>
+						<span data-i18n="theme.apply">APPLY</span>
+					</button>
                     </div>
                 </div>
 
                 <!-- Change Displayname Modal -->
                 <div id="change_displayname_modal" class="pong-modal  h-1/2 hidden">
-                    <div class="flex items-center justify-center">
-                        <button id="close_change_displayname" class="pong-cancel-button">X</button>
-                        <h2 class="pong-modal-top-text">UPDATE NAME</h2>
-                    </div>
+					<div class="flex items-center justify-center">
+						<button id="close_change_displayname" class="pong-cancel-button">X</button>
+						<h2 class="pong-modal-top-text" data-i18n="change_displayname.title">UPDATE NAME</h2>
+					</div>
                     <div class="flex flex-col gap-4 mt-4">
                         <input id="new_displayname_input" type="text" class="pong-input-field"
-                            placeholder="New Display Name" />
+							placeholder="New Display Name" data-i18n-placeholder="change_displayname.new_displayname" />
                         <div class="flex justify-center">
-                            <button id="submit_new_displayname" class="pong-submit-button active-border">SAVE</button>
+							<button id="submit_new_displayname" class="pong-submit-button active-border"><span data-i18n="change_displayname.save">SAVE</span></button>
                         </div>
                     </div>
                 </div>

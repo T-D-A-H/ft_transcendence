@@ -1,9 +1,63 @@
+//------------------- LANGUAGE MODAL -------------------
+import { Language, changeLanguage, getCurrentLanguage, translations, updateTranslations } from "./language-button.js";
+
+const changeLanguageButton = document.getElementById("change_language_button") as HTMLButtonElement;
+const languageModal = document.getElementById("language_modal") as HTMLDivElement;
+const languageOptions = document.getElementById("language_options") as HTMLDivElement;
+const languageClose = document.getElementById("language_close") as HTMLButtonElement;
+const menuBar = document.querySelector('.pong-menu-buttons') as HTMLDivElement;
+const topBar = document.querySelector('.pong-top-bar') as HTMLDivElement;
+
+function showLanguageModal() {
+	if (!languageModal || !languageOptions) return;
+	languageOptions.innerHTML = "";
+	// Hide menu bar and top bar overlays
+	if (menuBar) menuBar.style.display = 'none';
+	if (topBar) topBar.style.display = 'none';
+	// Dashboard style: large, centered language buttons
+	const langs = [
+		{ lang: Language.EN, label: 'ENGLISH' },
+		{ lang: Language.ES, label: 'ESPAÑOL' },
+		{ lang: Language.IT, label: 'ITALIANO' }
+	];
+	langs.forEach(({ lang, label }, idx) => {
+		const btn = document.createElement("button");
+		btn.className = "pong-button text-lg py-2 px-3 font-bold border-2 border-black rounded bg-gray-100 hover:bg-blue-200 transition-all duration-150 mb-1" + (getCurrentLanguage() === lang ? " active-border" : "");
+		btn.textContent = label;
+		btn.onclick = () => {
+			changeLanguage(lang);
+			hideLanguageModal();
+			updateTranslations();
+		};
+		if (idx === 0) btn.style.marginTop = '1.5rem';
+		languageOptions.appendChild(btn);
+	});
+	languageModal.classList.remove("hidden");
+}
+
+// When closing, restore the modal title display for next time
+function hideLanguageModal() {
+	if (languageModal) languageModal.classList.add("hidden");
+	// Restore menu bar and top bar overlays
+	if (menuBar) menuBar.style.display = '';
+	if (topBar) topBar.style.display = '';
+	const modalTitle = languageModal?.querySelector('.pong-modal-title');
+	if (modalTitle) (modalTitle as HTMLElement).style.display = '';
+}
+
+if (changeLanguageButton) {
+	changeLanguageButton.onclick = showLanguageModal;
+}
+if (languageClose) {
+	languageClose.onclick = hideLanguageModal;
+}
 import { drawGame } from "./draw.js";
 import { boardThemes } from "./themes.js"; // Importado de themes.js
 import { TournamentInfo, ProfileInfo, UserStats } from "./vars.js";
 import { changeAvatar } from "./change.js";
 import {GameStatus, setGameStatus, getGameStatus, GameType, setGameType, getGameType, setCurrentTournamentId, setCurrentMatchId} from "./vars.js";
 import { showNotification } from "./main.js";
+import { createLanguageButton } from "./language-button.js";
 
 //------------------------------------------------------------------------TOP-PROFILE-OPPONENT
 
@@ -389,11 +443,9 @@ export function renderPendingRequests(UL: HTMLElement, requests: any): HTMLButto
 //------------------------------------------------------------------------REQUESTS-MODAL
 //------------------------------------------------------------------------CURRENT-GAME-MODAL
 
-export const currentGameButton = 
-	document.getElementById('current_game') as HTMLButtonElement;
+export const currentGameButton = document.getElementById('current_game') as HTMLButtonElement;
 
-export const currentGameModal =
-	document.getElementById('current-game-modal') as HTMLDivElement;
+export const currentGameModal = document.getElementById('current-game-modal') as HTMLDivElement;
 
 export const currentGameCancel =
 	document.getElementById('current-game-cancel') as HTMLButtonElement;
@@ -445,47 +497,38 @@ export function setGameData(data: MatchData) {
 //------------------------------------------------------------------------CURRENT-GAME-MODAL
 //------------------------------------------------------------------------CREATE-GAME-MODAL
 
-export const createGameModal =
-	document.getElementById("create-game-modal") as HTMLDivElement;
 
-export const createGameButton =
-	document.getElementById("create_game") as HTMLButtonElement;
 
-export const createGameCancelButton =
-	document.getElementById("create-game-cancel") as HTMLButtonElement;
 
+export const createGameModal = document.getElementById("create-game-modal") as HTMLDivElement;
+export const createGameButton = document.getElementById("create_game") as HTMLButtonElement;
+export const createGameCancelButton = document.getElementById("create-game-cancel") as HTMLButtonElement;
 export let playAiButton: HTMLButtonElement;
-
 export let playLocallyButton: HTMLButtonElement;
-
 export let playRequestSendButton: HTMLButtonElement;
-
 export let submitTournamentCreationButton: HTMLButtonElement;
-
-export const playRequestUsernameInput =
-	document.getElementById("play_request_username") as HTMLInputElement;
-
-
-export const InviteManualSubmitButton =
-	document.getElementById("invite_manual_submit") as HTMLButtonElement;
-
-export const gameCreateSubmitButton = 
-	document.getElementById("create_submit_button") as HTMLButtonElement;
-
-export const matchTypeButtons =
-	document.querySelectorAll<HTMLButtonElement>(".match-type");
-
-export const matchOptionPanels =
-	document.querySelectorAll<HTMLDivElement>(".pong-suboptions");
-
+export const playRequestUsernameInput = document.getElementById("play_request_username") as HTMLInputElement;
+export const InviteManualSubmitButton = document.getElementById("invite_manual_submit") as HTMLButtonElement;
+export const gameCreateSubmitButton = document.getElementById("create_submit_button") as HTMLButtonElement;
+export const matchTypeButtons = document.querySelectorAll<HTMLButtonElement>(".match-type");
+export const matchOptionPanels = document.querySelectorAll<HTMLDivElement>(".pong-suboptions");
 export let selected_mode: string;
+export function setSelectedMode(mode :string): void { selected_mode = mode; }
+export function getSelectedMode(): string { return (selected_mode); }
 
-export function setSelectedMode(mode :string): void {
-	selected_mode = mode;
+// Ensure translations are updated when showing play_list or current-game-modal
+const playList = document.getElementById('play_list');
+const playListButton = document.querySelector('[data-target="play_list"]');
+
+if (playListButton && playList) {
+	playListButton.addEventListener('click', () => {
+		setTimeout(() => updateTranslations(), 0);
+	});
 }
-
-export function getSelectedMode(): string {
-	return (selected_mode);
+if (currentGameButton && currentGameModal) {
+	currentGameButton.addEventListener('click', () => {
+		setTimeout(() => updateTranslations(), 0);
+	});
 }
 
 
@@ -495,28 +538,33 @@ export function getSelectedMode(): string {
 export let onlineToggle =
 	document.getElementById('online_toggle') as HTMLButtonElement;
 
-export let onlineToggleText = 
-	document.getElementById('online_toggle_text') as HTMLDivElement;
 
-onlineToggleText.textContent = "Only by Invite....";
+export let onlineToggleText = document.getElementById('online_toggle_text') as HTMLDivElement;
 
-let isPublic: boolean = false; 
+let isPublic: boolean = false;
+
+export function updateOnlineToggleText() {
+	if (!onlineToggleText) return;
+	if (isPublic === false) {
+		onlineToggleText.setAttribute('data-i18n', 'create_game.only_invite');
+	} else {
+		onlineToggleText.setAttribute('data-i18n', 'create_game.anyone_join');
+	}
+	updateTranslations();
+}
 
 export function toggleVisibility(visibility: boolean): void {
-
 	isPublic = visibility;
-	if (isPublic === false) {
-		onlineToggleText.textContent = "Only by Invite....";
-	} else {
-		onlineToggleText.textContent = "Anyone can Join...";
-	}
+	updateOnlineToggleText();
 }
 
 onlineToggle.onclick = (): void => {
-
 	isPublic = !isPublic;
 	toggleVisibility(isPublic);
 };
+
+// Update onlineToggleText on language change
+document.addEventListener('languageChanged', updateOnlineToggleText);
 
 export function getGameVisibility(): boolean {
 
@@ -665,6 +713,24 @@ export function makeVisible(elem: HTMLElement): void {
 
 //------------------------------------------------------------------------UTILS
 //------------------------------------------------------------------------SETTINGS
+
+// Add language button to settings under board theme
+window.addEventListener('DOMContentLoaded', () => {
+	const langContainer = document.getElementById('language_button_container');
+	if (langContainer) {
+		langContainer.innerHTML = '';
+		createLanguageButton({
+			container: langContainer,
+			style: 'dropdown',
+			className: 'pong-button active-border full-width flex justify-between items-center',
+		});
+		// Set the label to match the other buttons
+		const innerBtn = langContainer.querySelector('.language-btn');
+		if (innerBtn) {
+			(innerBtn as HTMLElement).innerHTML = 'Change Language';
+		}
+	}
+});
 
 export let FONT = "BlockFont";
 
@@ -863,14 +929,20 @@ async function drawBoardThemePreview(): Promise<void> {
 }
 
 function updateBoardThemePreview(): void {
-    if (!boardThemePreview || !boardThemeName) return;
-    const theme = boardThemes[boardThemeIndex] || boardThemes[0];
-    boardThemeClassNames.forEach((className) =>
-        boardThemePreview.classList.remove(className),
-    );
-    boardThemePreview.classList.add(theme.className);
-    boardThemeName.textContent = theme.name;
-    void drawBoardThemePreview();
+	if (!boardThemePreview || !boardThemeName) return;
+	const theme = boardThemes[boardThemeIndex] || boardThemes[0];
+	boardThemeClassNames.forEach((className) =>
+		boardThemePreview.classList.remove(className),
+	);
+	boardThemePreview.classList.add(theme.className);
+	// Set theme name using translations
+	const themeNameSpan = document.getElementById("board_theme_name_text");
+	if (themeNameSpan) {
+		const lang = getCurrentLanguage();
+		const key = `theme.${theme.id}`;
+		themeNameSpan.textContent = (translations[key] && translations[key][lang]) ? translations[key][lang] : theme.name;
+	}
+	void drawBoardThemePreview();
 }
 
 if (boardThemeButton) {

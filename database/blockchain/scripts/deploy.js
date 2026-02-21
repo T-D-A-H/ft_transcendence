@@ -74,9 +74,24 @@ async function main() {
 	
 	console.log("\nDeployment completed successfully!");
 	console.log("CONTRACT_ADDRESS=" + contractAddress);
-	console.log("\nVerify the contract on SnowTrace (optional):");
-	console.log("npx hardhat verify --network fuji " + contractAddress);
-	
+
+	if (hre.network && hre.network.name && hre.network.name !== 'hardhat' && hre.network.name !== 'localhost') {
+		try {
+			console.log("\nStarting background verification on block explorer...");
+			const { spawn } = require('child_process');
+			const cmd = 'npx';
+			const args = ['hardhat', 'verify', '--network', hre.network.name, contractAddress];
+			const child = spawn(cmd, args, { detached: true, stdio: 'ignore', shell: true, cwd: path.join(__dirname, '..') });
+			child.unref();
+			console.log('Verification launched in background (detached).');
+			console.log('You can check the block explorer or run: npx hardhat verify --network ' + hre.network.name + ' ' + contractAddress);
+		} catch (bgErr) {
+			console.warn('Failed to launch background verification:', bgErr && bgErr.message ? bgErr.message : bgErr);
+			console.log('You can retry verification manually:');
+			console.log('npx hardhat verify --network ' + hre.network.name + ' ' + contractAddress);
+		}
+	}
+
 	return contractAddress;
 }
 

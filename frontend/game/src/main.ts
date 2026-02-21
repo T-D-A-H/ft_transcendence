@@ -24,6 +24,10 @@ import { BASE_URL, MATCH_URL, TOURNAMENT_URL, USER_URL, POST, GET, INVITE_URL, R
 import { setCurrentMatchId, getCurrentMatchId, setCurrentTournamentId, getDisplaySide, setDisplaySide, getCurrentTournamentId, setCurrentOpponentId } from "./vars.js";
 import { getCurrentOpponentId, setInviteFrom, getInviteFrom, setMatchMode, NOTIFICATION_TIME  } from "./vars.js";
 import { registerUser, loginUser, logoutUser, configure2FA, verify2FA } from "./auth.js";
+
+import { initializeLanguage, updateTranslations, translate } from "./language-button.js";
+initializeLanguage();
+updateTranslations();
 import { userSocket, initializeWebSocket, restoreSession } from "./websocket.js";
 
 import {httpEvent, initKeyHandling} from "./events.js";
@@ -186,6 +190,9 @@ closeLoginButton.onclick = () => hide(loginModal);
 googleLoginButton.onclick = () => {
 	window.location.href = "/auth/google";
 };
+
+
+
 
 (async () => {
 	const urlParams = new URLSearchParams(window.location.search);
@@ -642,11 +649,11 @@ export async function updateCurrentGame(url_type: string) {
 			setCurrentMatchId(data.match_id);
 		if (data.tournament_id)
 			setCurrentTournamentId(data.tournament_id);
-		currentGameType.textContent = truncateText(data.type, 12);
-		currentGameSubType.textContent = truncateText(data.sub_type, 12);
-		currentGameVisibility.textContent = truncateText(data.visibility, 12);
+		currentGameType.textContent = translate(`current_game.${data.type}`) || truncateText(data.type, 12);
+		currentGameSubType.textContent = translate(`current_game.${data.sub_type}`) || truncateText(data.sub_type, 12);
+		currentGameVisibility.textContent = translate(`current_game.${data.visibility}`) || truncateText(data.visibility, 12);
 		currentGameSize.textContent = truncateText(data.size.toString(), 12);
-		currentGameStatus.textContent = truncateText(data.status, 12);
+		currentGameStatus.textContent = translate(`current_game.${data.status.toLowerCase()}`) || truncateText(data.status, 12);
 		currentGameCreator.textContent = truncateText(data.creator, 12);
 		currentGamePlayers.innerHTML = data.players.map((player: string) => truncateText(player, 12)).join(', ');
 	} catch (err: any) {
