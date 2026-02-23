@@ -1,4 +1,4 @@
-	export enum Language {
+export enum Language {
 		EN = 'en',
 		ES = 'es',
 		IT = 'it'
@@ -26,82 +26,91 @@
 			es: 'Invitación manual',
 			it: 'Invito manuale'
 		},
-// ...existing code...
-	'current_game.type': {
-		en: 'Type',
-		es: 'Tipo',
-		it: 'Tipo'
-	},
-	'current_game.match': {
-		en: 'Match',
-		es: 'Partida',
-		it: 'Partita'
-	},
-	'current_game.subtype': {
-		en: 'Subtype',
-		es: 'Subtipo',
-		it: 'Sottotipo'
-	},
-	'current_game.online': {
-		en: 'Online',
-		es: 'Online',
-		it: 'Online'
-	},
-	'current_game.visibility': {
-		en: 'Visibility',
-		es: 'Visibilidad',
-		it: 'Visibilità'
-	},
-	'current_game.private': {
-		en: 'Private',
-		es: 'Privada',
-		it: 'Privata'
-	},
-	'current_game.size': {
-		en: 'Size',
-		es: 'Tamaño',
-		it: 'Dimensione'
-	},
-	'current_game.size_1_2': {
-		en: '1/2',
-		es: '1/2',
-		it: '1/2'
-	},
-	'current_game.creator': {
-		en: 'Creator',
-		es: 'Creador',
-		it: 'Creatore'
-	},
-	'current_game.test': {
-		en: 'test',
-		es: 'test',
-		it: 'test'
-	},
-	'current_game.status': {
-		en: 'Status',
-		es: 'Estado',
-		it: 'Stato'
-	},
-	'current_game.waiting': {
-		en: 'Waiting',
-		es: 'Esperando',
-		it: 'In attesa'
-	},
-	'current_game.players': {
-		en: 'Players:',
-		es: 'Jugadores:',
-		it: 'Giocatori:'
-	},
-	'dashboard.title': {
-		en: 'Dashboard',
-		es: 'Panel',
-		it: 'Cruscotto'
-	},
-	'dashboard.refresh': {
-		en: 'Refresh',
-		es: 'Refrescar',
-		it: 'Aggiorna'
-	},
+		'invite_game.title': {
+			en: 'Invite Friends',
+			es: 'Invitar Amigos',
+			it: 'Invita Amici'
+		},
+		'invite_game.manual_invite': {
+			en: 'Manual Invite',
+			es: 'Invitación manual',
+			it: 'Invito manuale'
+		},
+		'current_game.type': {
+			en: 'Type',
+			es: 'Tipo',
+			it: 'Tipo'
+		},
+		'current_game.match': {
+			en: 'Match',
+			es: 'Partida',
+			it: 'Partita'
+		},
+		'current_game.subtype': {
+			en: 'Subtype',
+			es: 'Subtipo',
+			it: 'Sottotipo'
+		},
+		'current_game.online': {
+			en: 'Online',
+			es: 'Online',
+			it: 'Online'
+		},
+		'current_game.visibility': {
+			en: 'Visibility',
+			es: 'Visibilidad',
+			it: 'Visibilità'
+		},
+		'current_game.private': {
+			en: 'Private',
+			es: 'Privada',
+			it: 'Privata'
+		},
+		'current_game.size': {
+			en: 'Size',
+			es: 'Tamaño',
+			it: 'Dimensione'
+		},
+		'current_game.size_1_2': {
+			en: '1/2',
+			es: '1/2',
+			it: '1/2'
+		},
+		'current_game.creator': {
+			en: 'Creator',
+			es: 'Creador',
+			it: 'Creatore'
+		},
+		'current_game.test': {
+			en: 'test',
+			es: 'test',
+			it: 'test'
+		},
+		'current_game.status': {
+			en: 'Status',
+			es: 'Estado',
+			it: 'Stato'
+		},
+		'current_game.waiting': {
+			en: 'Waiting',
+			es: 'Esperando',
+			it: 'In attesa'
+		},
+		'current_game.players': {
+			en: 'Players:',
+			es: 'Jugadores:',
+			it: 'Giocatori:'
+		},
+		'dashboard.title': {
+			en: 'Dashboard',
+			es: 'Panel',
+			it: 'Cruscotto'
+		},
+		'dashboard.refresh': {
+			en: 'Refresh',
+			es: 'Refrescar',
+			it: 'Aggiorna'
+		},
 		'common.invite': {
 			en: 'INVITE',
 			es: 'INVITAR',
@@ -559,6 +568,56 @@
 		es: 'CAMBIAR NOMBRE PARA MOSTRAR',
 		it: 'CAMBIA NOME VISUALIZZATO'
 	},
+	'settings.update_username': {
+		en: 'UPDATE USERNAME',
+		es: 'ACTUALIZAR NOMBRE DE USUARIO',
+		it: 'AGGIORNA NOME UTENTE'
+	},
+	'settings.new_username': {
+		en: 'New Username',
+		es: 'Nuevo nombre de usuario',
+		it: 'Nuovo nome utente'
+	},
+	'settings.save': {
+		en: 'SAVE',
+		es: 'GUARDAR',
+		it: 'SALVA'
+	},
+	'settings.update_email': {
+		en: 'UPDATE EMAIL',
+		es: 'ACTUALIZAR CORREO',
+		it: 'AGGIORNA EMAIL'
+	},
+	'settings.new_email': {
+		en: 'New Email Address',
+		es: 'Nueva dirección de correo',
+		it: 'Nuovo indirizzo email'
+	},
+	'settings.security': {
+		en: 'SECURITY',
+		es: 'SEGURIDAD',
+		it: 'SICUREZZA'
+	},
+	'settings.current_password': {
+		en: 'Current Password',
+		es: 'Contraseña actual',
+		it: 'Password attuale'
+	},
+	'settings.new_password': {
+		en: 'New Password',
+		es: 'Nueva contraseña',
+		it: 'Nuova password'
+	},
+	'settings.confirm_password': {
+		en: 'Confirm Password',
+		es: 'Confirmar contraseña',
+		it: 'Conferma password'
+	},
+	'settings.update_password': {
+		en: 'UPDATE',
+		es: 'ACTUALIZAR',
+		it: 'AGGIORNA'
+	},
 	'settings.change_username': {
 		en: 'CHANGE USERNAME',
 		es: 'CAMBIAR NOMBRE DE USUARIO',
@@ -680,7 +739,6 @@
 		es: 'Cambiar tema del tablero',
 		it: 'Cambia tema della schermata'
 	},
-// removed duplicate keys for settings.change_displayname, settings.change_username, settings.change_email, settings.change_password, settings.change_avatar
 	'play.play_locally': {
 		en: 'Play Locally',
 		es: 'Jugar localmente',

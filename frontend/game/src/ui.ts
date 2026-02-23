@@ -16,9 +16,9 @@ function showLanguageModal() {
 	if (topBar) topBar.style.display = 'none';
 	// Dashboard style: large, centered language buttons
 	const langs = [
-		{ lang: Language.EN, label: 'ENGLISH' },
-		{ lang: Language.ES, label: 'ESPAÑOL' },
-		{ lang: Language.IT, label: 'ITALIANO' }
+		{ lang: Language.EN, label: translations['language.en'] ? translations['language.en'][Language.EN] : 'ENGLISH' },
+		{ lang: Language.ES, label: translations['language.es'] ? translations['language.es'][Language.ES] : 'ESPAÑOL' },
+		{ lang: Language.IT, label: translations['language.it'] ? translations['language.it'][Language.IT] : 'ITALIANO' }
 	];
 	langs.forEach(({ lang, label }, idx) => {
 		const btn = document.createElement("button");
@@ -1061,28 +1061,60 @@ export const submitNewPasswordButton =
 
 
 if (changeDisplayNameButton) {
-    changeDisplayNameButton.onclick = () => {
-        hide(menuModal);
-        show(changeDisplayNameModal);
-    };
+	changeDisplayNameButton.onclick = () => {
+		hide(menuModal);
+		show(changeDisplayNameModal);
+		updateTranslations();
+	};
 }
 if (closeChangeDisplayNameButton) {
-    closeChangeDisplayNameButton.onclick = () => {
-        hide(changeDisplayNameModal);
-        show(menuModal);
-    };
+	closeChangeDisplayNameButton.onclick = () => {
+		hide(changeDisplayNameModal);
+		show(menuModal);
+		updateTranslations();
+	};
+}
+if (changeUsernameButton) {
+	changeUsernameButton.onclick = () => {
+		hide(menuModal);
+		show(changeUsernameModal);
+		updateTranslations();
+	};
+}
+if (closeChangeUsernameButton) {
+	closeChangeUsernameButton.onclick = () => {
+		hide(changeUsernameModal);
+		show(menuModal);
+		updateTranslations();
+	};
+}
+if (changeEmailButton) {
+	changeEmailButton.onclick = () => {
+		hide(menuModal);
+		show(changeEmailModal);
+		updateTranslations();
+	};
+}
+if (closeChangeEmailButton) {
+	closeChangeEmailButton.onclick = () => {
+		hide(changeEmailModal);
+		show(menuModal);
+		updateTranslations();
+	};
 }
 if (changePasswordButton) {
-    changePasswordButton.onclick = () => {
-        hide(menuModal);
-        show(changePasswordModal);
-    };
+	changePasswordButton.onclick = () => {
+		hide(menuModal);
+		show(changePasswordModal);
+		updateTranslations();
+	};
 }
 if (closeChangePasswordButton) {
-    closeChangePasswordButton.onclick = () => {
-        hide(changePasswordModal);
-        show(menuModal);
-    };
+	closeChangePasswordButton.onclick = () => {
+		hide(changePasswordModal);
+		show(menuModal);
+		updateTranslations();
+	};
 }
 
 //------------------------------------------------------------------------SETTINGS

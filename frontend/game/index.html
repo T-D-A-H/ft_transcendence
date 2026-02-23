@@ -228,19 +228,20 @@
 
 									<!-- Header row: requests button + add button -->
 									<div class="flex gap-2 w-full">
-										<button id="requests_friend_button" class="pong-button-gray shrink-0" data-i18n="menu.requests">requests</button>
-										<button id="add_friend_button" class="pong-button active-border border-2 ml-auto" data-i18n="friends.add">ADD +</button>
+										<button id="requests_friend_button" class="pong-button-gray shrink-0" data-i18n="menu.requests"></button>
+										<button id="add_friend_button" class="pong-button active-border border-2 ml-auto" data-i18n="friends.add"></button>
 									</div>
 
 									<!-- Dynamic friends rendered by friends.ts -->
 									<ul id="friends_list_ul" class="pong-friends-list flex flex-col gap-1 w-full"></ul>
+									<div class="text-center text-[8px] mt-2" id="no_friends_message" data-i18n="friends.no_friends"></div>
 
 								</div>
 
 								<!-- play -->
 								<div id="play_list" class="pong-list">
 									<div class="flex gap-2 w-full">
-										<button id="requests_game_button" class="pong-button-gray shrink-0" data-i18n="menu.requests">Solicitudes</button>
+										<button id="requests_game_button" class="pong-button-gray shrink-0" data-i18n="menu.requests"></button>
 										<button id="current_game" class="pong-button-gray ml-auto" data-i18n="current_game.title">Current Game</button>
 									</div>
 									<button id="create_game" class="pong-button active-border full-width" data-i18n="game.create">CREAR PARTIDA</button>
@@ -277,15 +278,14 @@
 
 				<!-- Invite Players Game Modal -->
 				<div id="invite-game-modal" class="pong-modal hidden">
-
 					<div class="pong-modal-header">
 						<button id="invite-game-cancel" class="pong-cancel-button">X</button>
-						<h2 class="pong-modal-top-text" data-i18n="invite_game.title">Invite Friends</h2>
+						<h2 class="pong-modal-top-text" data-i18n="invite_game.title"></h2>
 					</div>
 					<div id="online_friends" class="pong-suboptions">
 						<div class="pong-box flex flex-row gap-2 pb-0 pt-2 mb-2 items-center justify-center">
-							<input id="play_request_username" type="text" class="pong-input-field text-[10px] placeholder:text-[10px]" placeholder="Manual Invite" data-i18n-placeholder="invite_game.manual_invite"/>
-							<button id="invite_manual_submit" class="pong-submit-button h-1/2 text-[7px]  active-border ml-auto"><span data-i18n="common.send">ENVIAR</span></button>
+							<input id="play_request_username" type="text" class="pong-input-field text-[10px] placeholder:text-[10px]" data-i18n-placeholder="invite_game.manual_invite" />
+							<button id="invite_manual_submit" class="pong-submit-button h-1/2 text-[7px]  active-border ml-auto"><span data-i18n="common.send"></span></button>
 						</div>
 						<ul id="friends_list_invite_ul" class="pong-tournament-list"></ul>
 					</div>
@@ -585,69 +585,65 @@
                 </div>
 
                 <!-- Change Username Modal -->
-                <div id="change_username_modal" class="pong-modal h-1/2 hidden">
-                    <div class="flex items-center justify-center">
-                        <button id="close_change_username" class="pong-cancel-button">X</button>
-                        <h2 class="pong-modal-top-text">UPDATE USERNAME</h2>
-                    </div>
-                    <div class="flex flex-col gap-4 mt-4">
-                        <input id="new_username_input" type="text" class="pong-input-field" placeholder="New Username" />
-                        <div class="flex justify-center">
-                            <button id="submit_new_username" class="pong-submit-button active-border">SAVE</button>
-                        </div>
-                    </div>
-                </div>
+				<div id="change_username_modal" class="pong-modal h-1/2 hidden">
+					<div class="flex items-center justify-center">
+						<button id="close_change_username" class="pong-cancel-button">X</button>
+						<h2 class="pong-modal-top-text" data-i18n="settings.update_username">UPDATE USERNAME</h2>
+					</div>
+					<div class="flex flex-col gap-4 mt-4">
+						<input id="new_username_input" type="text" class="pong-input-field" placeholder="New Username" data-i18n-placeholder="settings.new_username" />
+						<div class="flex justify-center">
+							<button id="submit_new_username" class="pong-submit-button active-border"><span data-i18n="settings.save">SAVE</span></button>
+						</div>
+					</div>
+				</div>
 
                 <!-- Change Email Modal -->
-                <div id="change_email_modal" class="pong-modal h-1/2 hidden">
-                    <div class="flex items-center justify-center">
-                        <button id="close_change_email" class="pong-cancel-button">X</button>
-                        <h2 class="pong-modal-top-text">UPDATE EMAIL</h2>
-                    </div>
-                    <div class="flex flex-col gap-4 mt-4">
-                        <input id="new_email_input" type="email" class="pong-input-field"
-                            placeholder="New Email Address" />
-                        <div class="flex justify-center">
-                            <button id="submit_new_email" class="pong-submit-button active-border">SAVE</button>
-                        </div>
-                    </div>
-                </div>
+				<div id="change_email_modal" class="pong-modal h-1/2 hidden">
+					<div class="flex items-center justify-center">
+						<button id="close_change_email" class="pong-cancel-button">X</button>
+						<h2 class="pong-modal-top-text" data-i18n="settings.update_email">UPDATE EMAIL</h2>
+					</div>
+					<div class="flex flex-col gap-4 mt-4">
+						<input id="new_email_input" type="email" class="pong-input-field"
+							placeholder="New Email Address" data-i18n-placeholder="settings.new_email" />
+						<div class="flex justify-center">
+							<button id="submit_new_email" class="pong-submit-button active-border"><span data-i18n="settings.save">SAVE</span></button>
+						</div>
+					</div>
+				</div>
 
                 <!-- Change Password Modal -->
-                <div id="change_password_modal" class="pong-modal hidden">
-                    <div class="flex items-center justify-center">
-                        <button id="close_change_password" class="pong-cancel-button">X</button>
-                        <h2 class="pong-modal-top-text">SECURITY</h2>
-                    </div>
-                    <div class="flex flex-col gap-2 mt-4">
-                        <input id="old_password_input" type="password" class="pong-input-field"
-                            placeholder="Current Password" />
-                        <input id="new_password_input" type="password" class="pong-input-field"
-                            placeholder="New Password" />
-                        <input id="confirm_password_input" type="password" class="pong-input-field"
-                            placeholder="Confirm Password" />
-                        <div class="flex justify-center mt-2">
-                            <button id="submit_new_password" class="pong-submit-button active-border">UPDATE</button>
-                        </div>
-                    </div>
-                </div>
+				<div id="change_password_modal" class="pong-modal hidden">
+					<div class="flex items-center justify-center">
+						<button id="close_change_password" class="pong-cancel-button">X</button>
+						<h2 class="pong-modal-top-text" data-i18n="settings.security">SECURITY</h2>
+					</div>
+					<div class="flex flex-col gap-2 mt-4">
+						<input id="old_password_input" type="password" class="pong-input-field"
+							placeholder="Current Password" data-i18n-placeholder="settings.current_password" />
+						<input id="new_password_input" type="password" class="pong-input-field"
+							placeholder="New Password" data-i18n-placeholder="settings.new_password" />
+						<input id="confirm_password_input" type="password" class="pong-input-field"
+							placeholder="Confirm Password" data-i18n-placeholder="settings.confirm_password" />
+						<div class="flex justify-center mt-2">
+							<button id="submit_new_password" class="pong-submit-button active-border"><span data-i18n="settings.update_password">UPDATE</span></button>
+						</div>
+					</div>
+				</div>
 
 				<!-- 2FA Option Modal -->
 				<div id="twofa_option_modal" class="pong-modal h-[45%] hidden">
 					<div class="flex items-center justify-center">
 						<button id="twofa_option_cancel_button" class="pong-cancel-button">X</button>
-						<h2 class="pong-modal-top-text">Choose 2FA Method</h2>
+						<h2 class="pong-modal-top-text" data-i18n="twofa.choose_method"></h2>
 					</div>
 					<div class="h-full w-full flex flex-col items-center">
-						<p class="pong-modal-options-text text-[8px] text-center">
-							Help secure your account by choosing a second factor of authentication to protect your account from unauthorized access.
-						</p>
+						<p class="pong-modal-options-text text-[8px] text-center" data-i18n="twofa.help_text"></p>
 					</div>
 					<div class="h-full w-full flex flex-col items-center gap-1">
-					
-						<button id="twofa_email_button" class="pong-submit-button active-border">Set up via Email</button>
-						<button id="twofa_skip_button" class="pong-button text-[6px]">Skip For Now</button>
-
+						<button id="twofa_email_button" class="pong-submit-button active-border" data-i18n="twofa.email"></button>
+						<button id="twofa_skip_button" class="pong-button text-[6px]" data-i18n="twofa.skip"></button>
 					</div>
 				</div>
 
