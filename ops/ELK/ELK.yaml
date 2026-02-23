@@ -30,6 +30,7 @@ services:
       - ./Logstash/config:/app/config
       - ./Logstash/logs:/app/logs
       - ./Elasticsearch/certs:/app/config/certs:ro
+      - ./Logstash/data:/app/data
     ports:
       - "5069:5069"
       - "8080:8080"
