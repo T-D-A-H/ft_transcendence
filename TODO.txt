@@ -1,0 +1,5 @@
+LANGUAGE:
+
+- En request y en invitar amigos no se actualiza mensaje de:
+ -  no pending game/friends requests.
+ -  No friends yet.

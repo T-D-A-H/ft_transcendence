@@ -364,14 +364,14 @@ async function renderRequestLists(UL: HTMLElement, REQUEST_TYPE: string) {
 						await renderRequestLists(UL, REQUEST_TYPE);
 					
 				} catch (err: any) {
-					console.error(err?.msg ?? "Request failed11111");
+					console.error(err?.msg ?? "Request failed");
 				}
 			}
 		}
 	}
 	
 	} catch (err: any) {
-			console.error(err?.msg ?? "Request failed3333");
+			console.error(err?.msg ?? "Request failed");
 	}
 }
 
@@ -581,7 +581,7 @@ export async function renderInviteFriendsList(container: HTMLUListElement): Prom
 
 		if (friends.length === 0) {
 				const empty = document.createElement("li");
-				empty.className = "pong-font text-[7px] text-center";
+				empty.className = "pong-font text-[7px]";
 				empty.style.color = "var(--pong-gray)";
 				empty.textContent = "No friends yet. Add some!";
 				container.appendChild(empty);
@@ -649,11 +649,11 @@ export async function updateCurrentGame(url_type: string) {
 			setCurrentMatchId(data.match_id);
 		if (data.tournament_id)
 			setCurrentTournamentId(data.tournament_id);
-		currentGameType.textContent = translate(`current_game.${data.type}`) || truncateText(data.type, 12);
-		currentGameSubType.textContent = translate(`current_game.${data.sub_type}`) || truncateText(data.sub_type, 12);
-		currentGameVisibility.textContent = translate(`current_game.${data.visibility}`) || truncateText(data.visibility, 12);
+		currentGameType.textContent = truncateText(data.type, 12);
+		currentGameSubType.textContent = truncateText(data.sub_type, 12);
+		currentGameVisibility.textContent = truncateText(data.visibility, 12);
 		currentGameSize.textContent = truncateText(data.size.toString(), 12);
-		currentGameStatus.textContent = translate(`current_game.${data.status.toLowerCase()}`) || truncateText(data.status, 12);
+		currentGameStatus.textContent = truncateText(data.status, 12);
 		currentGameCreator.textContent = truncateText(data.creator, 12);
 		currentGamePlayers.innerHTML = data.players.map((player: string) => truncateText(player, 12)).join(', ');
 	} catch (err: any) {

@@ -719,6 +719,11 @@ export enum Language {
 		es: 'Estadísticas',
 		it: 'Statistiche'
 	},
+	'menu.friends': {
+		en: 'Friends',
+		es: 'Amigos',
+		it: 'Amici'
+	},
 	'menu.requests': {
 		en: 'Requests',
 		es: 'Solicitudes',

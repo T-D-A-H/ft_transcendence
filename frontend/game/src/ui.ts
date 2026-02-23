@@ -22,7 +22,7 @@ function showLanguageModal() {
 	];
 	langs.forEach(({ lang, label }, idx) => {
 		const btn = document.createElement("button");
-		btn.className = "pong-button text-lg py-2 px-3 font-bold border-2 border-black rounded bg-gray-100 hover:bg-blue-200 transition-all duration-150 mb-1" + (getCurrentLanguage() === lang ? " active-border" : "");
+		btn.className = "pong-button py-2 px-3 transition-all duration-150 mb-1" + (getCurrentLanguage() === lang ? " active-border" : "");
 		btn.textContent = label;
 		btn.onclick = () => {
 			changeLanguage(lang);

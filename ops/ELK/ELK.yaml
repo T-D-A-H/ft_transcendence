@@ -34,6 +34,10 @@ services:
       - "5069:5069"
       - "8080:8080"
       - "5044:5044"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     networks:
       - ELK
     restart: unless-stopped
@@ -59,6 +63,10 @@ services:
       - "9200:9200"
     networks:
       - ELK
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     restart: unless-stopped
 
   # visualizes logs as graphs
@@ -76,6 +84,10 @@ services:
       - "5601:5601"
     networks:
       - ELK
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     restart: unless-stopped
 
   # volume for persisting Elasticsearch and Kibana data

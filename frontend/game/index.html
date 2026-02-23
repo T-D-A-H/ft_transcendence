@@ -62,10 +62,10 @@
 					
 						<!-- Actions -->
 						<div class="pong-menu-buttons">
-													<button class="pong-button" data-target="settings_list"><span class="pong-icon -top-[6px]">&#9881;</span></button>
-													<button class="pong-button" data-target="stats_list" data-i18n="menu.stats">Estadísticas</button>
-													<button class="pong-button" data-target="friends_list" data-i18n="menu.requests">Solicitudes</button>
-													<button class="pong-button active-border" data-target="play_list" data-i18n="menu.play">Jugar</button>
+							<button class="pong-button" data-target="settings_list"><span class="pong-icon -top-[6px]">&#9881;</span></button>
+							<button class="pong-button" data-target="stats_list" data-i18n="menu.stats">Estadísticas</button>
+							<button class="pong-button" data-target="friends_list" data-i18n="menu.friends">Amigos</button>
+							<button class="pong-button active-border" data-target="play_list" data-i18n="menu.play">Jugar</button>
 						</div>
 					
 						<div class="flex justify-center mt-2.5">
@@ -86,13 +86,7 @@
 
 										<button id="change_language_button" class="pong-button active-border full-width flex justify-between items-center"><span data-i18n="settings.change_language">Change Language</span></button>
 
-										<!-- Language Modal Overlay -->
-										<div id="language_modal" class="pong-modal h-1/2 hidden">
-											<div class="relative bg-white border-4 border-black rounded-xl shadow-2xl min-w-[160px] max-w-[90vw] flex flex-col items-center pt-8 pb-2 px-2">
-												<button id="language_close" class="absolute top-4 right-4 text-3xl font-bold leading-none hover:text-red-600">&times;</button>
-												<div id="language_options" class="flex flex-col gap-4 w-full mt-2"></div>
-											</div>
-										</div>
+		
 
                                     <button id="change_displayname_button"
                                         class="pong-button active-border full-width flex justify-between items-center">
@@ -234,7 +228,6 @@
 
 									<!-- Dynamic friends rendered by friends.ts -->
 									<ul id="friends_list_ul" class="pong-friends-list flex flex-col gap-1 w-full"></ul>
-									<div class="text-center text-[8px] mt-2" id="no_friends_message" data-i18n="friends.no_friends"></div>
 
 								</div>
 
@@ -252,6 +245,15 @@
 							<div class="flex-1"></div>
 						</div>
 					</div>
+				</div>
+
+				<!-- Change Language Modal -->
+				<div id="language_modal" class="pong-modal h-[42%] hidden">
+					<div class="pong-modal-header">
+						<button id="language_close" class="pong-cancel-button">X</button>
+						<h2 class="pong-modal-top-text" data-i18n="settings.change_language"></h2>
+					</div>
+					<div id="language_options" class="flex flex-col gap-1 mt-[-2rem]"></div>
 				</div>
 
 				<!-- Friend Modal -->
@@ -486,11 +488,6 @@
 				
 				</div>
 				
-				<!-- Spinner -->
-				<div id="load_animation_modal" class="pong-modal pong-load-animation hidden">
-					<div class="h-12 w-12 mb-4 border-4 border-[#1c1817] animate-spin"></div>
-					<div class="text-[#1c1817] text-sm font-['PressStart2P']">Loading...</div>
-				</div>
 
 				<!-- Login modal -->
     			<div id="login_modal" class="pong-modal h-2/3 hidden">
