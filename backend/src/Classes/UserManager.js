@@ -170,69 +170,7 @@ class UserManager {
         LOGGER(400, "UserManager.js", "logoutUser", userId + "already logged out.");
         return false;
     }
-//    disconnectUser(user) {
 
-//         const match = user.getCurrentMatch();
-//         const tournament = user.getCurrentTournament();
-//         const userId = user.getId();
-
-//         if (match) {
-
-
-//             if (match.size !== 2) {
-//                 this.stopMatch(match);
-//                 return ;
-//             }
-
-//             if (match.getType() === "2player") {
-
-//                 // 4. Limpiar estado de jugadores
-//                 match.players[0].notify("WIN", ``);
-//                 match.players.forEach(p => {
-//                     if (p) {
-//                         p.setMatch(null);
-//                         p.setIsPlaying(false);
-//                     }
-//                 });
-//                 this.removeMatch(match);
-//                 return;
-//             }
-
-//             let loserIndex = match.players.indexOf(user);
-//             let winnerIndex = 1 - loserIndex;
-//             let loserAlias = user.getDisplayName();
-
-//             match.players[winnerIndex].notify("NOTIFICATION", `${loserAlias} disconnected.`);
-//             match.setWINNER(winnerIndex);
-//             match.setLOSER(loserIndex);
-//             this.stopMatch(match);
-//         }
-//         if (tournament) {
-
-
-//             if (tournament.getCreator() === userId) {
-
-    
-//                 let ids = tournament.getPlayers();
-//                 for (const id of ids.keys()) {
-//                     const user = this.getUserByID(id);
-//                     user.setTournament(null);
-//                     user.setCurrentMatch(null);
-//                     user.setIsPlaying(false);
-//                     user.notify("WIN", "Creator Disconnected");
-//                     tournament.removePlayer(id);
-//                 }
-//                 this.removeTournament(tournament.getId());
-//             }
-//             else if (tournament.getWinners().has(userId)) {
-//                 tournament.deleteWinner(userId);
-//             } else {
-//                 tournament.removePlayer(userId);
-//             }
-
-//         }
-//         user.setTournament(null);
-//     }
     disconnectUser(user) {
 
         const match = user.getCurrentMatch();
@@ -539,7 +477,6 @@ class UserManager {
 
         if (!winner_user) {
             LOGGER(400, "UserManager", "stopTournament", "Winner user not found");
-            this.removeTournament(tournament.getId());
             return;
         }
 
@@ -558,26 +495,22 @@ class UserManager {
                 
                 // Record all player scores
                 console.log("Recording player scores:");
-                for (const [user, playerData] of tournament.players.entries()) {
+                for (const [userId, playerData] of tournament.players.entries()) {
                     try {
-                        // Convert user ID to valid Fuji Testnet address
-                        const userId = user.id.toString().replace(/[^a-f0-9]/gi, '').substring(0, 40);
-                        const playerAddress = '0x' + userId.padStart(40, '0');
-                        const score = tournament.getPlayerScore(user) || 0;
-                        
+                        // Convertir userId a dirección Ethereum válida
+                        const cleanId = userId.toString().replace(/[^a-f0-9]/gi, '').substring(0, 40);
+                        const playerAddress = '0x' + cleanId.padStart(40, '0');
+                        const score = tournament.getPlayerScore(userId) || 0;
+
                         const result = await blockchainService.recordScore(
                             tournament.blockchainId,
                             playerAddress,
-                            playerData.alias,
+                            playerData.alias || 'Unknown',
                             score
                         );
-                        txHashes.push({ type: 'score', player: playerData.alias, tx: result.transactionHash });
-                        console.log(`${playerData.alias}: ${score} points`);
-                        console.log(`    TX: ${result.transactionHash}`);
-                        LOGGER(200, "UserManager", "stopTournament", `Recorded score for ${playerData.alias}: ${score} - TX: ${result.transactionHash}`);
+                        console.log(`  ✓ ${playerData.alias}: ${score} pts — TX: ${result.transactionHash}`);
                     } catch (error) {
-                        console.log(`✗ ${playerData.alias}: Failed - ${error.message}`);
-                        LOGGER(400, "UserManager", "stopTournament", `Failed to record score for ${playerData.alias}: ${error.message}`);
+                        console.log(`  ✗ ${playerData.alias}: Failed - ${error.message}`);
                     }
                 }
                 console.log("");
@@ -632,43 +565,49 @@ class UserManager {
         }
 
         // Limpieza
-        this.removeTournament(tournament.getId());
+        //this.removeTournament(tournament.getId());
         winner_user.setTournament(null);
         winner_user.setIsPlaying(false);
     }
 
+
     updateTournaments() {
-
-    	this.tournaments.forEach(tournament => {
-
+        this.tournaments.forEach(tournament => {
 
             if (tournament.getCurrentSize() === 0) {
                 this.removeTournament(tournament.getId());
+                return;
             }
-    		if (tournament.isWaitingAndFull()) { LOGGER(200, "UserManager.js", "updateTournaments", "Tournament is waiting and full");
 
+            if (tournament.isWaitingAndFull()) {
                 tournament.setReady();
                 for (const [userId] of tournament.getPlayers()) {
                     this.incrementTournamentPlayedDB(userId);
                     const playerUser = this.getUserByID(userId);
-                    if (playerUser && playerUser.stats) {
+                    if (playerUser?.stats) {
                         playerUser.stats.tournaments_played = (playerUser.stats.tournaments_played || 0) + 1;
                     }
                 }
-    			this.createNewTournamentMatches(tournament.getPlayers(), tournament);
-    		}
-    		else if (tournament.isRoundFinished()) {
+                this.createNewTournamentMatches(tournament.getPlayers(), tournament);
+            }
+            else if (tournament.isRoundFinished()) {
+                const winners = tournament.prepareNextRound();
+                if (winners.size > 1) {
+                    this.createNewTournamentMatches(winners, tournament);
+                } else {
+                  
+                    if (tournament._stopping) return;
+                    tournament._stopping = true;
 
-    			const winners = tournament.prepareNextRound();
-    			if (winners.size > 1) {
-    				this.createNewTournamentMatches(winners, tournament);
-                }
-                else {
-                    this.stopTournament(tournament);
-                }
-    		}
 
-    	});
+                    this.removeTournament(tournament.getId());
+
+                    this.stopTournament(tournament).catch(err => {
+                        console.error("stopTournament error:", err.message);
+                    });
+                }
+            }
+        });
     }
 
     createNewTournamentMatches(playerMap, tournament) { LOGGER(200, "UserManager.js", "createNewTournamentMatches", "Called");
@@ -695,13 +634,6 @@ class UserManager {
             if (!user2) {
                 this.stopMatch(match);
             } 
-        //     else {
-        //     // FIX: notificar directamente en vez de esperar el game loop
-        //     match.players[0].setIsPlaying(true);
-        //     match.players[1].setIsPlaying(true);
-        //     match.setWaiting(false);  // ← marcar como no-waiting para que updateMatches no lo reenvíe
-        //     this.sendGameReady(match);
-        // }
 	    }
     }
 

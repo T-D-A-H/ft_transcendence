@@ -33,51 +33,35 @@ echo "Building Docker images..."
 docker compose --env-file ../.env -f ELK.yaml build
 
 # Start Elasticsearch first
+
 echo "Starting Elasticsearch"
 docker compose --env-file ../.env -f ELK.yaml up -d elasticsearch
 
-# Wait for Elasticsearch to be ready
+# Fix permissions for elasticsearch.yml automatically
+echo "Fixing permissions for elasticsearch.yml..."
+docker exec ft_elasticsearch chown elasticsearch:elasticsearch /usr/share/elasticsearch/config/elasticsearch.yml 2>/dev/null || true
+docker exec ft_elasticsearch chmod 660 /usr/share/elasticsearch/config/elasticsearch.yml 2>/dev/null || true
+
+# Wait for Elasticsearch to be ready (no max count)
 echo "Waiting for Elasticsearch..."
 ELASTICSEARCH_URL="http://localhost:9200"
-MAX_ATTEMPTS=60
-ATTEMPT=0
-
-while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-    if curl -sf "$ELASTICSEARCH_URL" > /dev/null 2>&1; then
-        echo "Elasticsearch ready"
-        break
-    fi
-    ATTEMPT=$((ATTEMPT + 1))
+until curl -sf "$ELASTICSEARCH_URL" > /dev/null 2>&1; do
     sleep 2
 done
-
-if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-    echo "Warning: Elasticsearch timeout"
-    echo "Checking Elasticsearch logs..."
-    docker logs ft_elasticsearch --tail 50
-fi
+echo "Elasticsearch ready"
 
 # Start Kibana and Logstash
 echo "Starting Kibana and Logstash"
 docker compose --env-file ../.env -f ELK.yaml up -d kibana logstash
 
 echo "Waiting for Kibana"
-KIBANA_URL="http://localhost:5601"
-MAX_ATTEMPTS=30
-ATTEMPT=0
 
-while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-    if curl -s "$KIBANA_URL/api/status" > /dev/null 2>&1; then
-        echo "Kibana ready"
-        break
-    fi
-    ATTEMPT=$((ATTEMPT + 1))
+KIBANA_URL="http://localhost:5601"
+echo "Waiting for Kibana..."
+until curl -s "$KIBANA_URL/api/status" > /dev/null 2>&1; do
     sleep 2
 done
-
-if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-    echo "Warning: Kibana timeout"
-fi
+echo "Kibana ready"
 
 # Create Kibana index pattern automatically using dedicated script
 echo "Creating index pattern using create-index-pattern.sh"

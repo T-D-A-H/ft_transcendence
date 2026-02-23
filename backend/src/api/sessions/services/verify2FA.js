@@ -46,14 +46,6 @@ function verify2FAhandle(userManager, fastify, setTokenCookie) {
 				});
 			}
 
-			// Login exitoso
-			// if (userManager.loginUser(userId) ===  false) {
-			// 	LOGGER(401, "server", "verify2FAHandler", "Usuario ya logeado");
-			// 	return reply.code(401).send({ 
-			// 		status: "error",
-			// 		error: "Usuario ya logeado" 
-			// 	});
-			// }
 			const user = userManager.getUserByID(userId);
 
             if (!user) {

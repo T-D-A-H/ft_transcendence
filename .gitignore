@@ -30,3 +30,5 @@
 /ops/ELK/Logstash/logs/*.log
 =======
 /frontend/game/styles/tailwind.css
+
+./database/blockchain/deployment-info.json

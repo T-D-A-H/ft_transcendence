@@ -2,7 +2,7 @@ import { show, hide, updateProfileUI, updateSessionButtons} from "./ui.js";
 import { getUserSocket, closeUserSocket, setUserSocket} from "./websocket.js";
 
 export async function registerUser(usernameInput: HTMLInputElement, displaynameInput: HTMLInputElement, emailInput: HTMLInputElement, passwordInput: HTMLInputElement): 
-Promise<{ status: number; userId?: string; setupToken?: string; error?: string }> {
+Promise<{ status: number; userId?: string; setupToken?: string; msg?: string }> {
 
 	const username = usernameInput.value.trim();
     const display_name = displaynameInput.value.trim();
@@ -10,38 +10,38 @@ Promise<{ status: number; userId?: string; setupToken?: string; error?: string }
     const password = passwordInput.value;
 
 	// ! ---- Validate Username ----
-/* 	const usernameRegex = /^[a-zA-Z0-9_]+$/;
+	const usernameRegex = /^[a-zA-Z0-9_]+$/;
 	
     if (!usernameRegex.test(username)) {
 		return { 
 			status: 1, 
-            error: "El usuario solo puede contener letras, números y guiones bajos (sin espacios)." 
+            msg: "El usuario solo puede contener letras, números y guiones bajos (sin espacios)." 
         };
     }
 	
     if (username.length < 3 || username.length > 20) {
 		return { 
 			status: 1, 
-            error: "El usuario debe tener entre 3 y 20 caracteres." 
+            msg: "El usuario debe tener entre 3 y 20 caracteres." 
         };
-    } */
+    }
 	
 	// ! ---- Validate Password ----
-/* 	const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+	const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 	
 	if (!PASSWORD_REGEX.test(passwordInput.value)) {
-		return {status: 1, error: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo."};
-	} */
+		return {status: 1, msg: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo."};
+	}
 
 	// ! ---- Validate Email ----
-/* 	const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+	const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 
     if (!emailRegex.test(email)) {
         return { 
             status: 1, 
-            error: "Formato de correo electrónico inválido (ej: usuario@dominio.com)" 
+            msg: "Formato de correo electrónico inválido (ej: usuario@dominio.com)" 
         };
-    } */
+    }
 		
 	const body = {
         username: username,
@@ -65,12 +65,12 @@ Promise<{ status: number; userId?: string; setupToken?: string; error?: string }
 			return { status: 0, userId: String(result.userId), setupToken: result.setupToken };
 		}
 
-		return { status: 1, error: result.error || "Error en el registro"};
+		return { status: 1, msg: result.msg || "Error en el registro"};
 	}
 	catch (err) {
 
 		console.error("Register error:", err);
-		return { status: 1, error: "Error de conexión" };
+		return { status: 1, msg: "Error de conexión" };
 	}
 }
 

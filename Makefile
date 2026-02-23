@@ -30,7 +30,7 @@ NGINX_CONTAINER   = ft_nginx
 
 # ----------------------------------------------------------
 
-all: build up install-blockchain-deps
+all: build up 
 
 build: # Construir imagenes y borrar huerfanos
 	$(D_COMPOSE) build $(NO_CACHE)
@@ -38,9 +38,6 @@ build: # Construir imagenes y borrar huerfanos
 up: # Ejecutar contenedores dettached
 	$(D_COMPOSE) up $(DETTACHED) $(REMOVE_ORPH)
 	$(D_EXEC) $(DETTACHED) $(FRONT_CONTAINER) sh $(FRONT_SCRIPT)
-
-install-blockchain-deps:
-	cd database/blockchain && npm install
 	$(MAKE) -C ops all
 
 up-logs:  # Ejecutar contenedores con LOGS
@@ -82,6 +79,15 @@ rdb: rd rb
 rall: rfn rd # Recompilar backend, database, frontend, nginx , borrar volumenes y ejecutar scripts
 
 # ----------------------------------------------------------
+
+ops-up:
+	$(MAKE) -C ops all
+
+ops-down:
+	$(MAKE) -C ops clean
+
+ops-re:
+	$(MAKE) -C ops re
 
 logs: # ver LOGS
 	$(D_COMPOSE) logs -f

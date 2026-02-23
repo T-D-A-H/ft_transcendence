@@ -10,7 +10,7 @@ function buildSet2FAHandler(db, fastify) {
 			LOGGER(400, "server", "handleSet2FA", "Falta el método 2FA");
 			return reply.code(400).send({ 
 				status: "error",
-				error: "Falta el método 2FA" 
+				msg: "Falta el método 2FA" 
 			});
 		}
 
@@ -20,7 +20,7 @@ function buildSet2FAHandler(db, fastify) {
 			LOGGER(400, "server", "handleSet2FA", "Método 2FA inválido");
 			return reply.code(400).send({ 
 				status: "error",
-				error: "Método 2FA inválido" 
+				msg: "Método 2FA inválido" 
 			});
 		}
 
@@ -30,7 +30,7 @@ function buildSet2FAHandler(db, fastify) {
 				LOGGER(401, "server", "handleSet2FA", "No autorizado - Token requerido");
 				return reply.code(401).send({ 
 					status: "error",
-					error: "No autorizado - Token requerido" 
+					msg: "No autorizado - Token requerido" 
 				});
 			}
 
@@ -58,20 +58,20 @@ function buildSet2FAHandler(db, fastify) {
 				LOGGER(401, "server", "handleSet2FA", "Token inválido");
 				return reply.code(401).send({ 
 					status: "error",
-					error: "Token inválido" 
+					msg: "Token inválido" 
 				});
 			}
 			if (err.name === 'TokenExpiredError') {
 				LOGGER(401, "server", "handleSet2FA", "Token expirado");
 				return reply.code(401).send({ 
 					status: "error",
-					error: "Token expirado" 
+					msg: "Token expirado" 
 				});
 			}
 			LOGGER(500, "server", "handleSet2FA", "Error en el servidor");
 			return reply.code(500).send({ 
 				status: "error",
-				error: "Error en el servidor" 
+				msg: "Error en el servidor" 
 			});
 		}
 	};

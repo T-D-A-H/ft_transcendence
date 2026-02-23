@@ -47,7 +47,6 @@ module.exports = async function friendsRoutes(fastify, options) {
     });
 
     // GET /api/friends/requests - solicitudes pendientes entrantes
-    // ! Cambiar en front de /request a /invites
     fastify.get('/invites', { preHandler: authFromCookie }, async (req, reply) => {
         try {
             const userId = req.user.getId();

@@ -26,10 +26,10 @@ services:
       - ELASTICSEARCH_USERNAME=elastic
       - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
     volumes:
-      - ./Logstash/pipeline:/usr/share/logstash/pipeline
-      - ./Logstash/config:/usr/share/logstash/config
-      - ./Logstash/logs:/usr/share/logstash/logs
-      - ./Elasticsearch/certs:/usr/share/logstash/config/certs:ro
+      - ./Logstash/pipeline:/app/pipeline
+      - ./Logstash/config:/app/config
+      - ./Logstash/logs:/app/logs
+      - ./Elasticsearch/certs:/app/config/certs:ro
     ports:
       - "5069:5069"
       - "8080:8080"
@@ -53,9 +53,8 @@ services:
       - xpack.monitoring.collection.enabled=${XPACK_MONITORING_ENABLED}
       - bootstrap.memory_lock=false 
     volumes:
-      - es_data:/usr/share/elasticsearch/data
-      - ./Elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-      - ./Elasticsearch/certs:/usr/share/elasticsearch/config/certs:ro
+      - es_data:/app/data
+      - ./Elasticsearch/certs:/app/certs:ro
     ports:
       - "9200:9200"
     networks:
@@ -71,9 +70,8 @@ services:
     env_file:
       - ../.env
     volumes:
-      - ./Kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
-      - ./Elasticsearch/certs:/usr/share/kibana/config/certs:ro
-      - kibana_data:/usr/share/kibana/data
+      - ./Elasticsearch/certs:/app/certs:ro
+      - kibana_data:/app/data
     ports:
       - "5601:5601"
     networks:
@@ -89,4 +87,3 @@ volumes:
 networks:
   ELK:
     driver: bridge
-

@@ -140,7 +140,7 @@ submitRegisterButton.onclick = async () => {
 			configure2FA(result.setupToken!, "skip", twoFAOptionModal, loginModal, registerModal);
 		};
 	} else {
-		showNotification("1 Account with that username/email already exists.");
+		showNotification(result.msg);
 	}
 };
 

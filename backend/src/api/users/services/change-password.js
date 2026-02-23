@@ -1,15 +1,15 @@
 async function changePass(db, bcrypt, saltRounds, userId, oldPass, newPass) {
 
         // ! ---- Validate Pass ----
-/*         const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+        const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
         
         if (!PASSWORD_REGEX.test(newPass)) {
             return reply.code(400).send({
                 status: "error",
-                error: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo"
+                msg: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo"
             });
-        } */
-            // ✅ Obtener password actual
+        }
+        // ✅ Obtener password actual
         const user = await new Promise((resolve, reject) => {
             db.get(
                 "SELECT password FROM users WHERE id = ?",

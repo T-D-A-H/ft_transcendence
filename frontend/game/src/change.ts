@@ -28,7 +28,7 @@ export async function changeUserName(newName: string): Promise<{ status: number;
     try {
 
         // ! ---- Validate Username ----
-/*         const usernameRegex = /^[a-zA-Z0-9_]+$/;
+        const usernameRegex = /^[a-zA-Z0-9_]+$/;
         
         if (!usernameRegex.test(newName)) {
             return { 
@@ -42,7 +42,7 @@ export async function changeUserName(newName: string): Promise<{ status: number;
                 status: 1, 
                 msg: "El usuario debe tener entre 3 y 20 caracteres." 
             };
-        } */
+        }
         
         const res = await fetch("/api/users/me", {
             method: "PATCH",
@@ -68,14 +68,14 @@ export async function changeEmail(newName: string): Promise<{ status: number; ms
     try {
 
  	    // ! ---- Validate Email ----
-/*  	    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+ 	    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 
         if (!emailRegex.test(newName)) {
             return { 
                 status: 1, 
                 msg: "Incorrect format (ej: usuario@dominio.com)" 
             };
-        } */
+        }
 
         const res = await fetch("/api/users/me", {
             method: "PATCH",
@@ -101,11 +101,11 @@ export async function changePassword(newPass: string, oldPass: string): Promise<
     try {
 
  	    // ! ---- Validate Pass ----
-/*         const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+        const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
         
         if (!PASSWORD_REGEX.test(newPass)) {
             return {status: 1, msg: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo."};
-        } */
+        }
 
         const res = await fetch("/api/users/me", {
             method: "PATCH",

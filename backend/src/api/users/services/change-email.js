@@ -1,36 +1,46 @@
-async function changeEmail(db, userId, newName) {
+async function changeEmail(db, userId, newEmail) {
 
-
-    if (!newName || newName.trim() === "") {
-        return {status: 400, msg: "Email cannot be empty"};
+    if (!newEmail || newEmail.trim() === "") {
+        return { status: 400, msg: "Email cannot be empty" };
     }
-    // ! ---- Validate Email ----
-    const cleanEmail = newName.trim().toLowerCase();
 
-/* const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-        
+    const cleanEmail = newEmail.trim().toLowerCase();
+
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+
     if (!emailRegex.test(cleanEmail)) {
-        return reply.code(400).send({ 
-            status: "error",
-            msg: "Formato de correo electrónico inválido (ejemplo: usuario@dominio.com)" 
-        });
+        return { 
+            status: 400,
+            msg: "Invalid email format (example: user@domain.com)"
+        };
     }
- */
-    const changes = await new Promise((resolve, reject) => {
-        db.run(
-            "UPDATE users SET email = ? WHERE id = ?;", 
-            [cleanEmail, userId],
-            function (err) {
-                if (err) reject(err);
-                else resolve(this.changes);
-            }
-        );
-    })
-    if (changes === 0) {
-        return {status: 404, msg: "Email is identical"};
-    }
-    return {status: 200, msg: "Email Updated"};
 
+    try {
+        const changes = await new Promise((resolve, reject) => {
+            db.run(
+                "UPDATE users SET email = ? WHERE id = ?;", 
+                [cleanEmail, userId],
+                function (err) {
+                    if (err) return reject(err);
+                    resolve(this.changes);
+                }
+            );
+        });
+
+        if (changes === 0) {
+            return { status: 400, msg: "Email is identical" };
+        }
+
+        return { status: 200, msg: "Email Updated" };
+
+    } catch (err) {
+
+        if (err.code === "SQLITE_CONSTRAINT") {
+            return { status: 409, msg: "Email already exists" };
+        }
+
+        throw err;
+    }
 }
 
 module.exports = changeEmail;
