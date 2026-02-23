@@ -37,6 +37,13 @@ services:
     networks:
       - ELK
     restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18080"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
 
   # indexes + stores logs
   elasticsearch:
@@ -60,6 +67,13 @@ services:
     networks:
       - ELK
     restart: unless-stopped
+    mem_limit: 1g
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
 
   # visualizes logs as graphs
   kibana:
@@ -77,6 +91,13 @@ services:
     networks:
       - ELK
     restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
 
   # volume for persisting Elasticsearch and Kibana data
 volumes:

@@ -9,3 +9,4 @@ xpack.security.enabled: false
 xpack.monitoring.collection.enabled: true
 
 discovery.type: single-node
+# JVM heap size is set via ES_JAVA_OPTS in the environment (see ELK.yaml)
