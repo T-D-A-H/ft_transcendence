@@ -4,10 +4,10 @@
   "network": "localhost",
   "fuji": {
     "network": "fuji",
-    "contractAddress": "0x76b0929B55F44fEBcfE8C6EE7DC2B11DBADC60Cd",
+    "contractAddress": "0x9903Dc4A659C4426727bc89B78032843400e0C54",
     "deployer": "0x85Ac1Ddbde014a05d439e9526ea0C3DbbEe2d98E",
-    "deploymentTime": "2026-02-21T14:10:18.863Z",
-    "blockNumber": 52036318,
+    "deploymentTime": "2026-02-23T09:36:25.167Z",
+    "blockNumber": 52085602,
     "chainId": "43113"
   },
   "hardhat": {
