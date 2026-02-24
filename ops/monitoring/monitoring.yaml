@@ -11,9 +11,9 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       - grafana_logs:/var/log/grafana
-      - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
-      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
-      - ./grafana/system-metrics.json:/etc/grafana/provisioning/dashboards/system-metrics.json:ro
+      - ./grafana/datasources.yml:/app/grafana/datasources/datasources.yml:ro
+      - ./grafana/dashboards.yml:/app/grafana/dashboards/dashboards.yml:ro
+      - ./grafana/system-metrics.json:/app/grafana/dashboards/system-metrics.json:ro
     env_file:
       - ../.env
     environment:
@@ -31,20 +31,21 @@ services:
   # monitored targets with alerting capabilities.
   prometheus:
     image: prom/prometheus:latest
+    user: "0"
     container_name: prometheus_service
     ports:
       - "9091:9090"
     volumes:
       - prometheus_data:/prometheus
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - ./prometheus/prometheus.yml:/app/prometheus/prometheus.yml:ro
+      - ./prometheus/alert-rules.yml:/app/prometheus/alert-rules.yml:ro
     env_file:
       - ../.env
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--config.file=/app/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.console.libraries=/app/prometheus/console_libraries'
+      - '--web.console.templates=/app/prometheus/consoles'
       - '--web.enable-lifecycle'
     networks:
       - monitoring

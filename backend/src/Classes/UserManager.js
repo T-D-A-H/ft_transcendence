@@ -50,33 +50,6 @@ class UserManager {
     }
 
 //----------------------------------------------------------------------------------------USER
-
-    saveGameStatsToDB(userId, resultType, isWin) {
-        if (!this.db)
-            return;
-        LOGGER(200, userId, resultType, isWin);
-        let query = "";
-        const streakLogic = isWin 
-            ? ", current_streak = current_streak + 1, best_streak = MAX(best_streak, current_streak + 1)" 
-            : ", current_streak = 0";
-
-        if (resultType === "online") {
-            query = `UPDATE stats SET online_played = online_played + 1, matches = matches + 1 ${isWin ? ", online_won = online_won + 1,total_wins = total_wins + 1 " : ""} ${streakLogic} WHERE user_id = ?`;
-        }
-        else if (resultType === "local") {
-            // Normalmente en local no contamos rachas globales, pero depende de tu juego. Asumimos que sí.
-            query = `UPDATE stats SET local_played = local_played + 1, matches = matches + 1 ${isWin ? ", local_won = local_won + 1" : ""} WHERE user_id = ?`;
-        }
-        else if (resultType === "tournament") {
-             query = `UPDATE stats SET tournaments_played = tournaments_played + 1, matches = matches + 1 ${isWin ? ", tournaments_won = tournaments_won + 1, total_wins = total_wins + 1" : ""} ${streakLogic} WHERE user_id = ?`;
-        }
-
-        if (query) {
-            this.db.run(query, [userId], (err) => { 
-                if (err) console.error("Error saving stats for user " + userId, err); 
-            });
-        }
-    }
     
     incrementTournamentPlayedDB(userId) {
         if (!this.db) return;
