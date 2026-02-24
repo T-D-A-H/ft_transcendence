@@ -14,7 +14,7 @@ async function changeUserName(userManager, db, userId, newName) {
     }
 
     if (cleanUsername.length < 3 || cleanUsername.length > 20) {
-        return reply.code(400).send({ msg: "El usuario debe tener entre 3 y 20 caracteres." });
+        return reply.code(400).send({ msg: "The username must contain between 3 and 20 characters." });
     }
     
     const changes = await new Promise((resolve, reject) => {

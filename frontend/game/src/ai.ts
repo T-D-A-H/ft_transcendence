@@ -390,6 +390,7 @@ export function stopAiMode(): void {
   }
   document.removeEventListener("keydown", onAiKeyDown);
   document.removeEventListener("keyup", onAiKeyUp);
+  makeVisible(invitePlayersCurrentGameButton);
   setGameType(GameType.NONE);
   setGameStatus(GameStatus.NOT_IN_GAME);
   showNotification("Exited Ai Match");

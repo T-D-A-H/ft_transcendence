@@ -37,7 +37,7 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 			LOGGER(401, "server", "handleLogin", "Credenciales incorrectas");
 			return reply.code(401).send({ 
 				status: "error",
-				error: "Credenciales incorrectas" 
+				error: "Incorrect Credentials" 
 			});
 		}
 		
@@ -47,7 +47,7 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 			LOGGER(401, "server", "handleLogin", "Credenciales incorrectas");
 			return reply.code(401).send({ 
 				status: "error",
-				error: "Credenciales incorrectas" 
+				error: "Incorrect Credentials" 
 			});
 		}
 
@@ -114,7 +114,7 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 				from: `"Mini Pong" <${process.env.SMTP_USER}>`,
 				to: user.email,
 				subject: "Código 2FA - Mini Pong",
-				text: `Tu código de verificación es: ${code}\n\nEste código expira en 10 minutos.`
+				text: `Your verification code is: ${code}\n\nThis code expires in 10 minutes`
 			});
 
 			reply.setCookie('temp2FA', temp2FAToken, {
@@ -164,7 +164,7 @@ function loginHandler(db, bcrypt, userManager, fastify, setTokenCookie) {
 			LOGGER(500, "server", "handleLogin", "Login Error: " + err);
 			return reply.code(500).send({ 
 				status: "error",
-				error: "Error en el servidor" 
+				error: "Server Error" 
 			});
 		}
 	};

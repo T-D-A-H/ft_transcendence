@@ -240,7 +240,7 @@ export async function renderFriendRequestsList(container: HTMLElement): Promise<
         const empty = document.createElement("p");
         empty.className = "pong-font text-[7px] text-center";
         empty.style.color = "var(--pong-gray)";
-        empty.textContent = "No pending friend requests.";
+        empty.textContent = translate('requests.no_friend_requests');
         container.appendChild(empty);
         return;
     }

@@ -43,7 +43,7 @@ module.exports = function respondTournamentInvite(userManager, user, tournamentI
     }
     else {
 
-        userManager.addToTournament(user, tournament);
+        userManager.addToTournament(user, tournament, user.getDisplayName());
 
         user.removePendingRequest("tournaments", tournamentId, creatorId);
 

@@ -94,7 +94,6 @@ export async function registerEvents() {
 		setGameStatus(GameStatus.NOT_IN_GAME);
 		setSCORES(0, 0);
 		clearBackground();
-		hide(currentGameButton);
 		showMenu();
 	});
 	registerHandler("GAME_READY", (data) => {
@@ -107,11 +106,11 @@ export async function registerEvents() {
 
 			setGameType(GameType.TOURNAMENT);
 			setCurrentTournamentId(data.info?.tournament_id);
-			updateOpponentUI(data.info?.display_name, data.info?.id, data.info?.opponent_avatar);
+			updateOpponentUI(data.info?.opponent_display_name, "", data.info?.opponent_avatar);
 		}
 		else if (data.info?.type === "online") {
 			setGameType(GameType.MATCH);
-			updateOpponentUI(data.info?.display_name, data.info?.id, data.info?.opponent_avatar);
+			updateOpponentUI(data.info?.display_name, "", data.info?.opponent_avatar);
 		}    
 		else if (data.info?.type === "ai_easy") {
 			setGameType(GameType.AI);
@@ -132,7 +131,10 @@ export async function registerEvents() {
 			setMatchMode("dual");
 		}
 		showCanvas();
-		updateCurrentGame("matches");
+		if (getGameType() === GameType.TOURNAMENT)
+			updateCurrentGame("tournaments");
+		else if (getGameType() === GameType.MATCH || getGameType() === GameType.TWO_PLAYER)
+			updateCurrentGame("matches");
 	});
 	registerHandler("UPDATE", (data) => {
 

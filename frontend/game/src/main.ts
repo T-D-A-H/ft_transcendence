@@ -111,7 +111,7 @@ export async function getProfileInfo(reset: boolean) {
 
 	} catch (err: any) {
 
-				console.error(err?.msg ?? "Request failed");
+				console.error(err?.msg);
 		}
 	
 }
@@ -326,7 +326,7 @@ async function respondToInviteRequest(TYPE_URL: string, targetId: string, accept
 		}
 
 	} catch (err: any) {
-		console.error(err?.msg || "Request failed222222");
+		console.error(err?.msg);
 	}
 }
 
@@ -351,7 +351,7 @@ async function renderRequestLists(UL: HTMLElement, REQUEST_TYPE: string) {
 
 					let accept: boolean = false;
 
-					if (btn.textContent!.trim() === "ACCEPT") {
+					if (btn.textContent!.trim() === translate('common.accept')) {
 						accept = true;
 					}
 					else if (btn.textContent!.trim() === "X") {
@@ -364,14 +364,14 @@ async function renderRequestLists(UL: HTMLElement, REQUEST_TYPE: string) {
 						await renderRequestLists(UL, REQUEST_TYPE);
 					
 				} catch (err: any) {
-					console.error(err?.msg ?? "Request failed11111");
+					console.error(err?.msg);
 				}
 			}
 		}
 	}
 	
 	} catch (err: any) {
-			console.error(err?.msg ?? "Request failed3333");
+			console.error(err?.msg);
 	}
 }
 
@@ -493,7 +493,7 @@ async function createMatch(match_type: string) {
 		show(currentGameModal);
 	}
 	catch (err: any) {
-		console.error(err?.msg ?? "Request failed");
+		console.error(err?.msg);
 	}
 }
 
@@ -517,7 +517,7 @@ async function createTournament() {
 			updateCurrentGame("tournaments");
 			show(currentGameModal);
 	} catch (err: any) {
-			console.error(err?.msg ?? "Request failed");
+			console.error(err?.msg);
 	}
 }
 
@@ -573,7 +573,7 @@ export async function renderInviteFriendsList(container: HTMLUListElement): Prom
 		const loading = document.createElement("li");
 		loading.className = "pong-font text-[7px] text-center";
 		loading.style.color = "var(--pong-gray)";
-		loading.textContent = "Loading...";
+		loading.textContent = translate('common.loading');
 		container.appendChild(loading);
 
 		const friends = await fetchFriends();
@@ -581,9 +581,9 @@ export async function renderInviteFriendsList(container: HTMLUListElement): Prom
 
 		if (friends.length === 0) {
 				const empty = document.createElement("li");
-				empty.className = "pong-font text-[7px] text-center";
+				empty.className = "pong-font text-[7px]";
 				empty.style.color = "var(--pong-gray)";
-				empty.textContent = "No friends yet. Add some!";
+				empty.textContent = translate('friends.no_friends');
 				container.appendChild(empty);
 				return;
 		}
@@ -597,7 +597,7 @@ export async function renderInviteFriendsList(container: HTMLUListElement): Prom
 
 				// FIX 1: Use correct status color and text per friend
 				const statusColor = friend.online ? "#4ade80" : "var(--pong-gray)";
-				const statusText = friend.online ? "● ONLINE" : "● OFFLINE";
+				const statusText = friend.online ? `● ${translate('stats.online')}` : "● OFFLINE";
 
 				li.innerHTML = `
 						<div class="flex items-center gap-2">
@@ -608,7 +608,7 @@ export async function renderInviteFriendsList(container: HTMLUListElement): Prom
 								</div>
 						</div>
 						<button class="invite-friend-btn pong-button active-border text-[7px] px-2 py-0.5">
-								${friend.online ? 'INVITE' : 'OFFLINE'}
+								${friend.online ? `${translate('common.invite')}` : 'OFFLINE'}
 						</button>
 				`;
 
@@ -649,11 +649,11 @@ export async function updateCurrentGame(url_type: string) {
 			setCurrentMatchId(data.match_id);
 		if (data.tournament_id)
 			setCurrentTournamentId(data.tournament_id);
-		currentGameType.textContent = translate(`current_game.${data.type}`) || truncateText(data.type, 12);
-		currentGameSubType.textContent = translate(`current_game.${data.sub_type}`) || truncateText(data.sub_type, 12);
-		currentGameVisibility.textContent = translate(`current_game.${data.visibility}`) || truncateText(data.visibility, 12);
+		currentGameType.textContent = truncateText(data.type, 12);
+		currentGameSubType.textContent = truncateText(data.sub_type, 12);
+		currentGameVisibility.textContent = truncateText(data.visibility, 12);
 		currentGameSize.textContent = truncateText(data.size.toString(), 12);
-		currentGameStatus.textContent = translate(`current_game.${data.status.toLowerCase()}`) || truncateText(data.status, 12);
+		currentGameStatus.textContent = truncateText(data.status, 12);
 		currentGameCreator.textContent = truncateText(data.creator, 12);
 		currentGamePlayers.innerHTML = data.players.map((player: string) => truncateText(player, 12)).join(', ');
 	} catch (err: any) {
@@ -664,7 +664,7 @@ export async function updateCurrentGame(url_type: string) {
 }
 
 startMatchButton.onclick = async () => {
-	showCanvas();
+	// showCanvas();
 	hide(startMatchButton);
 	if (getGameType() === GameType.AI) {
 		hide(currentGameModal);
@@ -685,14 +685,14 @@ startMatchButton.onclick = async () => {
 				show(startMatchButton);
 			return showNotification(response.msg);
 		}
-		show(canvas);
 		hide(currentGameModal);
 		setGameStatus(GameStatus.IN_GAME);
+		showCanvas();
 		initKeyHandling();
 	}
 	catch (err: any) {
 		show(startMatchButton);
-		console.log(err?.msg ?? "Request failed");
+		console.log(err?.msg);
 	}
 };
 
@@ -723,7 +723,7 @@ async function exitGame() {
 		showMenu();
 	}
 	catch (err: any) {
-		console.log(err?.msg ?? "Request failed");
+		console.log(err?.msg);
 		showMenu();
 	}
 }
@@ -791,7 +791,7 @@ export async function searchAvailableGames(URL_TYPE: string, ul_list: HTMLUListE
 						
 		} catch (err: any) {
 
-			showNotification(err?.msg ?? "Request failed");
+			showNotification(err?.msg);
 		}
 	});
 }
@@ -832,7 +832,7 @@ export function showNotification(text: string | any, type?: string, id?: string)
 			}
 			catch (err: any) {
 
-				console.error(err?.msg ?? "Request failed");
+				console.error(err?.msg);
 			}
 		};
 	}

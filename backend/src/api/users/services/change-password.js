@@ -6,7 +6,7 @@ async function changePass(db, bcrypt, saltRounds, userId, oldPass, newPass) {
         if (!PASSWORD_REGEX.test(newPass)) {
             return reply.code(400).send({
                 status: "error",
-                msg: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo"
+                msg: "The password must contain at least 8 character, a capital and lowercase character, a number and a symbol"
             });
         }
         // ✅ Obtener password actual

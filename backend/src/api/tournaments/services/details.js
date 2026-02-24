@@ -20,7 +20,9 @@ module.exports = function getTournamentDetails(userManager, user) {
             visibility: ((tournament.isPublic()) ? "public" : "private"),
             size: tournament.getCurrentSize().toString() + "/" + tournament.getTournamentSize().toString(),
             creator: tournament.getCreatorAlias(),
-            players: [tournament.getPlayers().alias],
+            players: Array.from(tournament.getPlayers().values()).map(function(player) {
+			    return (player.alias);
+		    }),
             status: ((tournament.getCurrentSize()  === tournament.getTournamentSize()) ? "Ready" : "Waiting")
         }
     };

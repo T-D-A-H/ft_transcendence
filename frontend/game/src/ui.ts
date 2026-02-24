@@ -1,6 +1,6 @@
 //------------------- LANGUAGE MODAL -------------------
 import { Language, changeLanguage, getCurrentLanguage, translations, updateTranslations } from "./language-button.js";
-
+import { translate } from "./language-button.js";
 const changeLanguageButton = document.getElementById("change_language_button") as HTMLButtonElement;
 const languageModal = document.getElementById("language_modal") as HTMLDivElement;
 const languageOptions = document.getElementById("language_options") as HTMLDivElement;
@@ -22,7 +22,7 @@ function showLanguageModal() {
 	];
 	langs.forEach(({ lang, label }, idx) => {
 		const btn = document.createElement("button");
-		btn.className = "pong-button text-lg py-2 px-3 font-bold border-2 border-black rounded bg-gray-100 hover:bg-blue-200 transition-all duration-150 mb-1" + (getCurrentLanguage() === lang ? " active-border" : "");
+		btn.className = "pong-button py-2 px-3 transition-all duration-150 mb-1" + (getCurrentLanguage() === lang ? " active-border" : "");
 		btn.textContent = label;
 		btn.onclick = () => {
 			changeLanguage(lang);
@@ -163,7 +163,9 @@ export 	function showCanvas() {
 
 		
 		hide(currentGameCancel);
-		show(currentGameModal);
+		if (getGameStatus() === GameStatus.READY_TO_START)
+			show(currentGameModal);
+		show(topBarOpponentButton);
 		makeVisible(topBarOpponentButton);
 		show(topBarDisplayName);
 		makeVisible(topBarDisplayName);
@@ -226,9 +228,13 @@ export function updateProfileUI(self_id: string, displayName: string | null, use
 
 export function updateOpponentUI(opponentDisplayName: string, id: string, avatar: string) {
 
+	hide(topBarOpponentDisplayName);
+	hide(topBarOpponentPicture);
 	if (topBarOpponentDisplayName) topBarOpponentDisplayName.textContent =  truncateText(opponentDisplayName, 16);
 	if (topBarOpponentId) topBarOpponentId.textContent = id;
 	if (topBarOpponentPicture) topBarOpponentPicture.innerHTML = avatar;
+	show(topBarOpponentDisplayName);
+	show(topBarOpponentPicture);
 }
 
 //------------------------------------------------------------------------MANU
@@ -342,7 +348,7 @@ export function renderFriendsList( ul_list: HTMLUListElement, friends: any[], on
 		rowBtn.innerHTML = `
 			<span class="truncate">${truncateText(friend.username || friend.display_name, 20)}</span>
 			<span class="text-left">${friend.status || ""}</span>
-			<span class="join-label text-right">INVITE</span>
+			<span class="join-label text-right">${translate('common.invite')}</span>
 		`;
 
 		// Friends are always selectable
@@ -393,7 +399,7 @@ export function renderPendingRequests(UL: HTMLElement, requests: any): HTMLButto
     const empty = document.createElement("p");
     empty.className = "pong-font text-[7px] text-center";
     empty.style.color = "var(--pong-gray)";
-    empty.textContent = "No pending games requests.";
+    empty.textContent = translate('requests.no_game_requests');
 	UL.appendChild(empty);
 	for (const profile of requests) {
 
@@ -423,7 +429,7 @@ export function renderPendingRequests(UL: HTMLElement, requests: any): HTMLButto
 
 		const acceptBtn = document.createElement("button");
 		acceptBtn.className = "pong-list-box-reply active-border";
-		acceptBtn.textContent = "ACCEPT";
+		acceptBtn.textContent = translate('common.accept');
 		acceptBtn.dataset.username = profile.username;
 
 		btnWrap.appendChild(declineBtn);
@@ -496,7 +502,6 @@ export function setGameData(data: MatchData) {
 
 //------------------------------------------------------------------------CURRENT-GAME-MODAL
 //------------------------------------------------------------------------CREATE-GAME-MODAL
-
 
 
 
@@ -671,7 +676,7 @@ export function renderGamesList(ul_list: HTMLUListElement, games: any[], onJoin:
 		rowBtn.innerHTML = `
 			<span class="truncate">${truncateText(game.creator, 20)}</span>
 			<span class="text-left">${game.current_size}/${game.max_size}</span>
-			<span class="join-label text-right">${game.full ? "FULL" : "JOIN"}</span>
+			<span class="join-label text-right">${game.full ? `${translate('common.full')}` : `${translate('common.join')}`}</span>
 		`;
 
 		if (game.full) {

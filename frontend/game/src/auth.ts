@@ -15,14 +15,14 @@ Promise<{ status: number; userId?: string; setupToken?: string; msg?: string }> 
     if (!usernameRegex.test(username)) {
 		return { 
 			status: 1, 
-            msg: "El usuario solo puede contener letras, números y guiones bajos (sin espacios)." 
+			msg: "The username can only contain alphanumeric characters and - (no spaces)." 
         };
     }
 	
     if (username.length < 3 || username.length > 20) {
 		return { 
 			status: 1, 
-            msg: "El usuario debe tener entre 3 y 20 caracteres." 
+			msg: "The username must contain between 3 and 20 characters." 
         };
     }
 	
@@ -30,7 +30,7 @@ Promise<{ status: number; userId?: string; setupToken?: string; msg?: string }> 
 	const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 	
 	if (!PASSWORD_REGEX.test(passwordInput.value)) {
-		return {status: 1, msg: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo."};
+		return {status: 1, msg: "The password must contain at least 8 character, a capital and lowercase character, a number and a symbol"};
 	}
 
 	// ! ---- Validate Email ----
@@ -39,7 +39,7 @@ Promise<{ status: number; userId?: string; setupToken?: string; msg?: string }> 
     if (!emailRegex.test(email)) {
         return { 
             status: 1, 
-            msg: "Formato de correo electrónico inválido (ej: usuario@dominio.com)" 
+            msg: "Incorrect email format (example: user@domain.com)" 
         };
     }
 		
@@ -70,7 +70,7 @@ Promise<{ status: number; userId?: string; setupToken?: string; msg?: string }> 
 	catch (err) {
 
 		console.error("Register error:", err);
-		return { status: 1, msg: "Error de conexión" };
+		return { status: 1, msg: "Connection error" };
 	}
 }
 
@@ -166,7 +166,7 @@ export async function configure2FA(setupToken: string, method: "2FAmail" | "skip
 	}
     else {
 
-		alert(data.error || "Error al configurar 2FA");
+		alert(data.error);
 		hide(twoFAOptionModal);
 		show(registerModal);
 	}
@@ -191,7 +191,7 @@ export async function verify2FA(code: string, twoFAModal: HTMLElement, loginModa
 		if (verifyResult.status === "ok") {
 			return true;
 		} else {
-			alert(verifyResult.error || "Código 2FA incorrecto");
+			alert(verifyResult.error);
 			return false;
 		}
 	} catch (err) {

@@ -33,14 +33,14 @@ export async function changeUserName(newName: string): Promise<{ status: number;
         if (!usernameRegex.test(newName)) {
             return { 
                 status: 1, 
-                msg: "El usuario solo puede contener letras, números y guiones bajos (sin espacios)." 
+                msg: "The username can only contain alphanumeric characters and - (no spaces)." 
             };
         }
         
         if (newName.length < 3 || newName.length > 20) {
             return { 
                 status: 1, 
-                msg: "El usuario debe tener entre 3 y 20 caracteres." 
+                msg: "The username must contain between 3 and 20 characters." 
             };
         }
         
@@ -73,7 +73,7 @@ export async function changeEmail(newName: string): Promise<{ status: number; ms
         if (!emailRegex.test(newName)) {
             return { 
                 status: 1, 
-                msg: "Incorrect format (ej: usuario@dominio.com)" 
+                msg: "Incorrect format (example: usuario@dominio.com)" 
             };
         }
 
@@ -104,7 +104,7 @@ export async function changePassword(newPass: string, oldPass: string): Promise<
         const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
         
         if (!PASSWORD_REGEX.test(newPass)) {
-            return {status: 1, msg: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo."};
+            return {status: 1, msg: "The password must contain at least 8 character, a capital and lowercase character, a number and a symbol"};
         }
 
         const res = await fetch("/api/users/me", {
