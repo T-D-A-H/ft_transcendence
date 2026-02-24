@@ -70,9 +70,6 @@ class UserManager {
         else if (resultType === "tournament") {
              query = `UPDATE stats SET tournaments_played = tournaments_played + 1, matches = matches + 1 ${isWin ? ", tournaments_won = tournaments_won + 1, total_wins = total_wins + 1" : ""} ${streakLogic} WHERE user_id = ?`;
         }
-        // else if (resultType === "ai") {
-        //     query = `UPDATE stats SET ai_played = ai_played + 1, matches = matches + 1 ${isWin ? ", ai_won = ai_won + 1" : ""} WHERE user_id = ?`;
-        // }
 
         if (query) {
             this.db.run(query, [userId], (err) => { 

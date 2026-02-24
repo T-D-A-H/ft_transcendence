@@ -64,6 +64,7 @@ module.exports = async function websocketHandler(fastify, options) {
                     }
                 }
                 userManager.disconnectUser(user);
+                user.setConnected(false);
             } catch (err) {
                 console.error("Error notifying friends on disconnect:", err);
             }

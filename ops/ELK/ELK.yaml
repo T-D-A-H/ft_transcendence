@@ -25,26 +25,23 @@ services:
     environment:
       - ELASTICSEARCH_USERNAME=elastic
       - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
+      - LS_JAVA_OPTS=-Xms64m -Xmx128m 
     volumes:
       - ./Logstash/pipeline:/app/pipeline
       - ./Logstash/config:/app/config
       - ./Logstash/logs:/app/logs
       - ./Elasticsearch/certs:/app/config/certs:ro
-      - ./Logstash/data:/app/data
     ports:
       - "5069:5069"
       - "8080:8080"
       - "5044:5044"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     networks:
       - ELK
     restart: unless-stopped
-    mem_limit: 512m
-    cpus: 0.5
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:18080"]
-      interval: 1m
-      timeout: 10s
-      retries: 3
 
   # indexes + stores logs
   elasticsearch:
@@ -60,21 +57,19 @@ services:
       - xpack.security.enabled=false
       - xpack.monitoring.collection.enabled=${XPACK_MONITORING_ENABLED}
       - bootstrap.memory_lock=false 
+      - ES_JAVA_OPTS=-Xms128m -Xmx256m 
     volumes:
       - es_data:/app/data
       - ./Elasticsearch/certs:/app/certs:ro
     ports:
       - "9200:9200"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     networks:
       - ELK
     restart: unless-stopped
-    mem_limit: 1g
-    cpus: 1.0
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
-      interval: 1m
-      timeout: 10s
-      retries: 3
 
   # visualizes logs as graphs
   kibana:
@@ -89,16 +84,13 @@ services:
       - kibana_data:/app/data
     ports:
       - "5601:5601"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     networks:
       - ELK
     restart: unless-stopped
-    mem_limit: 512m
-    cpus: 0.5
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
-      interval: 1m
-      timeout: 10s
-      retries: 3
 
   # volume for persisting Elasticsearch and Kibana data
 volumes:
