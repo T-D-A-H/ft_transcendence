@@ -111,7 +111,7 @@ export async function getProfileInfo(reset: boolean) {
 
 	} catch (err: any) {
 
-				console.error(err?.msg ?? "Request failed");
+				console.error(err?.msg);
 		}
 	
 }
@@ -326,7 +326,7 @@ async function respondToInviteRequest(TYPE_URL: string, targetId: string, accept
 		}
 
 	} catch (err: any) {
-		console.error(err?.msg || "Request failed");
+		console.error(err?.msg);
 	}
 }
 
@@ -364,14 +364,14 @@ async function renderRequestLists(UL: HTMLElement, REQUEST_TYPE: string) {
 						await renderRequestLists(UL, REQUEST_TYPE);
 					
 				} catch (err: any) {
-					console.error(err?.msg ?? "Request failed");
+					console.error(err?.msg);
 				}
 			}
 		}
 	}
 	
 	} catch (err: any) {
-			console.error(err?.msg ?? "Request failed");
+			console.error(err?.msg);
 	}
 }
 
@@ -493,7 +493,7 @@ async function createMatch(match_type: string) {
 		show(currentGameModal);
 	}
 	catch (err: any) {
-		console.error(err?.msg ?? "Request failed");
+		console.error(err?.msg);
 	}
 }
 
@@ -517,7 +517,7 @@ async function createTournament() {
 			updateCurrentGame("tournaments");
 			show(currentGameModal);
 	} catch (err: any) {
-			console.error(err?.msg ?? "Request failed");
+			console.error(err?.msg);
 	}
 }
 
@@ -664,7 +664,7 @@ export async function updateCurrentGame(url_type: string) {
 }
 
 startMatchButton.onclick = async () => {
-	showCanvas();
+	// showCanvas();
 	hide(startMatchButton);
 	if (getGameType() === GameType.AI) {
 		hide(currentGameModal);
@@ -685,14 +685,14 @@ startMatchButton.onclick = async () => {
 				show(startMatchButton);
 			return showNotification(response.msg);
 		}
-		show(canvas);
 		hide(currentGameModal);
 		setGameStatus(GameStatus.IN_GAME);
+		showCanvas();
 		initKeyHandling();
 	}
 	catch (err: any) {
 		show(startMatchButton);
-		console.log(err?.msg ?? "Request failed");
+		console.log(err?.msg);
 	}
 };
 
@@ -723,7 +723,7 @@ async function exitGame() {
 		showMenu();
 	}
 	catch (err: any) {
-		console.log(err?.msg ?? "Request failed");
+		console.log(err?.msg);
 		showMenu();
 	}
 }
@@ -791,7 +791,7 @@ export async function searchAvailableGames(URL_TYPE: string, ul_list: HTMLUListE
 						
 		} catch (err: any) {
 
-			showNotification(err?.msg ?? "Request failed");
+			showNotification(err?.msg);
 		}
 	});
 }
@@ -832,7 +832,7 @@ export function showNotification(text: string | any, type?: string, id?: string)
 			}
 			catch (err: any) {
 
-				console.error(err?.msg ?? "Request failed");
+				console.error(err?.msg);
 			}
 		};
 	}

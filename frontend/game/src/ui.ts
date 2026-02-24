@@ -163,7 +163,9 @@ export 	function showCanvas() {
 
 		
 		hide(currentGameCancel);
-		show(currentGameModal);
+		if (getGameStatus() === GameStatus.READY_TO_START)
+			show(currentGameModal);
+		show(topBarOpponentButton);
 		makeVisible(topBarOpponentButton);
 		show(topBarDisplayName);
 		makeVisible(topBarDisplayName);
@@ -226,9 +228,13 @@ export function updateProfileUI(self_id: string, displayName: string | null, use
 
 export function updateOpponentUI(opponentDisplayName: string, id: string, avatar: string) {
 
+	hide(topBarOpponentDisplayName);
+	hide(topBarOpponentPicture);
 	if (topBarOpponentDisplayName) topBarOpponentDisplayName.textContent =  truncateText(opponentDisplayName, 16);
 	if (topBarOpponentId) topBarOpponentId.textContent = id;
 	if (topBarOpponentPicture) topBarOpponentPicture.innerHTML = avatar;
+	show(topBarOpponentDisplayName);
+	show(topBarOpponentPicture);
 }
 
 //------------------------------------------------------------------------MANU
@@ -496,7 +502,6 @@ export function setGameData(data: MatchData) {
 
 //------------------------------------------------------------------------CURRENT-GAME-MODAL
 //------------------------------------------------------------------------CREATE-GAME-MODAL
-
 
 
 

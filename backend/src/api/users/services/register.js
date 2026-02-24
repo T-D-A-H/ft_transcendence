@@ -24,7 +24,7 @@ function signupHandler(db, bcrypt, saltRounds, fastify) {
             }
 
             if (cleanUsername.length < 3 || cleanUsername.length > 20) {
-                return reply.code(400).send({ msg: "El usuario debe tener entre 3 y 20 caracteres." });
+                return reply.code(400).send({ msg: "The username must be between 3 and 20 characters." });
             }
 
 			// ! ---- Validate Password ----
@@ -33,7 +33,7 @@ function signupHandler(db, bcrypt, saltRounds, fastify) {
 			if (!PASSWORD_REGEX.test(password)) {
 				return reply.code(400).send({
 					status: "error",
-					msg: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo"
+					msg: "The password must contain at least 8 character, a capital and lowercase character, a number and a symbol"
 				});
 			}
 
@@ -45,7 +45,7 @@ function signupHandler(db, bcrypt, saltRounds, fastify) {
 			if (!emailRegex.test(cleanEmail)) {
 				return reply.code(400).send({ 
 					status: "error",
-					msg: "Formato de correo electrónico inválido (ejemplo: usuario@dominio.com)" 
+					msg: "Icorrect email format (example: user@domain.com)" 
 				});
 			}
 
@@ -104,11 +104,11 @@ function signupHandler(db, bcrypt, saltRounds, fastify) {
 
 			if (err.message && err.message.includes("UNIQUE constraint failed")) {
 			return reply.code(409).send({ 
-					msg: "Ya existe una cuenta con estos datos" 
+					msg: "An account already exists with this data"
 				});
 			}
 			
-			return reply.code(500).send({ msg: "Error interno del servidor" });
+			return reply.code(500).send({ msg: "Internal server error" });
 		}
 	};
 }
