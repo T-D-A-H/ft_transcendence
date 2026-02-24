@@ -116,6 +116,16 @@ export enum Language {
 			es: 'INVITAR',
 			it: 'INVITA'
 		},
+		'common.full': {
+			en: 'FULL',
+			es: 'LLENO',
+			it: 'PIENO'
+		},
+		'common.join': {
+			en: 'JOIN',
+			es: 'UNIRSE',
+			it: 'PARTICIPARE'
+		},
 		'friends.request_accepted': {
 			en: 'Friend request accepted!',
 			es: '¡Solicitud de amistad aceptada!',
@@ -388,10 +398,15 @@ export enum Language {
 			es: 'LOCAL',
 			it: 'LOCALE'
 		},
+		'stats.offline': {
+			en: 'OFFLINE',
+			es: 'EN LÍNEA',
+			it: 'IN LINEA'
+		},
 		'stats.online': {
 			en: 'ONLINE',
 			es: 'EN LÍNEA',
-			it: 'ONLINE'
+			it: 'IN LINEA'
 		},
 		'stats.tourn': {
 			en: 'TOURN',

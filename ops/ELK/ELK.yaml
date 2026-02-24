@@ -30,14 +30,18 @@ services:
       - ./Logstash/config:/app/config
       - ./Logstash/logs:/app/logs
       - ./Elasticsearch/certs:/app/config/certs:ro
+      - ./Logstash/data:/app/data
     ports:
       - "5069:5069"
       - "8080:8080"
       - "5044:5044"
-    deploy:
-      resources:
-        limits:
-          memory: 256M
+    mem_limit: 512m
+    cpus: 0.5
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18080"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
     networks:
       - ELK
     restart: unless-stopped
@@ -63,10 +67,13 @@ services:
       - "9200:9200"
     networks:
       - ELK
-    deploy:
-      resources:
-        limits:
-          memory: 512M
+    mem_limit: 1g
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
 
   # visualizes logs as graphs
@@ -84,10 +91,13 @@ services:
       - "5601:5601"
     networks:
       - ELK
-    deploy:
-      resources:
-        limits:
-          memory: 512M
+    mem_limit: 512m
+    cpus: 0.5
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
 
   # volume for persisting Elasticsearch and Kibana data

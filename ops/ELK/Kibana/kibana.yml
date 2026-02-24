@@ -14,3 +14,7 @@ xpack.encryptedSavedObjects.encryptionKey: "${KIBANA_ENCRYPTION_KEY}"
 xpack.reporting.encryptionKey: "${KIBANA_ENCRYPTION_KEY}"
 
 path.data: /usr/share/kibana/data
+
+xpack.ml.enabled: false
+xpack.apm.enabled: false
+xpack.maps.enabled: false

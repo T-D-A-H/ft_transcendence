@@ -326,7 +326,7 @@ async function respondToInviteRequest(TYPE_URL: string, targetId: string, accept
 		}
 
 	} catch (err: any) {
-		console.error(err?.msg || "Request failed222222");
+		console.error(err?.msg || "Request failed");
 	}
 }
 
@@ -351,7 +351,7 @@ async function renderRequestLists(UL: HTMLElement, REQUEST_TYPE: string) {
 
 					let accept: boolean = false;
 
-					if (btn.textContent!.trim() === "ACCEPT") {
+					if (btn.textContent!.trim() === translate('common.accept')) {
 						accept = true;
 					}
 					else if (btn.textContent!.trim() === "X") {
@@ -573,7 +573,7 @@ export async function renderInviteFriendsList(container: HTMLUListElement): Prom
 		const loading = document.createElement("li");
 		loading.className = "pong-font text-[7px] text-center";
 		loading.style.color = "var(--pong-gray)";
-		loading.textContent = "Loading...";
+		loading.textContent = translate('common.loading');
 		container.appendChild(loading);
 
 		const friends = await fetchFriends();
@@ -583,7 +583,7 @@ export async function renderInviteFriendsList(container: HTMLUListElement): Prom
 				const empty = document.createElement("li");
 				empty.className = "pong-font text-[7px]";
 				empty.style.color = "var(--pong-gray)";
-				empty.textContent = "No friends yet. Add some!";
+				empty.textContent = translate('friends.no_friends');
 				container.appendChild(empty);
 				return;
 		}
@@ -597,7 +597,7 @@ export async function renderInviteFriendsList(container: HTMLUListElement): Prom
 
 				// FIX 1: Use correct status color and text per friend
 				const statusColor = friend.online ? "#4ade80" : "var(--pong-gray)";
-				const statusText = friend.online ? "● ONLINE" : "● OFFLINE";
+				const statusText = friend.online ? `● ${translate('stats.online')}` : "● OFFLINE";
 
 				li.innerHTML = `
 						<div class="flex items-center gap-2">
@@ -608,7 +608,7 @@ export async function renderInviteFriendsList(container: HTMLUListElement): Prom
 								</div>
 						</div>
 						<button class="invite-friend-btn pong-button active-border text-[7px] px-2 py-0.5">
-								${friend.online ? 'INVITE' : 'OFFLINE'}
+								${friend.online ? `${translate('common.invite')}` : 'OFFLINE'}
 						</button>
 				`;
 

@@ -2,3 +2,6 @@ http.host: 0.0.0.0
 xpack.monitoring.elasticsearch.hosts:
 - http://elasticsearch:9200
 xpack.monitoring.enabled: true
+# Pipeline tuning for efficiency
+pipeline.workers: 1
+pipeline.batch.size: 50
