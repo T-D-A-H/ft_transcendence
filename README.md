@@ -369,8 +369,8 @@ Built by a team of 5 students from **42 Madrid**:
 
 | Name | GitHub | Responsibilities |
 |---|---|---|
-| Student 1 | [@handle](https://github.com/) | Backend (Fastify, API, WebSockets) |
-| Student 2 | [@handle](https://github.com/) | Frontend (TypeScript, Tailwind CSS) |
+| Jaimesan | [@handle](https://github.com/) | Backend (Fastify, API, WebSockets) |
+| Ctommasi | [@handle](https://github.com/) | Frontend (TypeScript, Tailwind CSS) |
 | Student 3 | [@handle](https://github.com/) | Game Engine & AI Opponent |
 | Student 4 | [@handle](https://github.com/) | Auth (JWT, OAuth, 2FA) & Blockchain |
 | Student 5 | [@handle](https://github.com/) | DevOps (Docker, ELK, Prometheus/Grafana) |
