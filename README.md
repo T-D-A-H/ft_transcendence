@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🏓 ft_transcendence
+#  ft_transcendence
 
 ### The Final Project of the 42 Common Core
 
