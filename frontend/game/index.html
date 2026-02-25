@@ -256,7 +256,7 @@
 				</div>
 
 				<!-- Friend Modal -->
-				<div id="add_friend_modal" class="pong-modal h-1/2 hidden">
+				<div id="add_friend_modal" class="pong-modal h-[40%] hidden">
 					<div class="pong-modal-header">
 						<button id="add_friend_cancel" class="pong-cancel-button">X</button>
 						<h2 class="pong-modal-top-text" data-i18n="add_friend.title">Add Friend</h2>
@@ -270,8 +270,8 @@
 							data-i18n-placeholder="add_friend.enter_username"
 						/>
 					</div>
-					<div class="pong-modal-bottom-buttons">
-						<button id="add_friend_submit" class="pong-submit-button active-border ml-auto">
+					<div class="pong-modal-bottom-buttons flex justify-center mt-2">
+						<button id="add_friend_submit" class="pong-submit-button active-border">
 							<span data-i18n="add_friend.send_request">SEND REQUEST</span>
 						</button>
 					</div>
@@ -400,7 +400,7 @@
 						<!-- Local -->
 						<div id="local" class="pong-suboptions">
 							<p class="pong-modal-options-text" data-i18n="create_game.local_desc">
-							Play on the same screen using w,s & up, down or play against the computer using an A* algorithm.
+							Play on the same screen using w,s & up, down or play against the computer.
 							</p>
 							<div id="local_options" class="flex-col pong-modal-subobtions mt-6">
 								<button id="2player" class="pong-button active-border gap-2" data-i18n="create_game.same_screen">Same Screen</button>

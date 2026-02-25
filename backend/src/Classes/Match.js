@@ -4,7 +4,7 @@ const User   = require("./User.js");
 
 class Match {
 
-	static ScoreMax = 4; // CAMBIAR
+	static ScoreMax = 9; // CAMBIAR
 	constructor(user, match_id, matchType, tournament, visibility) { LOGGER(200, "Match.js", "Constructor", "For " + user.getUsername() + " match_id: " + match_id);
 		
 		this.id = match_id;
@@ -77,7 +77,7 @@ class Match {
 
 		this.game.updatePlayerPaddle(this.YDir);
 		this.game.updateBall();
-		this.broadcast("DRAW", null, {LeftXY: this.game.getLeftPlayerXY(), RightXY: this.game.getRightPlayerXY(), BallXY: this.game.getBallXY()});
+		this.broadcast("UPDATE", "draw", {LeftXY: this.game.getLeftPlayerXY(), RightXY: this.game.getRightPlayerXY(), BallXY: this.game.getBallXY()});
 
 		const GameScores = this.game.getScores();
 		if (this.playerScored(GameScores) === true) {
@@ -85,7 +85,7 @@ class Match {
 			const winner_index = (this.SCORES[0] !== GameScores[0]) ? 0 : 1;
 			this.game.restartGame(winner_index);
 			this.updateScores(GameScores);
-			this.broadcast("SCORES", null, {scores: this.SCORES});
+			this.broadcast("UPDATE", "scores", {scores: this.SCORES});
 		}
 		if (this.playerWonMatch() === true) {
 

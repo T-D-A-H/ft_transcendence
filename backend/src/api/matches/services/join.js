@@ -32,7 +32,7 @@ module.exports = function joinMatch(userManager, user, match_id) {
 
     const creator = match.getCreator();
 
-    creator.notify("NOTIFICATION", `${creator.getUsername()} joined your match`);
+    creator.notify("NOTIFICATION", `${user.getUsername()} joined your match`);
 
     match.broadcast("UPDATE", "matches");
     

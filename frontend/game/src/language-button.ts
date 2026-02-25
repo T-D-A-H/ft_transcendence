@@ -549,9 +549,9 @@ export enum Language {
 		it: 'Torneo'
 	},
 	'create_game.local_desc': {
-		en: 'Play on the same screen using w,s & up, down or play against the computer using an A* algorithm.',
-		es: 'Juega en la misma pantalla usando w,s y arriba, abajo o juega contra la computadora usando un algoritmo A*.',
-		it: 'Gioca sullo stesso schermo usando w,s e su, giù oppure gioca contro il computer usando un algoritmo A*.'
+		en: 'Play on the same screen using w,s & up, down or play against the computer',
+		es: 'Juega en la misma pantalla usando w,s y arriba, abajo o juega contra la computadora',
+		it: 'Gioca sullo stesso schermo usando w,s e su, giù oppure gioca contro il computer.'
 	},
 	'create_game.same_screen': {
 		en: 'Same Screen',

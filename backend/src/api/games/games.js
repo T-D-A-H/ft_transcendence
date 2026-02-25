@@ -60,7 +60,7 @@ module.exports = async function websocketHandler(fastify, options) {
                 for (const row of rows) {
                     const friend = userManager.getUserByID(row.friend_id);
                     if (friend && friend.getIsConnected()) {
-                        friend.notify("FRIEND_UPDATE", "Friend went offline", null);
+                        friend.notify("UPDATE", "friends", null);
                     }
                 }
                 userManager.disconnectUser(user);

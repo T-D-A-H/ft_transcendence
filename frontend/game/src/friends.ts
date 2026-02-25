@@ -434,7 +434,7 @@ function handleFriendWebSocketEvents(): void {
 }
 
 export function onFriendWebSocketMessage(data: any): void {
-    if (data.type === "FRIEND_UPDATE") {
+    if (data.type === "UPDATE") {
         const friendsListEl = document.getElementById("friends_list");
         if (friendsListEl && !friendsListEl.classList.contains("hidden")) {
             if (renderDebounceTimer) clearTimeout(renderDebounceTimer);
