@@ -29,10 +29,11 @@ class UserManager {
         const user1 = this.getUserByID(userId1);
         const user2 = this.getUserByID(userId2);
         if (user1 && user1.getIsConnected()) {
-            user1.notify("FRIEND_UPDATE", "Friends list changed", null);
+            user1.notify("UPDATE", "friends", null);
+
         }
         if (user2 && user2.getIsConnected()) {
-            user2.notify("FRIEND_UPDATE", "Friends list changed", null);
+            user2.notify("UPDATE", "friends", null);
         }
     }
 
@@ -158,7 +159,7 @@ class UserManager {
             if (match.getType() === "2player") {
 
                 // 4. Limpiar estado de jugadores
-                match.players[0].notify("WIN", ``);
+                match.players[0].notify("UPDATE", "win", "");
                 match.players.forEach(p => {
                     if (p) {
                         p.setMatch(null);
@@ -195,7 +196,7 @@ class UserManager {
                     user.setTournament(null);
                     user.setMatch(null);
                     user.setIsPlaying(false);
-                    user.notify("WIN", "Creator Disbanded the Tournament.");
+                    user.notify("UPDATE", "win", "Creator Disbanded the Tournament.");
                     tournament.removePlayer(id);
                 }
             }
@@ -208,7 +209,7 @@ class UserManager {
         match.players.forEach(user => {
             if (user && typeof user !== 'string' && user.getDisplaySide) {
                 if (user.getDisplaySide() === match.getPlayerSides(user)) {
-                    user.notify("MIRROR", null, null);
+                    user.notify("UPDATE", "mirror", null);
                 }
             }
         });
@@ -321,7 +322,7 @@ class UserManager {
             const user = players[0];
             if (user) {
                 const userWon = this.stats._handleLocal(user, scores);
-                user.notify("WIN", userWon ? "You won the local match!" : "You lost the local match!");
+                user.notify("UPDATE", "win",  userWon ? "You won the local match!" : "You lost the local match!");
             }
 
         } else if (winnerUser && loserUser) {
@@ -329,8 +330,8 @@ class UserManager {
             const type = tournament ? "tournament" : "online";
             this.stats.handleMatchEnd(type, winnerUser, loserUser);
 
-            winnerUser.notify("WIN", `You won against ${loserUser.getDisplayName()}`);
-            loserUser.notify("WIN", `You lost against ${winnerUser.getDisplayName()}`);
+            winnerUser.notify("UPDATE", "win", `You won against ${loserUser.getDisplayName()}`);
+            loserUser.notify("UPDATE", "win", `You lost against ${winnerUser.getDisplayName()}`);
         }
 
         // 3. Lógica de torneo: actualizar ronda

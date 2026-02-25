@@ -85,9 +85,6 @@ export async function registerEvents() {
 
 		showNotification(data.msg, data.info?.type, data.info?.id);
 	});
-	registerHandler("FRIEND_UPDATE", (data) => {
-		onFriendWebSocketMessage(data);
-	});
 	registerHandler("TOURNAMENT_ELIMINATED", (data) => {
 		showNotification(data.msg);
 		setGameType(GameType.NONE);
@@ -138,7 +135,10 @@ export async function registerEvents() {
 	});
 	registerHandler("UPDATE", (data) => {
 
-    	if (data.msg === "matches") {
+		if (data.msg === "friends") {
+			onFriendWebSocketMessage(data);
+		}
+    	else if (data.msg === "matches") {
 			setGameType(GameType.MATCH);
 			updateCurrentGame("matches");
 		}
@@ -146,32 +146,29 @@ export async function registerEvents() {
 			setGameType(GameType.TOURNAMENT);
     	    updateCurrentGame("tournaments");
     	}
-
-	});
-	registerHandler("MIRROR", (data) => {
-
+		else if (data.msg === "mirror") {
 			mirrorCanvas();
+		}
+		else if (data.msg === "scores") {
+			setSCORES(data.info?.scores[0], data.info?.scores[1]);
+		}
+		else if (data.msg === "draw") {
+			drawGame(data.info?.LeftXY[0], data.info?.LeftXY[1], data.info?.RightXY[0], data.info?.RightXY[1], data.info?.BallXY[0], data.info?.BallXY[1]);				
+		}
+		else if (data.msg === "win") {
+			setGameType(GameType.NONE)
+			setGameStatus(GameStatus.NOT_IN_GAME);
+			showNotification(data.info);
+			setSCORES(0, 0);
+			clearBackground();
+			showMenu();
+		}
+
 	});
 	registerHandler("NOTIFICATION", (data) => {
 
 		showNotification(data.msg);
 
-	});
-	registerHandler("SCORES", (data) => {
-
-		setSCORES(data.info?.scores[0], data.info?.scores[1]);
-	});
-	registerHandler("WIN", (data) => {
-		setGameType(GameType.NONE)
-		setGameStatus(GameStatus.NOT_IN_GAME);
-		showNotification(data.msg);
-		setSCORES(0, 0);
-		clearBackground();
-		showMenu();
-	});
-	registerHandler("DRAW", (data) => {
-
-		drawGame(data.info?.LeftXY[0], data.info?.LeftXY[1], data.info?.RightXY[0], data.info?.RightXY[1], data.info?.BallXY[0], data.info?.BallXY[1]);				
 	});
 }
 
