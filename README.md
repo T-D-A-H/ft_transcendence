@@ -37,6 +37,10 @@ The platform lets users play real-time Pong matches against each other (from the
 
 The project was completed with **7 major modules and 7 minor modules**, equivalent to 10.5 major modules.
 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/415b6776-6c6d-4628-932c-41f941247250" alt="gif1" />
+</p>
+
 ---
 
 ## Tech Stack
