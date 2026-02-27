@@ -20,11 +20,11 @@
 
 - [Overview](#overview)
 - [Tech Stack](#tech-stack)
-- [Modules](#modules)
 - [Architecture](#architecture)
 - [Getting Started](#getting-started)
 - [Environment Variables](#environment-variables)
 - [API](#api)
+- [Modules](#modules)
 - [Team](#team)
 
 ---
@@ -59,41 +59,6 @@ The project was completed with **7 major modules and 7 minor modules**, equivale
 | Containerization | Docker, Docker Compose |
 | Reverse proxy | Nginx |
 | i18n | Multi-language support (3+ languages) |
-
----
-
-## Modules
-
-**7 Major + 7 Minor** — equivalent to 10.5 major modules
-
-![Web](https://img.shields.io/badge/Web-3_modules-0ea5e9?style=flat-square)
-![Blockchain](https://img.shields.io/badge/Blockchain-1_module-E84142?style=flat-square)
-![User_Management](https://img.shields.io/badge/User_Management-2_modules-8b5cf6?style=flat-square)
-![Gameplay](https://img.shields.io/badge/Gameplay-3_modules-22c55e?style=flat-square)
-![AI](https://img.shields.io/badge/AI-2_modules-f59e0b?style=flat-square)
-![Security](https://img.shields.io/badge/Security-1_module-ef4444?style=flat-square)
-![DevOps](https://img.shields.io/badge/DevOps-2_modules-64748b?style=flat-square)
-![Accessibility](https://img.shields.io/badge/Accessibility-1_module-14b8a6?style=flat-square)
-![Server_Pong](https://img.shields.io/badge/Server--Side_Pong-1_module-f97316?style=flat-square)
-
-| Category | Type | Module |
-|---|---|---|
-| Web | Major | Fastify + Node.js backend framework |
-| Web | Minor | TypeScript + Tailwind CSS frontend |
-| Web | Minor | SQLite database |
-| Blockchain | Major | Tournament scores on Avalanche Fuji via `TournamentScores.sol` |
-| User Management | Major | Registration, login, avatars, friends, match history, stats |
-| User Management | Major | Remote authentication via Google OAuth 2.0 |
-| Gameplay | Major | Remote players — two machines, real-time |
-| Gameplay | Major | Additional game with matchmaking and user history |
-| Gameplay | Minor | Game customization — themes, power-ups |
-| AI | Major | AI opponent, 1s view refresh, no A* |
-| AI | Minor | User and game stats dashboards |
-| Cybersecurity | Major | Two-Factor Authentication (2FA) and JWT |
-| DevOps | Major | ELK stack for centralized log management |
-| DevOps | Minor | Prometheus + Grafana monitoring |
-| Accessibility | Minor | Multi-language support with language switcher |
-| Server-Side Pong | Major | Server-side Pong with REST API, playable via CLI |
 
 ---
 
@@ -155,7 +120,7 @@ cd ft_transcendencer
 make
 ```
 
-Open [https://localhost](https://localhost) in Mozilla Firefox.
+Open [https://localhost:4000](https://localhost:4000) in Mozilla Firefox.
 
 **Makefile targets**
 
@@ -167,13 +132,12 @@ Open [https://localhost](https://localhost) in Mozilla Firefox.
 | `make clean` | Stop containers and remove volumes |
 | `make fclean` | Remove containers, volumes, and images |
 | `make logs` | Tail logs from all services |
-| `make ps` | Show container status |
 
 ---
 
 ## Environment Variables
 
-Two `.env` files are required. Neither should ever be committed.
+Three `.env` files are required. 
 
 > Sensitive values are marked as `your_*`. Replace them before running the project.
 
@@ -231,6 +195,24 @@ GF_USERS_ALLOW_SIGN_UP=false
 GF_SERVER_HTTP_PORT=3001
 ```
 
+### `database/blockchain/.env` — Wallet, Snowtrace & Avalanche
+
+Used by the Blockchain and Database containers.
+
+```env
+# ── Crypto Wallet ─────────────────────────────────────────────────
+PRIVATE_KEY=your_private_key
+WALLET_ADDRESS=your_wallet_address
+
+# ── Snowtrace ────────────────────────────────────────────────────────
+SNOWTRACE_API_KEY=your_snowtrace_api_key
+
+# ── Avalanche ──────────────────────────────────────────────────────
+AVALANCHE_FUJI_RPC_URL=your_avalanche_fuji_url
+AVALANCHE_MAINNET_RPC_URL=your_avalanche_mainet_url
+CONTRACT_ADDRESS=your_contact_address
+```
+
 **Service URLs once running**
 
 | Service | URL |
@@ -259,16 +241,52 @@ The `/api/games` endpoints mirror the browser game logic, so a CLI client can jo
 
 ---
 
+## Modules
+
+**7 Major + 7 Minor** — equivalent to 10.5 major modules
+
+![Web](https://img.shields.io/badge/Web-3_modules-0ea5e9?style=flat-square)
+![Blockchain](https://img.shields.io/badge/Blockchain-1_module-E84142?style=flat-square)
+![User_Management](https://img.shields.io/badge/User_Management-2_modules-8b5cf6?style=flat-square)
+![Gameplay](https://img.shields.io/badge/Gameplay-3_modules-22c55e?style=flat-square)
+![AI](https://img.shields.io/badge/AI-2_modules-f59e0b?style=flat-square)
+![Security](https://img.shields.io/badge/Security-1_module-ef4444?style=flat-square)
+![DevOps](https://img.shields.io/badge/DevOps-2_modules-64748b?style=flat-square)
+![Accessibility](https://img.shields.io/badge/Accessibility-1_module-14b8a6?style=flat-square)
+![Server_Pong](https://img.shields.io/badge/Server--Side_Pong-1_module-f97316?style=flat-square)
+
+| Category | Type | Module |
+|---|---|---|
+| Web | Major | Fastify + Node.js backend framework |
+| Web | Minor | TypeScript + Tailwind CSS frontend |
+| Web | Minor | SQLite database |
+| Blockchain | Major | Tournament scores on Avalanche Fuji via `TournamentScores.sol` |
+| User Management | Major | Registration, login, avatars, friends, match history, stats |
+| User Management | Major | Remote authentication via Google OAuth 2.0 |
+| Gameplay | Major | Remote players — two machines, real-time |
+| Gameplay | Major | Additional game with matchmaking and user history |
+| Gameplay | Minor | Game customization — themes, power-ups |
+| AI | Major | AI opponent, 1s view refresh, no A* |
+| AI | Minor | User and game stats dashboards |
+| Cybersecurity | Major | Two-Factor Authentication (2FA) and JWT |
+| DevOps | Major | ELK stack for centralized log management |
+| DevOps | Minor | Prometheus + Grafana monitoring |
+| Accessibility | Minor | Multi-language support with language switcher |
+| Server-Side Pong | Major | Server-side Pong with REST API, playable via CLI |
+
+---
+
+
 ## Team
 
-Built by a team of 5 students from **42 Madrid**:
+Built by a team of 4 students from **42 Madrid**:
 
 | Name | GitHub | Responsibilities |
 |---|---|---|
-| jaimesan  | [@handle](https://github.com/Ja1m3st)      | Backend (Fastify, API, WebSockets), Auth (JWT, OAuth, 2FA), Docker, Basic Stats      |
-| ctommasi  | [@handle](https://github.com/vikingokvist) | Frontend (TypeScript, Tailwind CSS), Game Engin, Backend (Fastify, API, WebSockets)  |
-| luis      | [@handle](https://github.com/)             |  AI Opponent & Graphic Stats                                                         |
-| jesus     | [@handle](https://github.com/)             |  Blockchain & DevOps (ELK, Prometheus/Grafana)                                       |
+| Jaime Sanchez      | [Ja1m3st](https://github.com/Ja1m3st)      | Backend (Fastify, API, WebSockets), Auth (JWT, OAuth, 2FA), Docker, Basic Stats      |
+| Cristopher Tommasi | [vikingokvist](https://github.com/vikingokvist) | Frontend (TypeScript, Tailwind CSS), Game Engin, Backend (Fastify, API, WebSockets)  |
+| Luis Martin        | [luuismrtn](https://github.com/luuismrtn)    |  AI Opponent, Graphic Stats & Customization                                                     |
+| Jesús Ramos        | [jramos-a](https://github.com/jramos-a)     |  Blockchain & DevOps (ELK, Prometheus/Grafana)                                       |
 
 ---
 
