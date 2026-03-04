@@ -284,7 +284,7 @@ Built by a team of 4 students from **42 Madrid**:
 | Name | GitHub | Responsibilities |
 |---|---|---|
 | Jaime Sanchez      | [Ja1m3st](https://github.com/Ja1m3st)      | Backend (Fastify, API, WebSockets), Auth (JWT, OAuth, 2FA), Docker, Basic Stats      |
-| Cristopher Tommasi | [vikingokvist](https://github.com/vikingokvist) | Frontend (TypeScript, Tailwind CSS), Game Engin, Backend (Fastify, API, WebSockets)  |
+| Cristopher Tommasi | [cristommasi](https://github.com/cristommasi) | Frontend (TypeScript, Tailwind CSS), Game Engin, Backend (Fastify, API, WebSockets)  |
 | Luis Martin        | [luuismrtn](https://github.com/luuismrtn)    |  AI Opponent, Graphic Stats & Customization                                                     |
 | Jesús Ramos        | [jramos-a](https://github.com/jramos-a)     |  Blockchain & DevOps (ELK, Prometheus/Grafana)                                       |
 
